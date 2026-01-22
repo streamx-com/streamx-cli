@@ -11,9 +11,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/*
-<argLine>--enable-native-access=ALL-UNNAMED -Dorg.jline.terminal.dumb=true</argLine>
- */
 class AbstractCommandTest extends AbstractCommandBaseTest {
   @Test
   void execute_success() {
