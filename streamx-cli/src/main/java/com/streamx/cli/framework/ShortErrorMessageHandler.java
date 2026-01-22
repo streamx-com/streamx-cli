@@ -1,0 +1,39 @@
+package dev.streamx.cli.framework.cli;
+
+import picocli.CommandLine;
+
+import java.io.PrintWriter;
+
+import picocli.CommandLine.IParameterExceptionHandler;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.UnmatchedArgumentException;
+
+import static dev.streamx.cli.framework.i18n.MessageProvider.msg;
+
+public class ShortErrorMessageHandler implements IParameterExceptionHandler {
+
+  @Override
+  public int handleParseException(ParameterException ex, String[] args) {
+    CommandLine cmd = ex.getCommandLine();
+    return shortErrorMessage(ex, cmd);
+  }
+
+  static int shortErrorMessage(Exception ex, CommandLine cmd) {
+    PrintWriter writer = cmd.getErr();
+    String errorMessage = ex.getMessage();
+
+    writer.println(cmd.getColorScheme().errorText(errorMessage));
+    if (ex instanceof ParameterException) {
+      UnmatchedArgumentException.printSuggestions((ParameterException) ex, writer);
+    }
+
+    if (ex instanceof ParameterException || ex instanceof IllegalArgumentException) {
+      CommandSpec spec = cmd.getCommandSpec();
+      writer.printf(msg.tryForMoreInformationOnAvailableOptions(spec.qualifiedName(), "help".equals(spec.name()) ? "" : " --help"));
+      return cmd.getCommandSpec().exitCodeOnInvalidInput();
+    }
+    return cmd.getCommandSpec().exitCodeOnExecutionException();
+  }
+
+}
