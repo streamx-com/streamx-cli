@@ -5,8 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.streamx.cli.framework.cli.AbstractCommand;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+
 import java.util.HashSet;
 import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
