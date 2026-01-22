@@ -1,13 +1,12 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
-import static dev.streamx.cli.framework.i18n.MessageProvider.msg;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-
 import java.util.function.Function;
 
 /**
@@ -20,7 +19,10 @@ public class CommandResult<ResultT> {
     this.result = result;
   }
 
-  public String toText(OutputFormat outputFormat, Function<CommandResult<ResultT>, String> textFormatter) throws RuntimeException {
+  public String toText(
+      OutputFormat outputFormat,
+      Function<CommandResult<ResultT>, String> textFormatter
+  ) throws RuntimeException {
     try {
       switch (outputFormat) {
         case OutputFormat.text -> {
@@ -33,15 +35,14 @@ public class CommandResult<ResultT> {
         }
         case OutputFormat.yaml -> {
           var yamlFactory = YAMLFactory.builder()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-            .build();
+              .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
+              .build();
           ObjectMapper mapper = new ObjectMapper(yamlFactory);
           JsonNode jsonNode = mapper.valueToTree(result);
           return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode).strip();
         }
+        default -> throw new RuntimeException(msg.unsupportedOutputFormat());
       }
-
-      throw new RuntimeException(msg.unsupportedOutputFormat());
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

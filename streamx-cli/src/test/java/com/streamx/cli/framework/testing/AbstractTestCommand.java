@@ -1,14 +1,13 @@
-package dev.streamx.cli.framework.cli.testing;
+package com.streamx.cli.framework.testing;
 
-import dev.streamx.cli.framework.cli.AbstractCommand;
-import dev.streamx.cli.framework.cli.CommandResult;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-
+import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CommandResult;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 // Helper class for testing AbstractCommand
 public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {

@@ -1,15 +1,13 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
-import picocli.CommandLine;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import java.io.PrintWriter;
-
+import picocli.CommandLine;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.UnmatchedArgumentException;
-
-import static dev.streamx.cli.framework.i18n.MessageProvider.msg;
 
 public class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
@@ -30,7 +28,10 @@ public class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
     if (ex instanceof ParameterException || ex instanceof IllegalArgumentException) {
       CommandSpec spec = cmd.getCommandSpec();
-      writer.printf(msg.tryForMoreInformationOnAvailableOptions(spec.qualifiedName(), "help".equals(spec.name()) ? "" : " --help"));
+      writer.printf(msg.tryForMoreInformationOnAvailableOptions(
+          spec.qualifiedName(),
+          "help".equals(spec.name()) ? "" : " --help"
+      ));
       return cmd.getCommandSpec().exitCodeOnInvalidInput();
     }
     return cmd.getCommandSpec().exitCodeOnExecutionException();

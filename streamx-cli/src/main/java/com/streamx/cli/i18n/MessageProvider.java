@@ -1,10 +1,9 @@
-package dev.streamx.cli.framework.i18n;
+package com.streamx.cli.i18n;
 
+import java.lang.invoke.MethodHandles;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-
-import java.lang.invoke.MethodHandles;
 
 @MessageBundle(projectCode = "STREAMXCLI")
 public interface MessageProvider {
@@ -15,7 +14,10 @@ public interface MessageProvider {
   String unsupportedOutputFormat();
 
   @Message(id = 101, value = "Try '%s%s' for more information on the available options.%n")
-  String tryForMoreInformationOnAvailableOptions(String qualifiedCommandName, String helpOptionName);
+  String tryForMoreInformationOnAvailableOptions(
+      String qualifiedCommandName,
+      String helpOptionName
+  );
 
   @Message(id = 102, value = "Failed to handle interactive input")
   String failedToHandleInteractiveInput();

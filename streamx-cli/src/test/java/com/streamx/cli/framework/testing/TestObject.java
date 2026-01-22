@@ -1,8 +1,7 @@
-package dev.streamx.cli.framework.cli.testing;
-
-import org.instancio.Instancio;
+package com.streamx.cli.framework.testing;
 
 import java.util.List;
+import org.instancio.Instancio;
 
 public class TestObject {
   public Void voidValue;
@@ -14,13 +13,13 @@ public class TestObject {
   public List<TestObject> nestedObjects;
 
   public TestObject(
-    Void voidValue,
-    boolean booleanValue,
-    long longValue,
-    double floatValue,
-    String stringValue,
-    TestObject nestedObject,
-    List<TestObject> nestedObjects
+      Void voidValue,
+      boolean booleanValue,
+      long longValue,
+      double floatValue,
+      String stringValue,
+      TestObject nestedObject,
+      List<TestObject> nestedObjects
   ) {
     this.voidValue = voidValue;
     this.booleanValue = booleanValue;

@@ -1,7 +1,12 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
-import static dev.streamx.cli.framework.i18n.MessageProvider.msg;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import io.quarkus.runtime.Quarkus;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -11,12 +16,6 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
-import io.quarkus.runtime.Quarkus;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.List;
 
 /**
  * Each CLI command should extend this class.
@@ -28,7 +27,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public abstract CommandResult<ResultT> runCommand() throws RuntimeException;
 
   // Override this method to hide specific command line options.
-  // May be useful to hide the "--output" option for commands that don't print anything in case of success.
+  // May be useful to hide the "--output" option for
+  // commands that don't print anything in case of success.
   public List<String> getHiddenOptions() {
     return List.of();
   }
@@ -59,15 +59,15 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   @CommandLine.Option(
-    names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
-    description = "Print debug information"
+      names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
+      description = "Print debug information"
   )
   public boolean verbose;
 
   @CommandLine.Option(
-    names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
-    description = "Specify output format: text, json, yaml",
-    defaultValue = "text"
+      names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
+      description = "Specify output format: text, json, yaml",
+      defaultValue = "text"
   )
   // Explicitly set default value here as a fallback for commands with the hidden output option.
   public OutputFormat output = OutputFormat.text;
@@ -82,10 +82,13 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   // Use this method for asking user input in interactive commands.
-  public String promptForInput(String prompt, @Nullable List<String> autocompleteOptions) throws RuntimeException {
+  public String promptForInput(
+      String prompt,
+      @Nullable List<String> autocompleteOptions
+  ) throws RuntimeException {
     try (Terminal terminal = createTerminal()) {
       LineReaderBuilder builder = LineReaderBuilder.builder()
-        .terminal(terminal);
+          .terminal(terminal);
 
       Completer completer = null;
       if (autocompleteOptions != null) {
@@ -95,7 +98,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
 
       LineReader reader = builder.build();
 
-      return reader.readLine(completer == null ? prompt : prompt + " (TAB for autocomplete):").strip();
+      return reader.readLine(completer == null ? prompt : prompt + " (TAB for autocomplete):")
+          .strip();
     } catch (IOException e) {
       throw new RuntimeException(msg.failedToHandleInteractiveInput(), e);
     }

@@ -1,12 +1,12 @@
-package dev.streamx.cli.framework.cli;
-
-import dev.streamx.cli.framework.cli.testing.AbstractCommandBaseTest;
-import dev.streamx.cli.framework.cli.testing.AbstractTestCommand;
-import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
+package com.streamx.cli.framework;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.streamx.cli.framework.testing.AbstractCommandBaseTest;
+import com.streamx.cli.framework.testing.AbstractTestCommand;
+import org.junit.jupiter.api.Test;
+import picocli.CommandLine;
 
 class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
   @Test

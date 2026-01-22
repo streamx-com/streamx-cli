@@ -1,4 +1,4 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
 public class CommonOption {
   public static final String VERBOSE_SHORT = "-v";

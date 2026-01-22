@@ -1,15 +1,18 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
-import dev.streamx.cli.framework.cli.testing.AbstractCommandBaseTest;
-import dev.streamx.cli.framework.cli.testing.AbstractTestCommand;
-import dev.streamx.cli.framework.cli.testing.TestObject;
-import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.streamx.cli.framework.testing.AbstractCommandBaseTest;
+import com.streamx.cli.framework.testing.AbstractTestCommand;
+import com.streamx.cli.framework.testing.TestObject;
 import java.io.ByteArrayInputStream;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import picocli.CommandLine;
 
 class AbstractCommandTest extends AbstractCommandBaseTest {
   @Test

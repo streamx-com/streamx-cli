@@ -1,8 +1,7 @@
-package dev.streamx.cli.framework.cli.testing;
+package com.streamx.cli.framework.testing;
 
-import dev.streamx.cli.framework.cli.AbstractSilentCommand;
-import dev.streamx.cli.framework.cli.CommandResult;
-
+import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.CommandResult;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -14,6 +13,7 @@ public class AbstractSilentTestCommand extends AbstractSilentCommand {
   public void setRunCommandHandler(Supplier<CommandResult<Void>> handler) {
     this.runCommandHandler = handler;
   }
+
   public void setHiddenOptionsHandler(Supplier<List<String>> handler) {
     this.hiddenOptionsHandler = handler;
   }

@@ -1,4 +1,4 @@
-package dev.streamx.cli.framework.cli.testing;
+package com.streamx.cli.framework.testing;
 
 public class UnserializableObject {
   // Object with circular reference to make it unserializable

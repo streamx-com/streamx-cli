@@ -1,11 +1,12 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
-import dev.streamx.cli.framework.cli.testing.AbstractCommandBaseTest;
-import dev.streamx.cli.framework.cli.testing.AbstractSilentTestCommand;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import com.streamx.cli.framework.testing.AbstractCommandBaseTest;
+import com.streamx.cli.framework.testing.AbstractSilentTestCommand;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractSilentCommandTest extends AbstractCommandBaseTest {
   @Test

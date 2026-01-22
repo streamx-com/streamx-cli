@@ -1,10 +1,9 @@
-package dev.streamx.cli.framework.cli.testing;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+package com.streamx.cli.framework.testing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class AbstractCommandBaseTest {
   public final ByteArrayOutputStream outStream = new ByteArrayOutputStream();

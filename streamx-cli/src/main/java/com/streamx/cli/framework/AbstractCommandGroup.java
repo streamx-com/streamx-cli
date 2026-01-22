@@ -1,4 +1,4 @@
-package dev.streamx.cli.framework.cli;
+package com.streamx.cli.framework;
 
 import java.util.List;
 
