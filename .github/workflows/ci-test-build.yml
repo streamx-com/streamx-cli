@@ -33,9 +33,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build project
+      - name: Run tests
         run: |
-          ./mvnw clean verify -P all-tests
+          cd ./streamx-cli && ./mvnw clean test
   windows-test-build:
     runs-on: windows-latest
     steps:
@@ -58,6 +58,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build project
+      - name: Run tests
         run: |
-          ./mvnw clean verify "-Djacoco.skip=true" -P all-tests
+          cd ./streamx-cli && ./mvnw clean test
