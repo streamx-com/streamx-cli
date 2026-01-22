@@ -11,6 +11,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
+import io.quarkus.runtime.Quarkus;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -124,6 +125,6 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
 
   public void run() {
     int exitCode = execute();
-    System.exit(exitCode);
+    Quarkus.asyncExit(exitCode);
   }
 }
