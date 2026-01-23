@@ -11,7 +11,7 @@ import picocli.CommandLine;
 class AbstractSilentCommandTest extends AbstractCommandBaseTest {
   @Test
   void outputFlagIsAbsent() {
-    var command = new AbstractSilentTestCommand();
+    AbstractSilentTestCommand command = new AbstractSilentTestCommand();
     new CommandLine(command); // Trigger all PicocLi initialization
 
     assertNull(command.spec.findOption(CommonOption.OUTPUT_LONG));
@@ -19,7 +19,7 @@ class AbstractSilentCommandTest extends AbstractCommandBaseTest {
 
   @Test
   void outputIsEmpty() {
-    var command = new AbstractSilentTestCommand();
+    AbstractSilentTestCommand command = new AbstractSilentTestCommand();
     command.setRunCommandHandler(() -> new CommandResult<>(null));
     command.execute();
 

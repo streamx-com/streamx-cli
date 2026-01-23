@@ -17,10 +17,10 @@ import picocli.CommandLine;
 class AbstractCommandTest extends AbstractCommandBaseTest {
   @Test
   void execute_success() {
-    var command = new AbstractTestCommand<TestObject>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> new CommandResult<>(TestObject.random()));
     new CommandLine(command);
-    var exitCode = command.execute();
+    int exitCode = command.execute();
 
     assertEquals(0, exitCode);
     assertFalse(outStream.toString().isEmpty());
@@ -29,12 +29,12 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
   @Test
   void execute_fail() {
-    var command = new AbstractTestCommand<TestObject>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new RuntimeException("Test exception");
     });
     new CommandLine(command);
-    var exitCode = command.execute();
+    int exitCode = command.execute();
 
     assertEquals(1, exitCode);
     assertTrue(outStream.toString().isEmpty());
@@ -43,12 +43,12 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
   @Test
   void getHiddenOptionsOverride() {
-    var command1 = new AbstractTestCommand<>();
+    AbstractTestCommand<Void> command1 = new AbstractTestCommand<>();
     new CommandLine(command1);
 
     assertNotNull(command1.spec.findOption(CommonOption.OUTPUT_LONG));
 
-    var command2 = new AbstractTestCommand<>();
+    AbstractTestCommand<Void> command2 = new AbstractTestCommand<>();
     command2.setHiddenOptionsHandler(() -> List.of(CommonOption.OUTPUT_LONG));
     new CommandLine(command2);
 
@@ -57,7 +57,7 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
   @Test
   void testPromptForInputMultipleCalls() {
-    var command = new AbstractTestCommand<>();
+    AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
     command.setSpec(commandLine.getCommandSpec());
 

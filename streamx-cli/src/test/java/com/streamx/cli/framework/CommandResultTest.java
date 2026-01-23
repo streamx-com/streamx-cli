@@ -50,7 +50,7 @@ class CommandResultTest {
 
   @Test
   void toText_withTextFormat_shouldUseTextFormatter() {
-    var expectedOutput = """
+    String expectedOutput = """
         Void Value: null
         Boolean Value: true
         Long Value: 100500
@@ -82,14 +82,14 @@ class CommandResultTest {
         cr.result.nestedObjects.size()
       );
 
-    var output = commandResult.toText(OutputFormat.text, textFormatter);
+    String output = commandResult.toText(OutputFormat.text, textFormatter);
 
     assertEquals(expectedOutput, output);
   }
 
   @Test
   void toText_withJsonFormat_shouldReturnPrettyPrintedJson() {
-    var expectedOutput = """
+    String expectedOutput = """
          {
           "voidValue" : null,
           "booleanValue" : true,
@@ -125,14 +125,14 @@ class CommandResultTest {
         }
         """.strip();
 
-    var output = commandResult.toText(OutputFormat.json, null);
+    String output = commandResult.toText(OutputFormat.json, null);
 
     assertEquals(expectedOutput, output);
   }
 
   @Test
   void toText_withYamlFormat_shouldReturnYaml() {
-    var expectedOutput = """
+    String expectedOutput = """
         voidValue: null
         booleanValue: true
         longValue: 100500
@@ -163,7 +163,7 @@ class CommandResultTest {
           nestedObjects: null
         """.strip();
 
-    var output = commandResult.toText(OutputFormat.yaml, null);
+    String output = commandResult.toText(OutputFormat.yaml, null);
 
     assertEquals(expectedOutput, output);
   }

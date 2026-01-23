@@ -16,6 +16,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 
 /**
  * Each CLI command should extend this class.
@@ -39,10 +40,10 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   private void applyHiddenOptions() {
-    var options = getHiddenOptions();
+    List<String> options = getHiddenOptions();
 
     for (String option : options) {
-      var optionSpec = spec.findOption(option);
+      OptionSpec optionSpec = spec.findOption(option);
       if (optionSpec != null) {
         spec.remove(optionSpec);
       }
@@ -109,7 +110,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     int exitCode = 0;
 
     try {
-      var textOutput = this.runCommand().toText(output, this::getTextOutput);
+      String textOutput = this.runCommand().toText(output, this::getTextOutput);
       if (!textOutput.isEmpty()) {
         System.out.println(textOutput);
       }

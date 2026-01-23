@@ -34,7 +34,7 @@ public class CommandResult<ResultT> {
           return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
         }
         case OutputFormat.yaml -> {
-          var yamlFactory = YAMLFactory.builder()
+          YAMLFactory yamlFactory = YAMLFactory.builder()
               .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
               .build();
           ObjectMapper mapper = new ObjectMapper(yamlFactory);

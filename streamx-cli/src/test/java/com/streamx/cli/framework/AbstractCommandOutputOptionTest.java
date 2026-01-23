@@ -49,13 +49,13 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void textOutputFlag_FormatsOutputAsJsonIfNoCustomFormatterProvided() {
-    var command = new AbstractTestCommand<>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.OUTPUT_LONG, "text");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 
-    var expectedStdOutOutput = """
+    String expectedStdOutOutput = """
          {
           "voidValue" : null,
           "booleanValue" : true,
@@ -97,7 +97,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void textOutputFlag_FormatsWithCustomFormatter() {
-    var command = new AbstractTestCommand<TestObject>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<TestObject>();
     CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.OUTPUT_LONG, "text");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
@@ -108,7 +108,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
     command.execute();
 
-    var expectedStdOutOutput = """
+    String expectedStdOutOutput = """
         String value: Test string,
         Total nested objects: 2
         """.strip() + "\n";
@@ -119,13 +119,13 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void jsonOutputFlag() {
-    var command = new AbstractTestCommand<>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.OUTPUT_LONG, "json");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 
-    var expectedStdOutOutput = """
+    String expectedStdOutOutput = """
          {
           "voidValue" : null,
           "booleanValue" : true,
@@ -167,13 +167,13 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void yamlOutputFlag() {
-    var command = new AbstractTestCommand<TestObject>();
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.OUTPUT_LONG, "yaml");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 
-    var expectedStdOutOutput = """
+    String expectedStdOutOutput = """
         voidValue: null
         booleanValue: true
         longValue: 100500
@@ -210,7 +210,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void voidResult() {
-    var command = new AbstractTestCommand<Void>();
+    AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> new CommandResult<>(null));
 
     command.output = OutputFormat.text;

@@ -11,11 +11,11 @@ import picocli.CommandLine;
 class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
   @Test
   void ifProvided_printsStackTrace() {
-    var command = new AbstractTestCommand<>();
+    AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new RuntimeException("Test exception");
     });
-    var commandLine = new CommandLine(command);
+    CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.VERBOSE_LONG);
 
     command.execute();
@@ -25,7 +25,7 @@ class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
 
   @Test
   void ifNotProvided_doesntPrintStackTrace() {
-    var command = new AbstractTestCommand<>();
+    AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new RuntimeException("Test exception");
     });
