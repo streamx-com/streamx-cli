@@ -99,8 +99,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
 
       LineReader reader = builder.build();
 
-      return reader.readLine(completer == null ? prompt : prompt + " (TAB for autocomplete):")
-          .strip();
+      return reader.readLine(prompt).strip();
     } catch (IOException e) {
       throw new RuntimeException(msg.failedToHandleInteractiveInput(), e);
     }
