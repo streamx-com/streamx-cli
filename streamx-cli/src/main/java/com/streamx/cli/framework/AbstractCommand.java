@@ -24,6 +24,29 @@ import picocli.CommandLine.Model.OptionSpec;
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
  */
 public abstract class AbstractCommand<ResultT> implements Runnable {
+  @CommandLine.Spec
+  public CommandSpec spec;
+
+  @CommandLine.Spec
+  public void setSpec(CommandSpec spec) {
+    this.spec = spec;
+    applyHiddenOptions();
+  }
+
+  @CommandLine.Option(
+      names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
+      description = "Print debug information"
+  )
+  public boolean verbose;
+
+  @CommandLine.Option(
+      names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
+      description = "Specify output format: text, json, yaml",
+      defaultValue = "text"
+  )
+  // Explicitly set default value here as a fallback for commands with the hidden output option.
+  public OutputFormat output = OutputFormat.text;
+
   // Override this method to implement the command logic.
   public abstract CommandResult<ResultT> runCommand() throws RuntimeException;
 
@@ -50,36 +73,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     }
   }
 
-  @CommandLine.Spec
-  public CommandSpec spec;
-
-  @CommandLine.Spec
-  public void setSpec(CommandSpec spec) {
-    this.spec = spec;
-    applyHiddenOptions();
-  }
-
-  @CommandLine.Option(
-      names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
-      description = "Print debug information"
-  )
-  public boolean verbose;
-
-  @CommandLine.Option(
-      names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
-      description = "Specify output format: text, json, yaml",
-      defaultValue = "text"
-  )
-  // Explicitly set default value here as a fallback for commands with the hidden output option.
-  public OutputFormat output = OutputFormat.text;
-
   public void printUsage() {
     spec.commandLine().usage(System.out);
-  }
-
-  // For testing purposes mostly.
-  protected Terminal createTerminal() throws IOException {
-    return TerminalBuilder.builder().system(true).build();
   }
 
   // Use this method for asking user input in interactive commands.
@@ -130,5 +125,10 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void run() {
     int exitCode = execute();
     Quarkus.asyncExit(exitCode);
+  }
+
+  // For testing purposes mostly.
+  protected Terminal createTerminal() throws IOException {
+    return TerminalBuilder.builder().system(true).build();
   }
 }
