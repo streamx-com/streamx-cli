@@ -27,13 +27,7 @@ public class ShortErrorMessageHandler implements IParameterExceptionHandler {
     ) {
       writer.println(cmd.getColorScheme().errorText(ex.getMessage()));
     } else {
-      String errorMessage = """
-          ❌ Something went wrong while running the command.
-          
-          Please try again with `--verbose` for more details.
-          If the problem persists, report it here:
-          https://www.streamx.dev/contact-us.html
-          """.strip();
+      String errorMessage = msg.somethingWentWrong().strip();
 
       writer.println(cmd.getColorScheme().errorText(errorMessage));
     }
