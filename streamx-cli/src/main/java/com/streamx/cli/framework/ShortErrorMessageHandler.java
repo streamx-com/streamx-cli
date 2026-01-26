@@ -20,19 +20,23 @@ public class ShortErrorMessageHandler implements IParameterExceptionHandler {
   static int shortErrorMessage(Exception ex, CommandLine cmd) {
     PrintWriter writer = cmd.getErr();
 
-    if (ex instanceof ParameterException || ex instanceof IllegalArgumentException || ex instanceof CliException) {
+    if (
+        ex instanceof ParameterException
+        || ex instanceof IllegalArgumentException
+        || ex instanceof CliException
+    ) {
       writer.println(cmd.getColorScheme().errorText(ex.getMessage()));
     } else {
       String errorMessage = """
-      ❌ Something went wrong while running the command.
-      
-      Please try again with `--verbose` for more details.
-      If the problem persists, report it here:
-      https://github.com/streamx-com/streamx-cli/issues
-      
-      You can also contact us at:
-      https://www.streamx.dev/contact-us.html
-      """.strip();
+          ❌ Something went wrong while running the command.
+          
+          Please try again with `--verbose` for more details.
+          If the problem persists, report it here:
+          https://github.com/streamx-com/streamx-cli/issues
+          
+          You can also contact us at:
+          https://www.streamx.dev/contact-us.html
+          """.strip();
 
       writer.println(cmd.getColorScheme().errorText(errorMessage));
     }
