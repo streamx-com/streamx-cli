@@ -32,9 +32,6 @@ public class ShortErrorMessageHandler implements IParameterExceptionHandler {
           
           Please try again with `--verbose` for more details.
           If the problem persists, report it here:
-          https://github.com/streamx-com/streamx-cli/issues
-          
-          You can also contact us at:
           https://www.streamx.dev/contact-us.html
           """.strip();
 
