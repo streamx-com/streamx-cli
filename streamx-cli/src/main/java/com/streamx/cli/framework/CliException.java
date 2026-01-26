@@ -1,6 +1,6 @@
 package com.streamx.cli.framework;
 
-public class CliException extends Exception {
+public class CliException extends RuntimeException {
   public CliException(String userFriendlyMessage) {
     super(userFriendlyMessage);
   }

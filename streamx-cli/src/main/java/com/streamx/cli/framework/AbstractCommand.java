@@ -48,7 +48,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public OutputFormat output = OutputFormat.text;
 
   // Override this method to implement the command logic.
-  public abstract CommandResult<ResultT> runCommand() throws CliException;
+  public abstract CommandResult<ResultT> runCommand();
 
   // Override this method to hide specific command line options.
   // May be useful to hide the "--output" option for
@@ -58,7 +58,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   // Override this method to provide human-readable output.
-  public String getTextOutput(CommandResult<ResultT> result) throws CliException {
+  public String getTextOutput(CommandResult<ResultT> result) {
     return result.toText(OutputFormat.json, null);
   }
 
@@ -81,12 +81,12 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public String promptForInput(
       String prompt,
       @Nullable List<String> autocompleteOptions
-  ) throws CliException {
+  ) {
     try (Terminal terminal = createTerminal()) {
       LineReaderBuilder builder = LineReaderBuilder.builder()
           .terminal(terminal);
 
-      Completer completer = null;
+      Completer completer;
       if (autocompleteOptions != null) {
         completer = new StringsCompleter(autocompleteOptions);
         builder.completer(completer);

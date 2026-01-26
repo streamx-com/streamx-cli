@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import java.util.function.Function;
 
 /**
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
@@ -20,12 +21,12 @@ public class CommandResult<ResultT> {
 
   public String toText(
       OutputFormat outputFormat,
-      ThrowingFunction1<CommandResult<ResultT>, String, CliException> textFormatter
+      Function<CommandResult<ResultT>, String> textFormatter
   ) throws CliException {
     try {
       switch (outputFormat) {
         case OutputFormat.text -> {
-          return textFormatter.get(this);
+          return textFormatter.apply(this);
         }
         case OutputFormat.json -> {
           ObjectMapper mapper = new ObjectMapper();

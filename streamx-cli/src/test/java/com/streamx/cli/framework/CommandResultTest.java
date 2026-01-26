@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.streamx.cli.framework.testing.TestObject;
 import com.streamx.cli.framework.testing.UnserializableObject;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class CommandResultTest {
@@ -60,7 +61,7 @@ class CommandResultTest {
         Total Nested Objects: 2
         """;
 
-    ThrowingFunction1<CommandResult<TestObject>, String, CliException> textFormatter =
+    Function<CommandResult<TestObject>, String> textFormatter =
         cr -> """
         Void Value: %s
         Boolean Value: %b

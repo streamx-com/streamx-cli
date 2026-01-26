@@ -3,21 +3,20 @@ package com.streamx.cli.framework.testing;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.framework.ThrowingFunction;
-import com.streamx.cli.framework.ThrowingFunction1;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 // Helper class for testing AbstractCommand
 public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
-  public ThrowingFunction<CommandResult<ResultT>, CliException> runCommandHandler;
+  public Supplier<CommandResult<ResultT>> runCommandHandler;
   public Supplier<List<String>> hiddenOptionsHandler;
-  public ThrowingFunction1<CommandResult<ResultT>, String, CliException> getTextOutputHandler;
+  public Function<CommandResult<ResultT>, String> getTextOutputHandler;
 
-  public void setRunCommandHandler(ThrowingFunction<CommandResult<ResultT>, CliException> handler) {
+  public void setRunCommandHandler(Supplier<CommandResult<ResultT>> handler) {
     this.runCommandHandler = handler;
   }
 
@@ -26,13 +25,13 @@ public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
   }
 
   public void setGetTextOutputHandler(
-      ThrowingFunction1<CommandResult<ResultT>, String, CliException> handler
+      Function<CommandResult<ResultT>, String> handler
   ) {
     this.getTextOutputHandler = handler;
   }
 
   @Override
-  public CommandResult<ResultT> runCommand() throws CliException {
+  public CommandResult<ResultT> runCommand() {
     if (runCommandHandler != null) {
       return runCommandHandler.get();
     }
@@ -48,9 +47,9 @@ public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
   }
 
   @Override
-  public String getTextOutput(CommandResult<ResultT> result) throws CliException {
+  public String getTextOutput(CommandResult<ResultT> result) {
     if (getTextOutputHandler != null) {
-      return getTextOutputHandler.get(result);
+      return getTextOutputHandler.apply(result);
     }
     return super.getTextOutput(result);
   }
