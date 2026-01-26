@@ -10,7 +10,7 @@ import picocli.CommandLine;
 
 class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
   @Test
-  void ifProvided_printsStackTrace() {
+  void shouldPrintStackTraceIfProvided() {
     AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new CliException("Test exception");
@@ -26,7 +26,7 @@ class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
   }
 
   @Test
-  void ifNotProvided_doesntPrintStackTrace() {
+  void shouldNotPrintStackTraceByDefault() {
     AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new CliException("Test exception");

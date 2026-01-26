@@ -16,7 +16,7 @@ import picocli.CommandLine;
 
 class AbstractCommandTest extends AbstractCommandBaseTest {
   @Test
-  void execute_success() {
+  void shouldExecuteSuccessfully() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> new CommandResult<>(TestObject.random()));
     new CommandLine(command);
@@ -28,7 +28,7 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
   }
 
   @Test
-  void execute_fail() {
+  void shouldHandleExceptionGracefully() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
       throw new CliException("Test exception");
@@ -42,7 +42,7 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
   }
 
   @Test
-  void getHiddenOptionsOverride() {
+  void shouldHideOptionsBasedOnHandler() {
     AbstractTestCommand<Void> command1 = new AbstractTestCommand<>();
     new CommandLine(command1);
 
@@ -56,7 +56,7 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
   }
 
   @Test
-  void testPromptForInputMultipleCalls() {
+  void shouldBeAbleToPromptForInput() {
     AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
     command.setSpec(commandLine.getCommandSpec());

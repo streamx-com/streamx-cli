@@ -10,7 +10,7 @@ import picocli.CommandLine;
 
 class AbstractSilentCommandTest extends AbstractCommandBaseTest {
   @Test
-  void outputFlagIsAbsent() {
+  void shouldNotHaveOutputOption() {
     AbstractSilentTestCommand command = new AbstractSilentTestCommand();
     new CommandLine(command); // Trigger all PicocLi initialization
 
@@ -18,7 +18,7 @@ class AbstractSilentCommandTest extends AbstractCommandBaseTest {
   }
 
   @Test
-  void outputIsEmpty() {
+  void shouldReturnEmptyOutput() {
     AbstractSilentTestCommand command = new AbstractSilentTestCommand();
     command.setRunCommandHandler(() -> new CommandResult<>(null));
     command.execute();

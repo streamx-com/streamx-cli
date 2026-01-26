@@ -26,30 +26,30 @@ class CommandResultTest {
           null
       ),
       List.of(
-        new TestObject(
-            null,
-            true,
-            15,
-            100.42,
-            "Nested list object 1 test string",
-            null,
-            null
-        ),
-        new TestObject(
-            null,
-            false,
-            18,
-            0.42,
-            "Nested list object 2 test string",
-            null,
-            null
-        )
+          new TestObject(
+              null,
+              true,
+              15,
+              100.42,
+              "Nested list object 1 test string",
+              null,
+              null
+          ),
+          new TestObject(
+              null,
+              false,
+              18,
+              0.42,
+              "Nested list object 2 test string",
+              null,
+              null
+          )
       )
   );
   private final CommandResult<TestObject> commandResult = new CommandResult<>(result);
 
   @Test
-  void toText_withTextFormat_shouldUseTextFormatter() throws CliException {
+  void shouldUseTextFormatterWhenTextFormatProvided() throws CliException {
     String expectedOutput = """
         Void Value: null
         Boolean Value: true
@@ -72,15 +72,15 @@ class CommandResultTest {
         Nested Object String Value: %s
         Total Nested Objects: %d
         """.formatted(
-        cr.result.voidValue,
-        cr.result.booleanValue,
-        cr.result.longValue,
-        cr.result.floatValue,
-        cr.result.stringValue,
-        cr.result.nestedObject.longValue,
-        cr.result.nestedObject.stringValue,
-        cr.result.nestedObjects.size()
-      );
+            cr.result.voidValue,
+            cr.result.booleanValue,
+            cr.result.longValue,
+            cr.result.floatValue,
+            cr.result.stringValue,
+            cr.result.nestedObject.longValue,
+            cr.result.nestedObject.stringValue,
+            cr.result.nestedObjects.size()
+        );
 
     String output = commandResult.toText(OutputFormat.text, textFormatter);
 
@@ -88,7 +88,7 @@ class CommandResultTest {
   }
 
   @Test
-  void toText_withJsonFormat_shouldReturnPrettyPrintedJson() {
+  void shouldReturnPrettyPrintedJsonWhenJsonFormatProvided() {
     String expectedOutput = """
          {
           "voidValue" : null,
@@ -136,7 +136,7 @@ class CommandResultTest {
   }
 
   @Test
-  void toText_withYamlFormat_shouldReturnYaml() {
+  void shouldReturnYamlWhenYamlFormatProvided() {
     String expectedOutput = """
         voidValue: null
         booleanValue: true
@@ -179,7 +179,7 @@ class CommandResultTest {
   }
 
   @Test
-  void toText_withNullResult_shouldHandleGracefully() {
+  void shouldHandleNullResultGracefully() {
     CommandResult<TestObject> commandResult = new CommandResult<>(null);
 
     String jsonOutput;
@@ -196,7 +196,7 @@ class CommandResultTest {
   }
 
   @Test
-  void toText_shouldThrowRuntimeExceptionForUnserializableObject() {
+  void shouldThrowRuntimeExceptionForUnserializableObject() {
     UnserializableObject unserializable = new UnserializableObject();
     CommandResult<UnserializableObject> commandResult = new CommandResult<>(unserializable);
 
