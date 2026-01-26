@@ -6,17 +6,7 @@ This project provides utilities for managing the mesh:
 
 For more information, see the [StreamX CLI Reference](https://www.streamx.dev/guides/main/streamx-command-line-interface-reference.html).
 
-## Development
-
-- Enter Quarkus development console.
-
-`cd streamx-cli && ./mvnw quarkus:dev`
-
-- Use `e` button to edit CLI arguments.
-
-## Running tests
-
-`cd streamx-cli && ./mvnw test`
+⚠️ Please read the [contributing guidelines](./CONTRIBUTING.md) if you're a developer and wish to contribute to the project.
 
 ## Configuration
 
