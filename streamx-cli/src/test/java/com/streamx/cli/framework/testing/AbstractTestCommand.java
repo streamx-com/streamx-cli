@@ -1,21 +1,23 @@
 package com.streamx.cli.framework.testing;
 
 import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.ThrowingFunction;
+import com.streamx.cli.framework.ThrowingFunction1;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 // Helper class for testing AbstractCommand
 public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
-  public Supplier<CommandResult<ResultT>> runCommandHandler;
+  public ThrowingFunction<CommandResult<ResultT>, CliException> runCommandHandler;
   public Supplier<List<String>> hiddenOptionsHandler;
-  public Function<CommandResult<ResultT>, String> getTextOutputHandler;
+  public ThrowingFunction1<CommandResult<ResultT>, String, CliException> getTextOutputHandler;
 
-  public void setRunCommandHandler(Supplier<CommandResult<ResultT>> handler) {
+  public void setRunCommandHandler(ThrowingFunction<CommandResult<ResultT>, CliException> handler) {
     this.runCommandHandler = handler;
   }
 
@@ -23,16 +25,18 @@ public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
     this.hiddenOptionsHandler = handler;
   }
 
-  public void setGetTextOutputHandler(Function<CommandResult<ResultT>, String> handler) {
+  public void setGetTextOutputHandler(
+      ThrowingFunction1<CommandResult<ResultT>, String, CliException> handler
+  ) {
     this.getTextOutputHandler = handler;
   }
 
   @Override
-  public CommandResult<ResultT> runCommand() throws RuntimeException {
+  public CommandResult<ResultT> runCommand() throws CliException {
     if (runCommandHandler != null) {
       return runCommandHandler.get();
     }
-    throw new IllegalStateException("No run command handler set");
+    throw new CliException("No run command handler set");
   }
 
   @Override
@@ -44,9 +48,9 @@ public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
   }
 
   @Override
-  public String getTextOutput(CommandResult<ResultT> result) throws RuntimeException {
+  public String getTextOutput(CommandResult<ResultT> result) throws CliException {
     if (getTextOutputHandler != null) {
-      return getTextOutputHandler.apply(result);
+      return getTextOutputHandler.get(result);
     }
     return super.getTextOutput(result);
   }

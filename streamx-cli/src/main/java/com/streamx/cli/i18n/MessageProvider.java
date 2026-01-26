@@ -21,4 +21,7 @@ public interface MessageProvider {
 
   @Message(id = 102, value = "Failed to handle interactive input")
   String failedToHandleInteractiveInput();
+
+  @Message(id = 103, value = "Unable to serialize JSON")
+  String unableToSerializeJson();
 }

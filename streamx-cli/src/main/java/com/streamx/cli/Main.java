@@ -1,6 +1,7 @@
 package com.streamx.cli;
 
 import com.streamx.cli.framework.AbstractCommandGroup;
+import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.ShortErrorMessageHandler;
 import io.quarkus.picocli.runtime.annotations.TopCommand;
@@ -18,7 +19,7 @@ public class Main extends AbstractCommandGroup {
   CommandLine.Model.CommandSpec commandSpec;
 
   @Override
-  public CommandResult<Void> runCommand() throws RuntimeException {
+  public CommandResult<Void> runCommand() {
     commandSpec
       .commandLine()
       .setParameterExceptionHandler(new ShortErrorMessageHandler())

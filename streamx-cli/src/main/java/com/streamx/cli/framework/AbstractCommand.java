@@ -48,7 +48,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public OutputFormat output = OutputFormat.text;
 
   // Override this method to implement the command logic.
-  public abstract CommandResult<ResultT> runCommand() throws RuntimeException;
+  public abstract CommandResult<ResultT> runCommand() throws CliException;
 
   // Override this method to hide specific command line options.
   // May be useful to hide the "--output" option for
@@ -58,7 +58,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   // Override this method to provide human-readable output.
-  public String getTextOutput(CommandResult<ResultT> result) throws RuntimeException {
+  public String getTextOutput(CommandResult<ResultT> result) throws CliException {
     return result.toText(OutputFormat.json, null);
   }
 
@@ -81,7 +81,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public String promptForInput(
       String prompt,
       @Nullable List<String> autocompleteOptions
-  ) throws RuntimeException {
+  ) throws CliException {
     try (Terminal terminal = createTerminal()) {
       LineReaderBuilder builder = LineReaderBuilder.builder()
           .terminal(terminal);
@@ -96,7 +96,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
 
       return reader.readLine(prompt).strip();
     } catch (IOException e) {
-      throw new RuntimeException(msg.failedToHandleInteractiveInput(), e);
+      throw new CliException(msg.failedToHandleInteractiveInput(), e);
     }
   }
 
@@ -104,7 +104,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     int exitCode = 0;
 
     try {
-      String textOutput = this.runCommand().toText(output, this::getTextOutput);
+      CommandResult<ResultT> result = this.runCommand();
+      String textOutput = result.toText(output, this::getTextOutput);
       if (!textOutput.isEmpty()) {
         System.out.println(textOutput);
       }

@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.streamx.cli.framework.testing.TestObject;
 import com.streamx.cli.framework.testing.UnserializableObject;
 import java.util.List;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class CommandResultTest {
@@ -49,7 +48,7 @@ class CommandResultTest {
   private final CommandResult<TestObject> commandResult = new CommandResult<>(result);
 
   @Test
-  void toText_withTextFormat_shouldUseTextFormatter() {
+  void toText_withTextFormat_shouldUseTextFormatter() throws CliException {
     String expectedOutput = """
         Void Value: null
         Boolean Value: true
@@ -61,7 +60,7 @@ class CommandResultTest {
         Total Nested Objects: 2
         """;
 
-    Function<CommandResult<TestObject>, String> textFormatter =
+    ThrowingFunction1<CommandResult<TestObject>, String, CliException> textFormatter =
         cr -> """
         Void Value: %s
         Boolean Value: %b
@@ -125,7 +124,12 @@ class CommandResultTest {
         }
         """.strip();
 
-    String output = commandResult.toText(OutputFormat.json, null);
+    String output;
+    try {
+      output = commandResult.toText(OutputFormat.json, null);
+    } catch (CliException e) {
+      throw new RuntimeException(e);
+    }
 
     assertEquals(expectedOutput, output);
   }
@@ -163,7 +167,12 @@ class CommandResultTest {
           nestedObjects: null
         """.strip();
 
-    String output = commandResult.toText(OutputFormat.yaml, null);
+    String output;
+    try {
+      output = commandResult.toText(OutputFormat.yaml, null);
+    } catch (CliException e) {
+      throw new RuntimeException(e);
+    }
 
     assertEquals(expectedOutput, output);
   }
@@ -172,8 +181,17 @@ class CommandResultTest {
   void toText_withNullResult_shouldHandleGracefully() {
     CommandResult<TestObject> commandResult = new CommandResult<>(null);
 
-    assertEquals("null", commandResult.toText(OutputFormat.json, null));
-    assertEquals("null", commandResult.toText(OutputFormat.yaml, null));
+    String jsonOutput;
+    String yamlOutput;
+    try {
+      jsonOutput = commandResult.toText(OutputFormat.json, null);
+      yamlOutput = commandResult.toText(OutputFormat.yaml, null);
+    } catch (CliException e) {
+      throw new RuntimeException(e);
+    }
+
+    assertEquals("null", jsonOutput);
+    assertEquals("null", yamlOutput);
   }
 
   @Test

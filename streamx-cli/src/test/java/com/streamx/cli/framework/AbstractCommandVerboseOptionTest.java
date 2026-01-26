@@ -13,25 +13,30 @@ class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
   void ifProvided_printsStackTrace() {
     AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
-      throw new RuntimeException("Test exception");
+      throw new CliException("Test exception");
     });
     CommandLine commandLine = new CommandLine(command);
     commandLine.parseArgs(CommonOption.VERBOSE_LONG);
 
     command.execute();
 
-    assertTrue(errStream.toString().contains("java.lang.RuntimeException: Test exception"));
+    assertTrue(
+        errStream.toString().contains("com.streamx.cli.framework.CliException: Test exception")
+    );
   }
 
   @Test
   void ifNotProvided_doesntPrintStackTrace() {
     AbstractTestCommand<Void> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
-      throw new RuntimeException("Test exception");
+      throw new CliException("Test exception");
     });
     new CommandLine(command);
     command.execute();
 
-    assertFalse(errStream.toString().contains("java.lang.RuntimeException: Test exception"));
+    assertTrue(errStream.toString().contains("Test exception"));
+    assertFalse(
+        errStream.toString().contains("com.streamx.cli.framework.CliException: Test exception")
+    );
   }
 }

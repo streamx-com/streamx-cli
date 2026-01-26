@@ -31,7 +31,7 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
   void execute_fail() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     command.setRunCommandHandler(() -> {
-      throw new RuntimeException("Test exception");
+      throw new CliException("Test exception");
     });
     new CommandLine(command);
     int exitCode = command.execute();
@@ -63,13 +63,23 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
     String input1 = "first\n";
     System.setIn(new ByteArrayInputStream(input1.getBytes()));
-    String result1 = command.promptForInput("Enter first:", null);
+    String result1;
+    try {
+      result1 = command.promptForInput("Enter first:", null);
+    } catch (CliException e) {
+      throw new RuntimeException(e);
+    }
 
     assertEquals("first", result1);
 
     String input2 = "second\n";
     System.setIn(new ByteArrayInputStream(input2.getBytes()));
-    String result2 = command.promptForInput("Enter second:", null);
+    String result2;
+    try {
+      result2 = command.promptForInput("Enter second:", null);
+    } catch (CliException e) {
+      throw new RuntimeException(e);
+    }
 
     assertEquals("second", result2);
   }

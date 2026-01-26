@@ -1,6 +1,7 @@
 package com.streamx.cli.framework.testing;
 
 import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.util.List;
 import java.util.function.Supplier;
@@ -19,7 +20,7 @@ public class AbstractSilentTestCommand extends AbstractSilentCommand {
   }
 
   @Override
-  public CommandResult<Void> runCommand() throws RuntimeException {
+  public CommandResult<Void> runCommand() throws CliException {
     if (runCommandHandler != null) {
       return runCommandHandler.get();
     }

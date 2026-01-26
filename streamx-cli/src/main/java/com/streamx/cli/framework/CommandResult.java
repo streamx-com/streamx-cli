@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import java.util.function.Function;
 
 /**
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
@@ -21,12 +20,12 @@ public class CommandResult<ResultT> {
 
   public String toText(
       OutputFormat outputFormat,
-      Function<CommandResult<ResultT>, String> textFormatter
-  ) throws RuntimeException {
+      ThrowingFunction1<CommandResult<ResultT>, String, CliException> textFormatter
+  ) throws CliException {
     try {
       switch (outputFormat) {
         case OutputFormat.text -> {
-          return textFormatter.apply(this);
+          return textFormatter.get(this);
         }
         case OutputFormat.json -> {
           ObjectMapper mapper = new ObjectMapper();
@@ -41,10 +40,10 @@ public class CommandResult<ResultT> {
           JsonNode jsonNode = mapper.valueToTree(result);
           return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode).strip();
         }
-        default -> throw new RuntimeException(msg.unsupportedOutputFormat());
+        default -> throw new CliException(msg.unsupportedOutputFormat());
       }
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      throw new CliException(msg.unableToSerializeJson(), e);
     }
   }
 }

@@ -10,7 +10,7 @@ public abstract class AbstractSilentCommand extends AbstractCommand<Void> {
   }
 
   @Override
-  public String getTextOutput(CommandResult<Void> result) throws RuntimeException {
+  public String getTextOutput(CommandResult<Void> result) {
     return "";
   }
 }
