@@ -4,7 +4,9 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
-
+import io.quarkus.test.junit.main.LaunchResult;
+import io.quarkus.test.junit.main.QuarkusMainLauncher;
+import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,9 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
-import io.quarkus.test.junit.main.LaunchResult;
-import io.quarkus.test.junit.main.QuarkusMainLauncher;
-import io.quarkus.test.junit.main.QuarkusMainTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

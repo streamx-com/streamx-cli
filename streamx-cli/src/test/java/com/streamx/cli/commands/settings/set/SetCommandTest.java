@@ -3,81 +3,54 @@ package com.streamx.cli.commands.settings.set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
-import java.io.ByteArrayOutputStream;
+import io.quarkus.test.junit.main.LaunchResult;
+import io.quarkus.test.junit.main.QuarkusMainLauncher;
+import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
 
+@QuarkusMainTest
 class SetCommandTest {
-  private String originalUserHome;
   private Path configFile;
-
-  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-  private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-  private final PrintStream originalOut = System.out;
-  private final PrintStream originalErr = System.err;
 
   @BeforeEach
   void setUp() throws IOException, URISyntaxException {
-    originalUserHome = System.getProperty("user.home");
     Path tempDir = Files.createTempDirectory("SetCommandTest");
     System.setProperty("user.home", tempDir.toString());
     configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
-
-    System.setOut(new PrintStream(outContent));
-    System.setErr(new PrintStream(errContent));
-  }
-
-  @AfterEach
-  void tearDown() {
-    System.setProperty("user.home", originalUserHome);
-
-    System.setOut(originalOut);
-    System.setErr(originalErr);
   }
 
   @Test
-  void shouldSetNewProperty() throws Exception {
-    SetCommand command = new SetCommand();
-    CommandLine cmd = new CommandLine(command);
-
-    cmd.parseArgs("a", "b");
-    command.runCommand();
-
-    cmd.parseArgs("x.x.x", "y");
-    command.runCommand();
-
-    assertEquals("b", loadProperties().getProperty("a"));
-    assertEquals("y", loadProperties().getProperty("x.x.x"));
-
-    assertEquals("", outContent.toString());
-    assertEquals("", errContent.toString());
-  }
-
-  @Test
-  void shouldUpdateExistingProperty() throws Exception {
-    SetCommand command = new SetCommand();
-    CommandLine cmd = new CommandLine(command);
-
-    cmd.parseArgs("a.a.a", "b");
-    command.runCommand();
+  void shouldSetNewProperty(QuarkusMainLauncher launcher) throws Exception {
+    LaunchResult launchResult = launcher.launch("settings", "set", "a.a.a", "b");
 
     assertEquals("b", loadProperties().getProperty("a.a.a"));
+    assertEquals("", launchResult.getOutput());
+    assertEquals("", launchResult.getErrorOutput());
+    assertEquals(0, launchResult.exitCode());
+  }
 
-    cmd.parseArgs("a.a.a", "c");
-    command.runCommand();
+  @Test
+  void shouldUpdateExistingProperty(QuarkusMainLauncher launcher) throws Exception {
+    LaunchResult launchResult1 = launcher.launch("settings", "set", "a.a.a", "b");
+
+    assertEquals("b", loadProperties().getProperty("a.a.a"));
+    assertEquals("", launchResult1.getOutput());
+    assertEquals("", launchResult1.getErrorOutput());
+    assertEquals(0, launchResult1.exitCode());
+
+    LaunchResult launchResult2 = launcher.launch("settings", "set", "a.a.a", "c");
+
     assertEquals("c", loadProperties().getProperty("a.a.a"));
-
-    assertEquals("", outContent.toString());
-    assertEquals("", errContent.toString());
+    assertEquals("", launchResult2.getOutput());
+    assertEquals("", launchResult2.getErrorOutput());
+    assertEquals(0, launchResult2.exitCode());
   }
 
   private Properties loadProperties() throws IOException {

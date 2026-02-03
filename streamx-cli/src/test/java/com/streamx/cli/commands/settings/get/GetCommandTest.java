@@ -2,34 +2,23 @@ package com.streamx.cli.commands.settings.get;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
-import com.streamx.cli.framework.CliException;
-import com.streamx.cli.framework.CommandResult;
-import java.io.ByteArrayOutputStream;
+import io.quarkus.test.junit.main.LaunchResult;
+import io.quarkus.test.junit.main.QuarkusMainLauncher;
+import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
 
+@QuarkusMainTest
 class GetCommandTest {
-  private String originalUserHome;
-  private Path configFile;
-
-  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-  private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-  private final PrintStream originalOut = System.out;
-  private final PrintStream originalErr = System.err;
-
   Map<String, String> testProperties = Map.of(
       "test.key", "test.value",
       "another.key", "another.value",
@@ -40,13 +29,9 @@ class GetCommandTest {
 
   @BeforeEach
   void setUp() throws IOException, URISyntaxException {
-    originalUserHome = System.getProperty("user.home");
     Path tempDir = Files.createTempDirectory("SetCommandTest");
     System.setProperty("user.home", tempDir.toString());
-    configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
-
-    System.setOut(new PrintStream(outContent));
-    System.setErr(new PrintStream(errContent));
+    Path configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
 
     Properties initialProps = new Properties();
     for (var property : testProperties.entrySet()) {
@@ -58,49 +43,52 @@ class GetCommandTest {
     }
   }
 
-  @AfterEach
-  void tearDown() {
-    System.setProperty("user.home", originalUserHome);
-
-    System.setOut(originalOut);
-    System.setErr(originalErr);
-  }
-
   @Test
-  void shouldGetExistingProperties() throws Exception {
+  void shouldDisplayPropertyIfExists(QuarkusMainLauncher launcher) {
     for (var property : testProperties.entrySet()) {
-      outContent.reset();
-      errContent.reset();
-
-      GetCommand command = new GetCommand();
-      CommandLine cmd = new CommandLine(command);
-
       String key = property.getKey();
       String value = property.getValue();
 
-      cmd.parseArgs(key);
+      // With text output
+      LaunchResult launchResult = launcher.launch("settings", "get", key);
 
-      CommandResult<GetCommandResult> result = command.runCommand();
+      assertEquals(value, launchResult.getOutput());
+      assertEquals("", launchResult.getErrorOutput());
+      assertEquals(0, launchResult.exitCode());
 
-      assertEquals(key, result.result.key());
-      assertEquals(value, result.result.value());
+      // With JSON output
+      LaunchResult jsonLaunchResult = launcher.launch("settings", "get", "--output", "json", key);
+      String expectedJsonValue = """
+          {
+            "key" : "%s",
+            "value" : "%s"
+          }
+          """.strip().formatted(key, value);
 
-      String textOutput = command.getTextOutput(result);
-      assertEquals(value, textOutput);
+      assertEquals(expectedJsonValue, jsonLaunchResult.getOutput());
+      assertEquals("", jsonLaunchResult.getErrorOutput());
+      assertEquals(0, jsonLaunchResult.exitCode());
 
-      assertEquals("", errContent.toString());
+      // With YAML output
+      LaunchResult yamlLaunchResult = launcher.launch("settings", "get", "--output", "yaml", key);
+      String expectedYamlValue = """
+          key: "%s"
+          value: "%s"
+          """.strip().formatted(key, value);
+
+      assertEquals(expectedYamlValue, yamlLaunchResult.getOutput());
+      assertEquals("", yamlLaunchResult.getErrorOutput());
+      assertEquals(0, yamlLaunchResult.exitCode());
     }
   }
 
   @Test
-  void shouldThrowExceptionWhenPropertyNotFound() {
-    GetCommand command = new GetCommand();
-    CommandLine cmd = new CommandLine(command);
-    String key = "nonexistent";
-    cmd.parseArgs(key);
+  void shouldFailIfNoPropertyFound(QuarkusMainLauncher launcher) {
+    String key = "non.existing.key";
+    LaunchResult launchResult = launcher.launch("settings", "get", key);
 
-    CliException exception = assertThrows(CliException.class, command::runCommand);
-
-    assertEquals(exception.getMessage(), msg.noSettingsPropertyFound(key));
+    assertEquals("", launchResult.getOutput());
+    assertEquals(msg.noSettingsPropertyFound(key), launchResult.getErrorOutput());
+    assertEquals(1, launchResult.exitCode());
   }
 }
