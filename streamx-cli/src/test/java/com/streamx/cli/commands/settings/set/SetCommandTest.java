@@ -8,6 +8,7 @@ import io.quarkus.test.junit.main.QuarkusMainLauncher;
 import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,8 +56,8 @@ class SetCommandTest {
 
   private Properties loadProperties() throws IOException {
     Properties props = new Properties();
-    try (var in = Files.newInputStream(configFile)) {
-      props.load(in);
+    try (InputStream inputStream = Files.newInputStream(configFile)) {
+      props.load(inputStream);
     }
     return props;
   }

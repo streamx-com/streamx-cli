@@ -9,6 +9,7 @@ import io.quarkus.test.junit.main.QuarkusMainLauncher;
 import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,18 +35,18 @@ class GetCommandTest {
     Path configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
 
     Properties initialProps = new Properties();
-    for (var property : testProperties.entrySet()) {
+    for (Map.Entry<String, String> property : testProperties.entrySet()) {
       initialProps.setProperty(property.getKey(), property.getValue());
     }
 
-    try (var out = Files.newOutputStream(configFile)) {
+    try (OutputStream out = Files.newOutputStream(configFile)) {
       initialProps.store(out, null);
     }
   }
 
   @Test
   void shouldDisplayPropertyIfExists(QuarkusMainLauncher launcher) {
-    for (var property : testProperties.entrySet()) {
+    for (Map.Entry<String, String> property : testProperties.entrySet()) {
       String key = property.getKey();
       String value = property.getValue();
 

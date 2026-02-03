@@ -7,6 +7,8 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 import picocli.CommandLine;
 
@@ -26,18 +28,18 @@ public class GetCommand extends AbstractCommand<GetCommandResult> {
 
   @Override
   public CommandResult<GetCommandResult> runCommand() {
-    var url = DotStreamxConfigSource.getUrl();
+    URL url = DotStreamxConfigSource.getUrl();
 
-    try (var inputStream = url.openStream()) {
+    try (InputStream inputStream = url.openStream()) {
       Properties properties = new Properties();
       properties.load(inputStream);
 
-      var value = properties.getProperty(key);
+      String value = properties.getProperty(key);
       if (value == null) {
         throw new CliException(msg.noSettingsPropertyFound(key));
       }
 
-      var result = new GetCommandResult(key, value);
+      GetCommandResult result = new GetCommandResult(key, value);
 
       return new CommandResult<>(result);
     } catch (IOException e) {

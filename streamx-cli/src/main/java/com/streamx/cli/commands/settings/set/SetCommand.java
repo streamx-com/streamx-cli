@@ -7,7 +7,11 @@ import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import picocli.CommandLine;
@@ -26,12 +30,12 @@ public class SetCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() throws RuntimeException {
-    var url = DotStreamxConfigSource.getUrl();
-    var path = Paths.get(url.getPath());
+    URL url = DotStreamxConfigSource.getUrl();
+    Path path = Paths.get(url.getPath());
 
     Properties properties = new Properties();
 
-    try (var inputStream = url.openStream()) {
+    try (InputStream inputStream = url.openStream()) {
       properties.load(inputStream);
     } catch (IOException e) {
       throw new CliException(msg.unableToSetSettingsProperty(), e);
@@ -39,7 +43,7 @@ public class SetCommand extends AbstractSilentCommand {
 
     properties.setProperty(key, value);
 
-    try (var outputStream = Files.newOutputStream(path)) {
+    try (OutputStream outputStream = Files.newOutputStream(path)) {
       properties.store(outputStream, null);
     } catch (IOException e) {
       throw new CliException(msg.unableToSetSettingsProperty(), e);

@@ -6,6 +6,8 @@ import com.streamx.cli.config.DotStreamxConfigSource;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +56,14 @@ public class ListCommand extends AbstractCommand<List<Property>> {
 
   @Override
   public CommandResult<List<Property>> runCommand() {
-    var url = DotStreamxConfigSource.getUrl();
-    var properties = getProperties(url);
+    URL url = DotStreamxConfigSource.getUrl();
+    List<Property> properties = getProperties(url);
 
     return new CommandResult<>(properties);
   }
 
   private List<Property> getProperties(URL url) {
-    try (var input = url.openStream()) {
+    try (InputStream input = url.openStream()) {
       Properties properties = new Properties();
       properties.load(input);
 

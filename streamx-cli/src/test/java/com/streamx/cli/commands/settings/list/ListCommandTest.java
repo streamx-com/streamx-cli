@@ -9,6 +9,7 @@ import io.quarkus.test.junit.main.QuarkusMainLauncher;
 import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ class ListCommandTest {
       initialProps.setProperty(entry.getKey(), entry.getValue());
     }
 
-    try (var out = Files.newOutputStream(configFile)) {
+    try (OutputStream out = Files.newOutputStream(configFile)) {
       initialProps.store(out, null);
     }
   }
