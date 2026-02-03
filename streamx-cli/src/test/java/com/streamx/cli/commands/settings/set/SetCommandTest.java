@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.settings.set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
 
@@ -19,7 +19,6 @@ import picocli.CommandLine;
 
 class SetCommandTest {
   private String originalUserHome;
-  private Path tempDir;
   private Path configFile;
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -30,7 +29,7 @@ class SetCommandTest {
   @BeforeEach
   void setUp() throws IOException, URISyntaxException {
     originalUserHome = System.getProperty("user.home");
-    tempDir = Files.createTempDirectory("SetCommandTest");
+    Path tempDir = Files.createTempDirectory("SetCommandTest");
     System.setProperty("user.home", tempDir.toString());
     configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
 

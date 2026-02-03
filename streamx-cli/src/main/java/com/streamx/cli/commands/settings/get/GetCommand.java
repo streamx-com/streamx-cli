@@ -4,6 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
 import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.io.IOException;
 import java.util.Properties;
@@ -16,15 +17,15 @@ import picocli.CommandLine;
 )
 public class GetCommand extends AbstractCommand<GetCommandResult> {
   @CommandLine.Parameters(index = "0", description = "Property key")
-  private String key;
+  public String key;
 
   @Override
-  public String getTextOutput(CommandResult<GetCommandResult> result) throws RuntimeException {
+  public String getTextOutput(CommandResult<GetCommandResult> result) {
     return result.result.value();
   }
 
   @Override
-  public CommandResult<GetCommandResult> runCommand() throws RuntimeException {
+  public CommandResult<GetCommandResult> runCommand() {
     var url = DotStreamxConfigSource.getUrl();
 
     try (var inputStream = url.openStream()) {
@@ -33,14 +34,14 @@ public class GetCommand extends AbstractCommand<GetCommandResult> {
 
       var value = properties.getProperty(key);
       if (value == null) {
-        throw new RuntimeException(msg.noSettingsPropertyFound(key));
+        throw new CliException(msg.noSettingsPropertyFound(key));
       }
 
       var result = new GetCommandResult(key, value);
 
       return new CommandResult<>(result);
     } catch (IOException e) {
-      throw new RuntimeException(msg.unableToGetSettingsProperty(), e);
+      throw new CliException(msg.unableToGetSettingsProperty(), e);
     }
   }
 }
