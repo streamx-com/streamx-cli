@@ -73,4 +73,13 @@ public interface MessageProvider {
          * Docker is installed,
          * Docker is running""")
   String invalidDockerEnvironment();
+
+  @Message(id = 113, value = """
+      StreamX configuration properties:
+      =================================
+      """)
+  String listSettingsHeader();
+
+  @Message(id = 114, value = "No StreamX configuration properties found")
+  String listSettingsNoPropertiesFound();
 }

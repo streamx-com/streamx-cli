@@ -1,10 +1,8 @@
 package com.streamx.cli.commands.settings.get;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
 import com.streamx.cli.framework.CliException;
@@ -16,6 +14,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +30,13 @@ class GetCommandTest {
   private final PrintStream originalOut = System.out;
   private final PrintStream originalErr = System.err;
 
-  String[][] existingProperties = {
-      {"test.key", "test.value"},
-      {"another.key", "another.value"},
-      {"special.chars", "value=with:special@chars!"},
-      {"empty.value", ""},
-      {"spaced.value", "value with spaces"}
-  };
+  Map<String, String> testProperties = Map.of(
+      "test.key", "test.value",
+      "another.key", "another.value",
+      "special.chars", "value=with:special@chars!",
+      "empty.value", "",
+      "spaced.value", "value with spaces"
+  );
 
   @BeforeEach
   void setUp() throws IOException, URISyntaxException {
@@ -50,8 +49,8 @@ class GetCommandTest {
     System.setErr(new PrintStream(errContent));
 
     Properties initialProps = new Properties();
-    for (String[] property : existingProperties) {
-      initialProps.setProperty(property[0], property[1]);
+    for (var property : testProperties.entrySet()) {
+      initialProps.setProperty(property.getKey(), property.getValue());
     }
 
     try (var out = Files.newOutputStream(configFile)) {
@@ -69,15 +68,16 @@ class GetCommandTest {
 
   @Test
   void shouldGetExistingProperties() throws Exception {
-    for (String[] property : existingProperties) {
-      String key = property[0];
-      String value = property[1];
-
+    for (var property : testProperties.entrySet()) {
       outContent.reset();
       errContent.reset();
 
       GetCommand command = new GetCommand();
       CommandLine cmd = new CommandLine(command);
+
+      String key = property.getKey();
+      String value = property.getValue();
+
       cmd.parseArgs(key);
 
       CommandResult<GetCommandResult> result = command.runCommand();

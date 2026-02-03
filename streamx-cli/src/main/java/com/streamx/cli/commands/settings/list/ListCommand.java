@@ -4,6 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
 import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.net.URL;
 import java.util.List;
@@ -20,7 +21,11 @@ import picocli.CommandLine;
 )
 public class ListCommand extends AbstractCommand<List<Property>> {
   @Override
-  public String getTextOutput(CommandResult<List<Property>> result) throws RuntimeException {
+  public String getTextOutput(CommandResult<List<Property>> result) {
+    if (result.result.isEmpty()) {
+      return msg.listSettingsNoPropertiesFound();
+    }
+
     StringBuilder stringOutput = new StringBuilder();
 
     Map<String, String> map = result.result.stream()
@@ -33,30 +38,29 @@ public class ListCommand extends AbstractCommand<List<Property>> {
         .max()
         .orElse(0);
 
-    stringOutput.append("\nConfiguration properties:\n");
-    String repeat = "=".repeat(Math.min(80, maxKeyLength + 40));
-    stringOutput.append(repeat).append("\n");
+    stringOutput.append(msg.listSettingsHeader()).append("\n");
 
     for (Map.Entry<String, String> entry : sortedProperties.entrySet()) {
       String paddedKey = String.format("%-" + maxKeyLength + "s", entry.getKey());
-      stringOutput.append(paddedKey).append(" = ").append(entry.getValue()).append("\n");
+      stringOutput.append(paddedKey).append(" =");
+      if (!entry.getValue().isEmpty()) {
+        stringOutput.append(" ").append(entry.getValue());
+      }
+      stringOutput.append("\n");
     }
 
-    stringOutput.append(repeat).append("\n");
-    stringOutput.append("Total properties: ").append(result.result.size()).append("\n");
-
-    return stringOutput.toString();
+    return stringOutput.toString().strip();
   }
 
   @Override
-  public CommandResult<List<Property>> runCommand() throws RuntimeException {
+  public CommandResult<List<Property>> runCommand() {
     var url = DotStreamxConfigSource.getUrl();
     var properties = getProperties(url);
 
     return new CommandResult<>(properties);
   }
 
-  private List<Property> getProperties(URL url) throws RuntimeException {
+  private List<Property> getProperties(URL url) {
     try (var input = url.openStream()) {
       Properties properties = new Properties();
       properties.load(input);
@@ -65,7 +69,7 @@ public class ListCommand extends AbstractCommand<List<Property>> {
           .map(key -> new Property(key, properties.getProperty(key)))
           .toList();
     } catch (Exception e) {
-      throw new RuntimeException(msg.failedToLoadPropertiesFrom(url.getPath()), e);
+      throw new CliException(msg.failedToLoadPropertiesFrom(url.getPath()), e);
     }
   }
 }

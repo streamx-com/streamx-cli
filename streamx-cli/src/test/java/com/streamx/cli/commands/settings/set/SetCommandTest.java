@@ -3,7 +3,6 @@ package com.streamx.cli.commands.settings.set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.streamx.cli.config.DotStreamxConfigSource;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -53,11 +52,11 @@ class SetCommandTest {
     cmd.parseArgs("a", "b");
     command.runCommand();
 
-    cmd.parseArgs("x", "y");
+    cmd.parseArgs("x.x.x", "y");
     command.runCommand();
 
     assertEquals("b", loadProperties().getProperty("a"));
-    assertEquals("y", loadProperties().getProperty("x"));
+    assertEquals("y", loadProperties().getProperty("x.x.x"));
 
     assertEquals("", outContent.toString());
     assertEquals("", errContent.toString());
@@ -68,14 +67,14 @@ class SetCommandTest {
     SetCommand command = new SetCommand();
     CommandLine cmd = new CommandLine(command);
 
-    cmd.parseArgs("a", "b");
+    cmd.parseArgs("a.a.a", "b");
     command.runCommand();
 
-    assertEquals("b", loadProperties().getProperty("a"));
+    assertEquals("b", loadProperties().getProperty("a.a.a"));
 
-    cmd.parseArgs("a", "c");
+    cmd.parseArgs("a.a.a", "c");
     command.runCommand();
-    assertEquals("c", loadProperties().getProperty("a"));
+    assertEquals("c", loadProperties().getProperty("a.a.a"));
 
     assertEquals("", outContent.toString());
     assertEquals("", errContent.toString());
