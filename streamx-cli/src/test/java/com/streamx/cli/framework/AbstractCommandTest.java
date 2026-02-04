@@ -63,23 +63,13 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
     String input1 = "first\n";
     System.setIn(new ByteArrayInputStream(input1.getBytes()));
-    String result1;
-    try {
-      result1 = command.promptForInput("Enter first:", null);
-    } catch (CliException e) {
-      throw new RuntimeException(e);
-    }
+    String result1 = command.promptForInput("Enter first:", null);
 
     assertEquals("first", result1);
 
     String input2 = "second\n";
     System.setIn(new ByteArrayInputStream(input2.getBytes()));
-    String result2;
-    try {
-      result2 = command.promptForInput("Enter second:", null);
-    } catch (CliException e) {
-      throw new RuntimeException(e);
-    }
+    String result2 = command.promptForInput("Enter second:", null);
 
     assertEquals("second", result2);
   }

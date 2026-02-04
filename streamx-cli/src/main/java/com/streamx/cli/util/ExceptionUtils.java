@@ -1,6 +1,9 @@
 package com.streamx.cli.util;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jetbrains.annotations.NotNull;
 
 public final class ExceptionUtils {
 
@@ -8,10 +11,7 @@ public final class ExceptionUtils {
 
   }
 
-  public static RuntimeException sneakyThrow(Throwable t) {
-    if (t == null) {
-      throw new NullPointerException("t");
-    }
+  public static RuntimeException sneakyThrow(@NotNull Throwable t) {
     return ExceptionUtils.<RuntimeException>sneakyThrow0(t);
   }
 
@@ -24,10 +24,6 @@ public final class ExceptionUtils {
     String logPath = ConfigProvider.getConfig()
         .getValue("quarkus.log.file.path", String.class);
 
-    return """
-        %s
-        
-        Full logs can be found in %s"""
-        .formatted(originalMessage, logPath);
+    return msg.fullLogsCanBeFoundIn(originalMessage, logPath);
   }
 }

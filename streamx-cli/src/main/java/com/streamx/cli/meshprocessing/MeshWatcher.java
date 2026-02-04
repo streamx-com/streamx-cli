@@ -1,7 +1,9 @@
 package com.streamx.cli.meshprocessing;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.util.Output.print;
 
+import com.streamx.cli.framework.CliException;
 import io.quarkus.scheduler.Scheduled.ConcurrentExecution;
 import io.quarkus.scheduler.Scheduler;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -53,12 +55,12 @@ public class MeshWatcher {
                   }
                   case STOP -> {
                     print("");
-                    print("Mesh file deleted. Stopping...");
+                    print(msg.meshFileDeleted());
                     meshManager.stop();
-                    print("Mesh stopped.");
+                    print(msg.meshStopped());
                   }
                   default -> {
-                    print("Unknown action: " + action + ". Skipping...");
+                    print(msg.skippingUnknownAction(action.toString()));
                   }
                 }
               }
@@ -69,7 +71,7 @@ public class MeshWatcher {
           .setInterval("500ms")
           .schedule();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new CliException(msg.failedToWatchMeshChanges(), e);
     }
   }
 

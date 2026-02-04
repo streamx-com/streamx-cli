@@ -6,7 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class SystemCurrentDirectoryProvider implements CurrentDirectoryProvider {
 
   @Override
-  public String provide() {
+  public String resolve() {
     return "./";
   }
 }

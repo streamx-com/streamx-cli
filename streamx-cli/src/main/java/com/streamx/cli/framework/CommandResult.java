@@ -43,7 +43,7 @@ public class CommandResult<ResultT> {
         }
         default -> throw new CliException(msg.unsupportedOutputFormat());
       }
-    } catch (JsonProcessingException e) {
+    } catch (Exception e) {
       throw new CliException(msg.unableToSerializeJson(), e);
     }
   }

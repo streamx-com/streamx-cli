@@ -1,15 +1,16 @@
 package com.streamx.cli.meshprocessing;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.streamx.cli.framework.CliException;
 import com.streamx.mesh.model.ServiceMesh;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +33,11 @@ class MeshDefinitionResolverInterpolationTest {
   void shouldFailWithMandatoryPropertyUndefined() {
     assertThatThrownBy(() -> uut.resolve(TEST_MESH_PATH))
         .isInstanceOf(JsonMappingException.class)
-        .hasRootCauseInstanceOf(NoSuchElementException.class)
-        .hasRootCauseMessage("Could not expand value config.image.interpolated"
-                             + " in expression ${config.image.interpolated}");
+        .hasRootCauseInstanceOf(CliException.class)
+        .hasRootCauseMessage(msg.couldNotExpandValueInExpression(
+            "config.image.interpolated",
+            "${config.image.interpolated}"
+        ));
   }
 
   @Test

@@ -24,7 +24,7 @@ public class AbstractSilentTestCommand extends AbstractSilentCommand {
     if (runCommandHandler != null) {
       return runCommandHandler.get();
     }
-    throw new IllegalStateException("No run command handler set");
+    throw new CliException("No run command handler set");
   }
 
   @Override

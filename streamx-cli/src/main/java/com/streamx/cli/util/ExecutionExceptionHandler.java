@@ -1,5 +1,7 @@
 package com.streamx.cli.util;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
@@ -18,7 +20,7 @@ public class ExecutionExceptionHandler implements IExecutionExceptionHandler {
   public int handleExecutionException(Exception ex, CommandLine cmd,
       ParseResult parseResult) {
     printErrorMessage(ex, cmd);
-    log.error("Execution exception occurred.", ex);
+    log.error(msg.executionExceptionOccurred(), ex);
 
     return cmd.getExitCodeExceptionMapper() == null
         ? cmd.getCommandSpec().exitCodeOnExecutionException()
@@ -27,7 +29,7 @@ public class ExecutionExceptionHandler implements IExecutionExceptionHandler {
 
   public void handleExecutionException(Exception ex, CommandLine cmd) {
     printErrorMessage(ex, cmd);
-    log.error("Execution exception occurred.", ex);
+    log.error(msg.executionExceptionOccurred(), ex);
   }
 
   private static void printErrorMessage(Exception ex, CommandLine cmd) {

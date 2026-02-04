@@ -1,5 +1,8 @@
 package com.streamx.cli.util;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
+import com.streamx.cli.framework.CliException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
@@ -18,7 +21,7 @@ public class StreamxMavenPropertiesUtils {
 
         properties = loadedProperties;
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new CliException(msg.failedToInitializeStreamxMavenProperties(), e);
       }
     }
 
@@ -27,10 +30,6 @@ public class StreamxMavenPropertiesUtils {
 
   public static String getStreamxCliVersion() {
     return getProperty("streamx.cli.version");
-  }
-
-  public static String getDashboardImage() {
-    return getProperty("streamx.dev.dashboard.image");
   }
 
   private static String getProperty(String key) {

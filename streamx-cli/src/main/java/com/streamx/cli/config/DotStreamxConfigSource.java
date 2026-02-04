@@ -19,7 +19,7 @@ public class DotStreamxConfigSource {
 
       return file.toURI().toURL();
     } catch (IOException e) {
-      throw new RuntimeException(msg.unableToGetSettingsFilePath(), e);
+      throw new CliException(msg.unableToGetSettingsFilePath(), e);
     }
   }
 }

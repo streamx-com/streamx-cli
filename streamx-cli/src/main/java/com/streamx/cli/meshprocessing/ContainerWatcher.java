@@ -1,5 +1,6 @@
 package com.streamx.cli.meshprocessing;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.util.Output.print;
 
 import com.streamx.runner.event.ContainerFailed;
@@ -12,14 +13,14 @@ import jakarta.enterprise.event.Observes;
 public class ContainerWatcher {
 
   void onContainerStarted(@Observes ContainerStarted event) {
-    print("🟢 " + event.containerName() + " ready.");
+    print(msg.dockerContainerStarted(event.containerName()));
   }
 
   void onContainerStopped(@Observes ContainerStopped event) {
-    print("🔴 " + event.containerName() + " stopped.");
+    print(msg.dockerContainerStopped(event.containerName()));
   }
 
   void onContainerFailed(@Observes ContainerFailed event) {
-    print("❌ " + event.containerName() + " failed.");
+    print(msg.dockerContainerFailed(event.containerName()));
   }
 }

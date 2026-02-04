@@ -34,7 +34,7 @@ public class RunCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     if (!meshPath.toFile().exists()) {
-      throw new CliException("Mesh file not found: " + meshPath);
+      throw new CliException(msg.meshFileNotFound(meshPath.toString()));
     }
 
     try {

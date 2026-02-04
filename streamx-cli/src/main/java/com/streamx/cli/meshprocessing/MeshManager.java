@@ -4,7 +4,6 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.util.Output.print;
 import static com.streamx.runner.main.Main.StreamxApp.printSummary;
 
-import com.streamx.cli.commands.local.run.RunningMeshPropertiesGenerator;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.util.ExceptionUtils;
 import com.streamx.cli.util.ExecutionExceptionHandler;
@@ -50,7 +49,7 @@ public class MeshManager {
   }
 
   public void initializeRunMode(Path meshPath) {
-    print("Setting up system containers...");
+    print(msg.settingUpSystemContainers());
     this.errorHandlingExecutor =
         new ErrorHandlingExecutor(false, executionExceptionHandler, commandLine);
 
@@ -63,20 +62,6 @@ public class MeshManager {
     } catch (Exception e) {
       throw getMeshException(meshPath, e);
     }
-
-    this.runner.startBase();
-  }
-
-  public void initializeDevMode(Path meshPath, CommandLine commandLine) {
-    this.meshPath = meshPath;
-    this.errorHandlingExecutor =
-        new ErrorHandlingExecutor(true, executionExceptionHandler, commandLine);
-    this.commandLine = commandLine;
-
-    normalizedMeshPath = meshPath.toAbsolutePath().normalize();
-    meshPathAsString = normalizedMeshPath.toString();
-
-    print("\nSetting up system containers...");
 
     this.runner.startBase();
   }
@@ -102,12 +87,11 @@ public class MeshManager {
     }
 
     print("");
-    print("Starting DX Mesh...");
+    print(msg.startingMesh());
 
     boolean failFast = !errorHandlingExecutor.failsafe;
     boolean started = this.runner.startMesh(failFast);
     print("");
-    RunningMeshPropertiesGenerator.generateRootAuthToken(this.runner.getMeshContext());
     if (started) {
       printSummary(runner, normalizedMeshPath, serviceMesh);
     }
@@ -123,12 +107,8 @@ public class MeshManager {
   }
 
   private CliException getMeshException(Path meshPath, Exception e) {
-    return new CliException(
-        ExceptionUtils.appendLogSuggestion(
-            "Unable to read mesh definition from '" + meshPath + "'.\n"
-            + "\n"
-            + "Details:\n"
-            + e.getMessage()), e);
+    String message = msg.unableToReadMeshDefinition(meshPath.toString(), e.getMessage());
+    return new CliException(ExceptionUtils.appendLogSuggestion(message), e);
   }
 
   public void stop() {
@@ -138,11 +118,11 @@ public class MeshManager {
 
   private void doStop() {
     try {
-      print("Stopping DX Mesh...");
+      print(msg.stoppingMesh());
 
       runner.stopMesh();
 
-      print("DX Mesh stopped...");
+      print(msg.meshStopped());
       print("");
     } catch (Exception e) {
       if (!errorHandlingExecutor.failsafe) {
@@ -160,7 +140,7 @@ public class MeshManager {
     });
 
     if (newServiceMesh == null) {
-      print("\nMesh definition is invalid. Skip reloading...");
+      print("\n" + msg.meshDefinitionIsInvalidSkipReload());
       return;
     }
 
@@ -173,7 +153,7 @@ public class MeshManager {
         serviceMesh = newServiceMesh;
       } catch (Exception e) {
         serviceMesh = null;
-        print("Mesh reload failed...");
+        print(msg.meshReloadFailed());
         throw e;
       }
     }
@@ -181,12 +161,11 @@ public class MeshManager {
 
   void onMeshStarted(@Observes MeshReloadUpdate event) {
     switch (event.event()) {
-      case MESH_UNCHANGED -> print("\nMesh definition is unchanged. Skip reloading...");
-      case FULL_RELOAD_STARTED -> print("\nMesh file changed. Processing full reload...");
-      case INCREMENTAL_RELOAD_STARTED ->
-          print("\nMesh file changed. Processing incremental reload...");
-      case FULL_RELOAD_FINISHED, INCREMENTAL_RELOAD_FINISHED -> print("\nMesh reloaded.");
-      case FULL_RELOAD_FAILED, INCREMENTAL_RELOAD_FAILED -> print("\nMesh reload failed.");
+      case MESH_UNCHANGED -> print("\n" + msg.meshDefinitionIsUnchangedSkipReload());
+      case FULL_RELOAD_STARTED -> print("\n" + msg.meshFileChangedFullReload());
+      case INCREMENTAL_RELOAD_STARTED -> print("\n" + msg.meshFileChangedIncrementalReload());
+      case FULL_RELOAD_FINISHED, INCREMENTAL_RELOAD_FINISHED -> print("\n" + msg.meshReloaded());
+      case FULL_RELOAD_FAILED, INCREMENTAL_RELOAD_FAILED -> print("\n" + msg.meshReloadFailed());
       default -> { }
     }
   }
