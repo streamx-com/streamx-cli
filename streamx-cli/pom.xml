@@ -201,6 +201,39 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>streamx-maven-snapshots</id>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>streamx-maven-releases</id>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-releases</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>streamx-maven-public-releases</id>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases</url>
+    </repository>
+  </repositories>
+
   <build>
     <resources>
       <resource>
