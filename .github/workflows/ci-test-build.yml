@@ -18,6 +18,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+        
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
