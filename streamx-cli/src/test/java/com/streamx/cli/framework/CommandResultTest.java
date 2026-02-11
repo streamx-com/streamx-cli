@@ -72,14 +72,14 @@ class CommandResultTest {
         Nested Object String Value: %s
         Total Nested Objects: %d
         """.formatted(
-            cr.result.voidValue,
-            cr.result.booleanValue,
-            cr.result.longValue,
-            cr.result.floatValue,
-            cr.result.stringValue,
-            cr.result.nestedObject.longValue,
-            cr.result.nestedObject.stringValue,
-            cr.result.nestedObjects.size()
+            cr.getData().voidValue,
+            cr.getData().booleanValue,
+            cr.getData().longValue,
+            cr.getData().floatValue,
+            cr.getData().stringValue,
+            cr.getData().nestedObject.longValue,
+            cr.getData().nestedObject.stringValue,
+            cr.getData().nestedObjects.size()
         );
 
     String output = commandResult.toText(OutputFormat.text, textFormatter);

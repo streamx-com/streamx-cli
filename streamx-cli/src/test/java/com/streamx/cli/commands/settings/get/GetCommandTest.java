@@ -60,11 +60,8 @@ class GetCommandTest {
       // With JSON output
       LaunchResult jsonLaunchResult = launcher.launch("settings", "get", "--output", "json", key);
       String expectedJsonValue = """
-          {
-            "key" : "%s",
-            "value" : "%s"
-          }
-          """.strip().formatted(key, value);
+          "%s"
+          """.strip().formatted(value);
 
       assertEquals(expectedJsonValue, jsonLaunchResult.getOutput());
       assertEquals("", jsonLaunchResult.getErrorOutput());
@@ -73,9 +70,8 @@ class GetCommandTest {
       // With YAML output
       LaunchResult yamlLaunchResult = launcher.launch("settings", "get", "--output", "yaml", key);
       String expectedYamlValue = """
-          key: "%s"
-          value: "%s"
-          """.strip().formatted(key, value);
+          "%s"
+          """.strip().formatted(value);
 
       assertEquals(expectedYamlValue, yamlLaunchResult.getOutput());
       assertEquals("", yamlLaunchResult.getErrorOutput());

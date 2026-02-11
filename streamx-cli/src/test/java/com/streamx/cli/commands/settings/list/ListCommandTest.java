@@ -87,22 +87,13 @@ class ListCommandTest {
     LaunchResult launchResult = launcher.launch("settings", "list", "--output", "json");
 
     String expectedOutput = """
-        [ {
-          "key" : "special.chars",
-          "value" : "value=with:special@chars!"
-        }, {
-          "key" : "empty.value",
-          "value" : ""
-        }, {
-          "key" : "spaced.value",
-          "value" : "value with spaces"
-        }, {
-          "key" : "test.key",
-          "value" : "test.value"
-        }, {
-          "key" : "another.key",
-          "value" : "another.value"
-        } ]
+        {
+          "special.chars" : "value=with:special@chars!",
+          "empty.value" : "",
+          "spaced.value" : "value with spaces",
+          "test.key" : "test.value",
+          "another.key" : "another.value"
+        }
         """.strip();
 
     assertEquals(expectedOutput, launchResult.getOutput());
@@ -116,7 +107,7 @@ class ListCommandTest {
 
     LaunchResult launchResult = launcher.launch("settings", "list", "--output", "json");
 
-    String expectedOutput = "[ ]".strip();
+    String expectedOutput = "{ }".strip();
 
     assertEquals(expectedOutput, launchResult.getOutput());
     assertEquals("", launchResult.getErrorOutput());
@@ -130,16 +121,11 @@ class ListCommandTest {
     LaunchResult launchResult = launcher.launch("settings", "list", "--output", "yaml");
 
     String expectedOutput = """
-        - key: "special.chars"
-          value: "value=with:special@chars!"
-        - key: "empty.value"
-          value: ""
-        - key: "spaced.value"
-          value: "value with spaces"
-        - key: "test.key"
-          value: "test.value"
-        - key: "another.key"
-          value: "another.value"
+        special.chars: "value=with:special@chars!"
+        empty.value: ""
+        spaced.value: "value with spaces"
+        test.key: "test.value"
+        another.key: "another.value"
         """.strip();
 
     assertEquals(expectedOutput, launchResult.getOutput());
@@ -153,7 +139,7 @@ class ListCommandTest {
 
     LaunchResult launchResult = launcher.launch("settings", "list", "--output", "yaml");
 
-    String expectedOutput = "[]".strip();
+    String expectedOutput = "{}".strip();
 
     assertEquals(expectedOutput, launchResult.getOutput());
     assertEquals("", launchResult.getErrorOutput());

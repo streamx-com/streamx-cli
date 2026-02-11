@@ -8,7 +8,6 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -20,19 +19,16 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     description = "Display configuration properties"
 )
-public class ListCommand extends AbstractCommand<List<Property>> {
+public class ListCommand extends AbstractCommand<Map<String, String>> {
   @Override
-  public String getTextOutput(CommandResult<List<Property>> result) {
-    if (result.result.isEmpty()) {
+  public String getTextOutput(CommandResult<Map<String, String>> result) {
+    if (result.getData().isEmpty()) {
       return msg.listSettingsNoPropertiesFound();
     }
 
     StringBuilder stringOutput = new StringBuilder();
 
-    Map<String, String> map = result.result.stream()
-        .collect(Collectors.toMap(Property::key, Property::value));
-
-    Map<String, String> sortedProperties = new TreeMap<>(map);
+    Map<String, String> sortedProperties = new TreeMap<>(result.getData());
 
     int maxKeyLength = sortedProperties.keySet().stream()
         .mapToInt(String::length)
@@ -54,21 +50,23 @@ public class ListCommand extends AbstractCommand<List<Property>> {
   }
 
   @Override
-  public CommandResult<List<Property>> runCommand() {
+  public CommandResult<Map<String, String>> runCommand() {
     URL url = DotStreamxConfigSource.getUrl();
-    List<Property> properties = getProperties(url);
+    Map<String, String> properties = getProperties(url);
 
     return new CommandResult<>(properties);
   }
 
-  private List<Property> getProperties(URL url) {
+  private Map<String, String> getProperties(URL url) {
     try (InputStream input = url.openStream()) {
       Properties properties = new Properties();
       properties.load(input);
 
       return properties.stringPropertyNames().stream()
-          .map(key -> new Property(key, properties.getProperty(key)))
-          .toList();
+          .collect(Collectors.toMap(
+              key -> key,
+              properties::getProperty
+          ));
     } catch (Exception e) {
       throw new CliException(msg.failedToLoadPropertiesFrom(url.getPath()), e);
     }

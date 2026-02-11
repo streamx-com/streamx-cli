@@ -2,7 +2,6 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -13,10 +12,14 @@ import java.util.function.Function;
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
  */
 public class CommandResult<ResultT> {
-  public ResultT result;
+  private ResultT data;
 
-  public CommandResult(ResultT result) {
-    this.result = result;
+  public CommandResult(ResultT data) {
+    this.data = data;
+  }
+
+  public ResultT getData() {
+    return data;
   }
 
   public String toText(
@@ -30,7 +33,7 @@ public class CommandResult<ResultT> {
         }
         case OutputFormat.json -> {
           ObjectMapper mapper = new ObjectMapper();
-          JsonNode jsonNode = mapper.valueToTree(result);
+          JsonNode jsonNode = mapper.valueToTree(data);
           return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
         }
         case OutputFormat.yaml -> {
@@ -38,8 +41,17 @@ public class CommandResult<ResultT> {
               .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
               .build();
           ObjectMapper mapper = new ObjectMapper(yamlFactory);
-          JsonNode jsonNode = mapper.valueToTree(result);
-          return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode).strip();
+          JsonNode jsonNode = mapper.valueToTree(data);
+          String formattedJsonNode = mapper
+              .writerWithDefaultPrettyPrinter()
+              .writeValueAsString(jsonNode)
+              .strip();
+
+          if (formattedJsonNode.isEmpty() || formattedJsonNode.equals("--- \"\"")) {
+            return "\"\"";
+          }
+
+          return formattedJsonNode;
         }
         default -> throw new CliException(msg.unsupportedOutputFormat());
       }

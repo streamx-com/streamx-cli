@@ -17,17 +17,17 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     description = "Get configuration property"
 )
-public class GetCommand extends AbstractCommand<GetCommandResult> {
+public class GetCommand extends AbstractCommand<String> {
   @CommandLine.Parameters(index = "0", description = "Property key")
   public String key;
 
   @Override
-  public String getTextOutput(CommandResult<GetCommandResult> result) {
-    return result.result.value();
+  public String getTextOutput(CommandResult<String> result) {
+    return result.getData();
   }
 
   @Override
-  public CommandResult<GetCommandResult> runCommand() {
+  public CommandResult<String> runCommand() {
     URL url = DotStreamxConfigSource.getUrl();
 
     try (InputStream inputStream = url.openStream()) {
@@ -39,9 +39,7 @@ public class GetCommand extends AbstractCommand<GetCommandResult> {
         throw new CliException(msg.noSettingsPropertyFound(key));
       }
 
-      GetCommandResult result = new GetCommandResult(key, value);
-
-      return new CommandResult<>(result);
+      return new CommandResult<>(value);
     } catch (IOException e) {
       throw new CliException(msg.unableToGetSettingsProperty(), e);
     }
