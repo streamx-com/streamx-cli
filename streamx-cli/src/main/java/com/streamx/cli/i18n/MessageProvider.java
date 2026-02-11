@@ -38,21 +38,6 @@ public interface MessageProvider {
   )
   String somethingWentWrong();
 
-  @Message(id = 105, value = "No such settings property found: %s")
-  String noSettingsPropertyFound(String key);
-
-  @Message(id = 106, value = "Unable to get settings property")
-  String unableToGetSettingsProperty();
-
-  @Message(id = 107, value = "Failed to load properties from: %s")
-  String failedToLoadPropertiesFrom(String path);
-
-  @Message(id = 108, value = "Unable to set settings property")
-  String unableToSetSettingsProperty();
-
-  @Message(id = 109, value = "Unable to get settings file path")
-  String unableToGetSettingsFilePath();
-
   @Message(
       id = 110,
       value = """
@@ -158,4 +143,28 @@ public interface MessageProvider {
 
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
+
+  @Message(id = 139, value = """
+      StreamX configuration properties:
+      =================================
+      """)
+  String listSettingsHeader();
+
+  @Message(id = 140, value = "No StreamX configuration properties found")
+  String listSettingsNoPropertiesFound();
+
+  @Message(id = 105, value = "No such settings property found: %s")
+  String noSettingsPropertyFound(String key);
+
+  @Message(id = 106, value = "Unable to get settings property")
+  String unableToGetSettingsProperty();
+
+  @Message(id = 107, value = "Failed to load properties from: %s")
+  String failedToLoadPropertiesFrom(String path);
+
+  @Message(id = 108, value = "Unable to set settings property")
+  String unableToSetSettingsProperty();
+
+  @Message(id = 109, value = "Unable to get settings file path")
+  String unableToGetSettingsFilePath();
 }

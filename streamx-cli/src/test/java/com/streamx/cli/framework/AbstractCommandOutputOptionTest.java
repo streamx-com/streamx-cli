@@ -104,7 +104,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
     command.setGetTextOutputHandler((cr) -> """
         String value: %s,
         Total nested objects: %d
-        """.formatted(cr.result.stringValue, cr.result.nestedObjects.size()).strip());
+        """.formatted(cr.getData().stringValue, cr.getData().nestedObjects.size()).strip());
 
     command.execute();
 
