@@ -83,10 +83,10 @@ public interface MessageProvider {
   @Message(id = 120, value = "Setting up system containers...")
   String settingUpSystemContainers();
 
-  @Message(id = 121, value = "Starting DX mesh...")
+  @Message(id = 121, value = "Starting mesh...")
   String startingMesh();
 
-  @Message(id = 122, value = "Stopping DX mesh...")
+  @Message(id = 122, value = "Stopping mesh...")
   String stoppingMesh();
 
   @Message(id = 123, value = """
