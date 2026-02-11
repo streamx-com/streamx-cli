@@ -47,7 +47,10 @@ public class CommandResult<ResultT> {
               .writeValueAsString(jsonNode)
               .strip();
 
-          if (formattedJsonNode.isEmpty() || formattedJsonNode.equals("--- \"\"")) {
+          if (
+              (formattedJsonNode.isEmpty() && jsonNode.isTextual())
+                  || formattedJsonNode.equals("--- \"\"")
+          ) {
             return "\"\"";
           }
 
