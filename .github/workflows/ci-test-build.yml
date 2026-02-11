@@ -35,7 +35,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd ./streamx-cli && ./mvnw clean test
+          ./mvnw clean test
   windows-test-build:
     runs-on: windows-latest
     steps:
@@ -53,4 +53,4 @@ jobs:
 
       - name: Run tests
         run: |
-          cd ./streamx-cli && ./mvnw clean test
+          ./mvnw clean test
