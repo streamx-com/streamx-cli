@@ -18,7 +18,8 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <streamx.version>2.0.12-SNAPSHOT</streamx.version>
+    <com.streamx.version>2.0.12-SNAPSHOT</com.streamx.version>
+    <io.cloudevents.version>4.0.1</io.cloudevents.version>
   </properties>
 
   <dependencyManagement>
@@ -137,19 +138,30 @@
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>streamx-runner</artifactId>
-      <version>${streamx.version}</version>
+      <version>${com.streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>mesh-model</artifactId>
-      <version>${streamx.version}</version>
+      <version>${com.streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>ingestion-client</artifactId>
-      <version>${streamx.version}</version>
+      <version>${com.streamx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-core</artifactId>
+      <version>${io.cloudevents.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-json-jackson</artifactId>
+      <version>${io.cloudevents.version}</version>
     </dependency>
 
     <dependency>

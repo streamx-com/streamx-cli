@@ -7,7 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 public class StreamxClientFactory {
-  public StreamxClient create(IngestionClientConfig ingestionClientConfig) throws CliException {
+  public static StreamxClient create(IngestionClientConfig ingestionClientConfig) throws CliException {
     CloseableHttpClient httpClient = HttpClients.createDefault();
 
     StreamxClientBuilder builder = StreamxClient.builder(ingestionClientConfig.url())
