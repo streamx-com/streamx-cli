@@ -10,15 +10,9 @@ import org.junit.jupiter.api.Test;
 
 class CloudEventsTest {
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
-  private JsonNode parse(String json) throws Exception {
-    return mapper.readTree(json);
-  }
-
   @Test
   void shouldDeserializeValidCloudEvent() throws Exception {
-    JsonNode node = parse("""
+    JsonNode node = new ObjectMapper().readTree("""
         {
           "specversion": "1.0",
           "type": "com.example.test",
@@ -38,7 +32,7 @@ class CloudEventsTest {
 
   @Test
   void shouldDeserializeCloudEventWithData() throws Exception {
-    JsonNode node = parse("""
+    JsonNode node = new ObjectMapper().readTree("""
         {
           "specversion": "1.0",
           "type": "com.example.test",
@@ -58,7 +52,7 @@ class CloudEventsTest {
 
   @Test
   void shouldThrowCliExceptionWhenRequiredFieldsAreMissing() throws Exception {
-    JsonNode node = parse("""
+    JsonNode node = new ObjectMapper().readTree("""
         {
           "type": "com.example.test"
         }
@@ -69,7 +63,7 @@ class CloudEventsTest {
 
   @Test
   void shouldThrowCliExceptionWithMessageOnInvalidStructure() throws Exception {
-    JsonNode node = parse("""
+    JsonNode node = new ObjectMapper().readTree("""
         {
           "invalid": "data"
         }
@@ -82,7 +76,7 @@ class CloudEventsTest {
 
   @Test
   void shouldThrowCliExceptionForEmptyObject() throws Exception {
-    JsonNode node = parse("{}");
+    JsonNode node = new ObjectMapper().readTree("{}");
 
     assertThrows(CliException.class, () -> CloudEvents.fromJsonNode(node));
   }
