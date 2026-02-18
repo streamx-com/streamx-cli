@@ -18,6 +18,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
+    <streamx.version>2.0.12-SNAPSHOT</streamx.version>
   </properties>
 
   <dependencyManagement>
@@ -136,13 +137,19 @@
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>streamx-runner</artifactId>
-      <version>2.0.10</version>
+      <version>${streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>mesh-model</artifactId>
-      <version>2.0.10</version>
+      <version>${streamx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.streamx</groupId>
+      <artifactId>ingestion-client</artifactId>
+      <version>${streamx.version}</version>
     </dependency>
 
     <dependency>
