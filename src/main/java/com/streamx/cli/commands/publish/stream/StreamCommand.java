@@ -4,13 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 import com.streamx.cli.ingestion.CloudEvents;
 import com.streamx.cli.ingestion.ConcatenatedJsonParser;
 import com.streamx.cli.ingestion.IngestionClientConfig;
@@ -20,6 +13,15 @@ import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -51,20 +53,27 @@ public class StreamCommand extends AbstractSilentCommand {
         Publisher publisher = streamxClient.newPublisher();
 
         try (Stream<JsonNode> jsonStream = jsonParser.parse(sourceStream)) {
+          Spliterator<JsonNode> spliterator = jsonStream.spliterator();
+          long knownSize = spliterator.getExactSizeIfKnown();
+          int counter = 0;
           List<CloudEvent> chunk = new ArrayList<>();
 
-          jsonStream
-              .map(CloudEvents::fromJsonNode)
-              .forEach(event -> {
-                chunk.add(event);
-                if (chunk.size() >= CHUNK_SIZE) {
-                  sendChunk(publisher, chunk);
-                  chunk.clear();
-                }
-              });
+          Stream<CloudEvent> eventStream = StreamSupport.stream(spliterator, false)
+              .map(CloudEvents::fromJsonNode);
 
-          if (!chunk.isEmpty()) {
-            sendChunk(publisher, chunk);
+          try (eventStream) {
+            for (var iterator = eventStream.iterator(); iterator.hasNext(); ) {
+              CloudEvent event = iterator.next();
+              chunk.add(event);
+              if (chunk.size() >= CHUNK_SIZE) {
+                counter = sendChunk(publisher, chunk, counter, knownSize);
+                chunk.clear();
+              }
+            }
+
+            if (!chunk.isEmpty()) {
+              sendChunk(publisher, chunk, counter, knownSize);
+            }
           }
         }
 
@@ -79,14 +88,36 @@ public class StreamCommand extends AbstractSilentCommand {
     }
   }
 
-  private void sendChunk(Publisher publisher, List<CloudEvent> chunk) {
-    try {
-      publisher.send(new ArrayList<>(chunk));
-    } catch (Exception e) {
-      throw new CliException("Failed to send events: " + e.getMessage(), e);
+  private int sendChunk(
+      Publisher publisher,
+      List<CloudEvent> chunk,
+      int counter,
+      long knownSize
+  ) {
+    for (CloudEvent event : chunk) {
+      try {
+        publisher.send(List.of(event));
+        counter++;
+        System.out.printf("Event published (%s): type='%s', source='%s', id='%s'%n",
+            formatProgress(counter, knownSize),
+            event.getType(), event.getSource(), event.getId());
+      } catch (Exception e) {
+        counter++;
+        System.err.printf("Event publish failed (%s): type='%s', source='%s', id='%s' - %s%n",
+            formatProgress(counter, knownSize),
+            event.getType(), event.getSource(), event.getId(), e.getMessage());
+        throw new CliException("Failed to send event: " + e.getMessage(), e);
+      }
     }
+    return counter;
   }
 
+  private String formatProgress(int current, long knownSize) {
+    if (knownSize >= 0) {
+      return current + "/" + knownSize;
+    }
+    return String.valueOf(current);
+  }
 
   private InputStream getSourceStream() throws CliException {
     InputStream input;
@@ -98,7 +129,6 @@ public class StreamCommand extends AbstractSilentCommand {
       } catch (Exception e) {
         throw new CliException("Unable to open source input stream: " + source, e);
       }
-
     }
 
     try {
