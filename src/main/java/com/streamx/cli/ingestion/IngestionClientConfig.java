@@ -1,6 +1,7 @@
 package com.streamx.cli.ingestion;
 
 import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.SmallRyeConfigBuilder;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 import java.util.Optional;
