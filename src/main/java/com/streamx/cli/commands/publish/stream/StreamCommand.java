@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
@@ -64,7 +65,11 @@ public class StreamCommand extends AbstractSilentCommand {
       try {
         System.out.println("!!! B");
         InputStream sourceStream = getSourceStream();
-        System.out.println("Source stream: %s".formatted(sourceStream.readAllBytes()));
+
+        byte[] bytes = sourceStream.readAllBytes();
+        System.out.println("Source stream: " + new String(bytes, StandardCharsets.UTF_8));
+        sourceStream = new ByteArrayInputStream(bytes);
+
         ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
         Publisher publisher = streamxClient.newPublisher();
 

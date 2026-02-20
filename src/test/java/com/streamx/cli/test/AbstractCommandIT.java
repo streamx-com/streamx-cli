@@ -51,17 +51,43 @@ public abstract class AbstractCommandIT {
       os.flush();
     }
 
+    StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
+    StreamCapture stderrCapture = captureAndForward(process.getErrorStream(), System.err);
+
     boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
     Assertions.assertTrue(finished, "Process timed out after %d seconds".formatted(timeoutSeconds));
 
-    String stdout = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-    String stderr = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+    String stdout = stdoutCapture.join();
+    String stderr = stderrCapture.join();
 
     return new ProcessResult(process.exitValue(), stdout, stderr);
   }
 
   protected ProcessResult exec(String... args) throws Exception {
     return execWithStdin(InputStream.nullInputStream(), args);
+  }
+
+  private record StreamCapture(Thread thread, java.io.ByteArrayOutputStream buffer) {
+    String join() throws InterruptedException {
+      thread.join();
+      return buffer.toString(StandardCharsets.UTF_8);
+    }
+  }
+
+  private StreamCapture captureAndForward(InputStream source, java.io.PrintStream target) {
+    var buffer = new java.io.ByteArrayOutputStream();
+    Thread thread = Thread.ofVirtual().start(() -> {
+      try {
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = source.read(buf)) != -1) {
+          buffer.write(buf, 0, len);
+          target.write(buf, 0, len);
+          target.flush();
+        }
+      } catch (Exception ignored) {}
+    });
+    return new StreamCapture(thread, buffer);
   }
 
   private static List<String> resolveBaseCommand() {
