@@ -34,12 +34,13 @@ public class StreamCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Path to mesh definition file.",
+      description = "Events source URI",
       arity = "0..1",
       defaultValue = CommandLine.Parameters.NULL_VALUE
   )
   public URI source;
 
+  // TODO: Should we make chunk size configurable via CLI options?
   private static final int CHUNK_SIZE = 100;
 
   @Override

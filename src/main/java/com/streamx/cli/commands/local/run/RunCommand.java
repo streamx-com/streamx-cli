@@ -5,7 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.meshprocessing.MeshManager;
+import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.util.BannerPrinter;
 import com.streamx.runner.StreamxRunner;
 import com.streamx.runner.exception.ContainerStartupTimeoutException;

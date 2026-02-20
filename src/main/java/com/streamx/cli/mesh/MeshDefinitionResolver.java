@@ -1,4 +1,4 @@
-package com.streamx.cli.meshprocessing;
+package com.streamx.cli.mesh;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.interpolation.Interpolating;

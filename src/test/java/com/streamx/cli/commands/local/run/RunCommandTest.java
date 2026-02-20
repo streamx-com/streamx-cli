@@ -42,11 +42,11 @@ public class RunCommandTest {
 
   @Test
   void shouldRunStreamxExampleMesh(QuarkusMainLauncher launcher) {
-    String s = Paths.get("target/test-classes/mesh.yaml")
+    String meshPath = Paths.get("target/test-classes/mesh.yaml")
         .toAbsolutePath()
         .normalize()
         .toString();
-    LaunchResult result = launcher.launch("local", "run", "-f=" + s);
+    LaunchResult result = launcher.launch("local", "run", "-f=" + meshPath);
 
     assertThat(result.getOutput()).contains("STREAMX IS READY!");
   }

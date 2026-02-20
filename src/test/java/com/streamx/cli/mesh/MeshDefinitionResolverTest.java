@@ -1,4 +1,4 @@
-package com.streamx.cli.meshprocessing;
+package com.streamx.cli.mesh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

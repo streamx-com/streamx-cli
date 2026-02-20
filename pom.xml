@@ -18,7 +18,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <com.streamx.version>2.0.12-SNAPSHOT</com.streamx.version>
+    <com.streamx.version>2.0.15-SNAPSHOT</com.streamx.version>
     <io.cloudevents.version>4.0.1</io.cloudevents.version>
   </properties>
 
@@ -276,6 +276,13 @@
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${quarkus.platform.version}</version>
         <extensions>true</extensions>
+        <configuration>
+          <!-- Otherwise we get runtime errors like:
+            java.lang.IllegalAccessError: module java.base does not open java.lang to unnamed module @xxx;
+            to use the thread-local-reset capability on Java 24 or later.
+          -->
+          <jvmArgs>--add-opens java.base/java.lang=ALL-UNNAMED</jvmArgs>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -325,6 +332,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <!-- Otherwise we get runtime errors like:
+            java.lang.IllegalAccessError: module java.base does not open java.lang to unnamed module @xxx;
+            to use the thread-local-reset capability on Java 24 or later.
+          -->
+          <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>

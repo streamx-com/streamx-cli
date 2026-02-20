@@ -1,4 +1,4 @@
-package com.streamx.cli.meshprocessing;
+package com.streamx.cli.mesh;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.util.Output.print;
