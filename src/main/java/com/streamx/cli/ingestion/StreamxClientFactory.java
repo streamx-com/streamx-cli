@@ -13,7 +13,7 @@ public class StreamxClientFactory {
     StreamxClientBuilder builder = StreamxClient.builder(ingestionClientConfig.url())
         .setApacheHttpClient(httpClient);
 
-    ingestionClientConfig.authToken().ifPresent(builder::setAuthToken);
+    ingestionClientConfig.authToken().ifPresent(token -> builder.setAuthToken(token.get()));
 
     try {
       return builder.build();

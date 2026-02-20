@@ -1,9 +1,7 @@
 package com.streamx.cli.ingestion;
 
-import io.smallrye.config.ConfigMapping;
-import io.smallrye.config.SmallRyeConfigBuilder;
-import io.smallrye.config.WithDefault;
-import io.smallrye.config.WithName;
+import io.smallrye.config.*;
+
 import java.util.Optional;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -19,7 +17,7 @@ public interface IngestionClientConfig {
   String url();
 
   @WithName(STREAMX_INGESTION_AUTH_TOKEN)
-  Optional<String> authToken();
+  Optional<Secret<String>> authToken();
 
   @WithName(STREAMX_INGESTION_INSECURE)
   @WithDefault(BooleanUtils.FALSE)

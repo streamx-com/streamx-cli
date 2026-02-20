@@ -1,5 +1,6 @@
 package com.streamx.cli.ingestion;
 
+import io.smallrye.config.Secret;
 import io.smallrye.config.SmallRyeConfigBuilder;
 import picocli.CommandLine;
 
@@ -42,8 +43,10 @@ public class IngestionClientPicocliOptions {
       }
 
       @Override
-      public Optional<String> authToken() {
-        return authToken == null ? originalConfig.authToken() : Optional.of(authToken);
+      public Optional<Secret<String>> authToken() {
+        return authToken == null ?
+            originalConfig.authToken() :
+            Optional.of((Secret<String>) () -> authToken);
       }
 
       @Override

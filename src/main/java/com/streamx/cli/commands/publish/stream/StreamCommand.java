@@ -45,11 +45,26 @@ public class StreamCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    if (this.verbose) {
+      System.out.println("Running stream command");
+    }
+
+    if (this.verbose) {
+      System.out.println("Resolving StreamX client config");
+    }
+
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
+    if (this.verbose) {
+      System.out.println("Initializing StreamX client with config: %s".formatted(ingestionClientConfig));
+    }
+
+    System.out.println("!!! A");
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
       try {
+        System.out.println("!!! B");
         InputStream sourceStream = getSourceStream();
+        System.out.println("Source stream: %s".formatted(sourceStream.readAllBytes()));
         ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
         Publisher publisher = streamxClient.newPublisher();
 
@@ -95,6 +110,10 @@ public class StreamCommand extends AbstractSilentCommand {
       int counter,
       long knownSize
   ) {
+    if (this.verbose) {
+      System.out.printf("Sending chunk of %s events%n", chunk.size());
+    }
+
     for (CloudEvent event : chunk) {
       try {
         publisher.send(List.of(event));
