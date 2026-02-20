@@ -22,4 +22,16 @@ public interface IngestionClientConfig {
   @WithName(STREAMX_INGESTION_INSECURE)
   @WithDefault(BooleanUtils.FALSE)
   boolean insecure();
+
+  public static String prettyPrint(IngestionClientConfig config) {
+    return """
+        %s = %s
+        %s = %s
+        %s = %s
+        """.formatted(
+        STREAMX_INGESTION_URL, config.url(),
+        STREAMX_INGESTION_AUTH_TOKEN, config.authToken().map(s -> "****").orElse("<not set>"),
+        STREAMX_INGESTION_INSECURE, config.insecure()
+    );
+  }
 }

@@ -21,7 +21,7 @@ class CloudEventsTest {
         }
         """);
 
-    CloudEvent event = CloudEvents.fromJsonNode(node);
+    CloudEvent event = CloudEvents.fromJson(node);
 
     assertNotNull(event);
     assertEquals("1.0", event.getSpecVersion().toString());
@@ -43,7 +43,7 @@ class CloudEventsTest {
         }
         """);
 
-    CloudEvent event = CloudEvents.fromJsonNode(node);
+    CloudEvent event = CloudEvents.fromJson(node);
 
     assertNotNull(event);
     assertNotNull(event.getData());
@@ -58,7 +58,7 @@ class CloudEventsTest {
         }
         """);
 
-    assertThrows(CliException.class, () -> CloudEvents.fromJsonNode(node));
+    assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
   }
 
   @Test
@@ -69,7 +69,7 @@ class CloudEventsTest {
         }
         """);
 
-    CliException ex = assertThrows(CliException.class, () -> CloudEvents.fromJsonNode(node));
+    CliException ex = assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
     assertTrue(ex.getMessage().startsWith("CloudEvent deserialization failed:"));
     assertNotNull(ex.getCause());
   }
@@ -78,6 +78,6 @@ class CloudEventsTest {
   void shouldThrowCliExceptionForEmptyObject() throws Exception {
     JsonNode node = new ObjectMapper().readTree("{}");
 
-    assertThrows(CliException.class, () -> CloudEvents.fromJsonNode(node));
+    assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
   }
 }

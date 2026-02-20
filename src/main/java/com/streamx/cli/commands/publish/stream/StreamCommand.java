@@ -13,6 +13,7 @@ import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -57,17 +59,15 @@ public class StreamCommand extends AbstractSilentCommand {
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
     if (this.verbose) {
-      System.out.println("Initializing StreamX client with config: %s".formatted(ingestionClientConfig));
+      System.out.println("Initializing StreamX client with config:");
+      System.out.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
-    System.out.println("!!! A");
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
       try {
-        System.out.println("!!! B");
         InputStream sourceStream = getSourceStream();
 
         byte[] bytes = sourceStream.readAllBytes();
-        System.out.println("Source stream: " + new String(bytes, StandardCharsets.UTF_8));
         sourceStream = new ByteArrayInputStream(bytes);
 
         ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
@@ -80,7 +80,7 @@ public class StreamCommand extends AbstractSilentCommand {
           List<CloudEvent> chunk = new ArrayList<>();
 
           Stream<CloudEvent> eventStream = StreamSupport.stream(spliterator, false)
-              .map(CloudEvents::fromJsonNode);
+              .map(CloudEvents::fromJson);
 
           try (eventStream) {
             for (var iterator = eventStream.iterator(); iterator.hasNext(); ) {

@@ -9,17 +9,27 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 public class CloudEvents {
-  public static CloudEvent fromJsonNode(JsonNode jsonNode) {
-    ObjectMapper mapper = new ObjectMapper();
-    EventFormat eventFormat = EventFormatProvider
-        .getInstance()
-        .resolveFormat(JsonFormat.CONTENT_TYPE);
 
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final EventFormat EVENT_FORMAT = EventFormatProvider
+      .getInstance()
+      .resolveFormat(JsonFormat.CONTENT_TYPE);
+
+  public static CloudEvent fromJson(JsonNode jsonNode) {
     try {
-      byte[] bytes = mapper.writeValueAsBytes(jsonNode);
-      return eventFormat.deserialize(bytes);
+      byte[] bytes = MAPPER.writeValueAsBytes(jsonNode);
+      return EVENT_FORMAT.deserialize(bytes);
     } catch (Exception e) {
       throw new CliException("CloudEvent deserialization failed: " + e.getMessage(), e);
+    }
+  }
+
+  public static JsonNode toJson(CloudEvent cloudEvent) {
+    try {
+      byte[] bytes = EVENT_FORMAT.serialize(cloudEvent);
+      return MAPPER.readTree(bytes);
+    } catch (Exception e) {
+      throw new CliException("CloudEvent serialization failed: " + e.getMessage(), e);
     }
   }
 }

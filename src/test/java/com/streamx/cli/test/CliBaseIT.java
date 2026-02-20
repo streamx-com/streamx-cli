@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractCommandIT {
+public abstract class CliBaseIT {
 
   private static final boolean NATIVE = Boolean.getBoolean("native.image");
   private static final Path TARGET = Path.of("target");

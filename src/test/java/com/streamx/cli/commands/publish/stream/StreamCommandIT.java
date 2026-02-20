@@ -1,34 +1,41 @@
 package com.streamx.cli.commands.publish.stream;
 
-import com.streamx.cli.test.AbstractCommandIT;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.streamx.cli.ingestion.CloudEvents;
+import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
+import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.CloudEventGenerator;
 import com.streamx.cli.test.MeshTestProfile;
+import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 @QuarkusTest
 @TestProfile(MeshTestProfile.class)
-public class StreamCommandIT extends AbstractCommandIT {
+public class StreamCommandIT extends CliBaseIT {
+  CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
+  ConcatenatedJsonSerializer concatenatedJsonSerializer = new ConcatenatedJsonSerializer();
 
   @Test
-  void shouldStreamSingleEvent() throws Exception {
-    String exampleEvent = """
-            {
-              "specversion": "1.0",
-              "id": "Bar & Serving Carts",
-              "source": "streamx-commerce-accelerator",
-              "type": "com.streamx.blueprints.data.published.v1",
-              "datacontenttype": "application/json",
-              "subject": "cat:Bar & Serving Carts",
-              "time": "2026-01-01T00:00:00.000000Z",
-              "data": {
-                "content": "{\\"id\\":\\"Bar & Serving Carts\\"}",
-                "type": "data/category"
-              }
-            }
-            """;
+  void shouldStreamSingleEventFromStdin() throws Exception {
+    String stdIn = CloudEvents.toJson(cloudEventGenerator.generate(1).getFirst()).toString();
 
-    ProcessResult result = execWithStdin(exampleEvent, "publish", "stream", "-v");
+    ProcessResult result = execWithStdin(stdIn, "publish", "stream");
+
+    result.assertSuccess();
+  }
+
+  @Test
+  void shouldStreamManyEventsFromStdin() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(1000);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String stdIn = concatenatedJsonSerializer.serialize(eventsJson);
+
+    ProcessResult result = execWithStdin(stdIn, "publish", "stream");
+
     result.assertSuccess();
   }
 }
