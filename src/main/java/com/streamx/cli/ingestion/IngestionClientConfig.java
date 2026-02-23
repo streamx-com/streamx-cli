@@ -1,7 +1,11 @@
 package com.streamx.cli.ingestion;
 
-import io.smallrye.config.*;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.Secret;
+import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
 import java.util.Optional;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -30,7 +34,8 @@ public interface IngestionClientConfig {
         %s = %s
         """.formatted(
         STREAMX_INGESTION_URL, config.url(),
-        STREAMX_INGESTION_AUTH_TOKEN, config.authToken().map(s -> "****").orElse("<not set>"),
+        STREAMX_INGESTION_AUTH_TOKEN, config.authToken()
+            .map(s -> msg.ingestionTokenMasked()).orElse(msg.ingestionTokenNotSet()),
         STREAMX_INGESTION_INSECURE, config.insecure()
     );
   }

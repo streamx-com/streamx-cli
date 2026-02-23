@@ -1,5 +1,7 @@
 package com.streamx.cli.ingestion;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +22,7 @@ public class ConcatenatedJsonSerializer {
         mapper.writeValue(generator, node);
       }
     } catch (Exception e) {
-      throw new CliException("Failed to serialize JSON sequence: " + e.getMessage(), e);
+      throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
     }
 
     return writer.toString();
@@ -34,13 +36,13 @@ public class ConcatenatedJsonSerializer {
         try {
           mapper.writeValue(generator, node);
         } catch (Exception e) {
-          throw new CliException("Failed to serialize JSON sequence: " + e.getMessage(), e);
+          throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
         }
       });
     } catch (CliException e) {
       throw e;
     } catch (Exception e) {
-      throw new CliException("Failed to serialize JSON sequence: " + e.getMessage(), e);
+      throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
     }
   }
 }

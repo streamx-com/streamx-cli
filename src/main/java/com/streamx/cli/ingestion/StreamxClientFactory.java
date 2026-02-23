@@ -1,5 +1,7 @@
 package com.streamx.cli.ingestion;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.streamx.cli.framework.CliException;
 import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.StreamxClientBuilder;
@@ -18,7 +20,7 @@ public class StreamxClientFactory {
     try {
       return builder.build();
     } catch (Exception e) {
-      throw new CliException("Unable to create StreamX client. %s".formatted(e.getMessage()), e);
+      throw new CliException(msg.unableToCreateStreamxClient(e.getMessage()), e);
     }
   }
 }

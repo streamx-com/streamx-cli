@@ -230,4 +230,25 @@ public interface MessageProvider {
 
   @Message(id = 161, value = "Source URI not reachable: '%s' - %s")
   String sourceUriNotReachable(String uri, String reason);
+
+  @Message(id = 162, value = "CloudEvent deserialization failed: %s")
+  String cloudEventDeserializationFailed(String reason);
+
+  @Message(id = 163, value = "CloudEvent serialization failed: %s")
+  String cloudEventSerializationFailed(String reason);
+
+  @Message(id = 164, value = "Failed to parse JSON: %s")
+  String failedToParseJson(String reason);
+
+  @Message(id = 165, value = "Failed to close JSON parser: %s")
+  String failedToCloseJsonParser(String reason);
+
+  @Message(id = 166, value = "Failed to serialize JSON sequence: %s")
+  String failedToSerializeJsonSequence(String reason);
+
+  @Message(id = 167, value = "<not set>")
+  String ingestionTokenNotSet();
+
+  @Message(id = 168, value = "*****")
+  String ingestionTokenMasked();
 }

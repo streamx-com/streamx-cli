@@ -1,5 +1,7 @@
 package com.streamx.cli.ingestion;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.framework.CliException;
@@ -20,7 +22,7 @@ public class CloudEvents {
       byte[] bytes = MAPPER.writeValueAsBytes(jsonNode);
       return EVENT_FORMAT.deserialize(bytes);
     } catch (Exception e) {
-      throw new CliException("CloudEvent deserialization failed: " + e.getMessage(), e);
+      throw new CliException(msg.cloudEventDeserializationFailed(e.getMessage()), e);
     }
   }
 
@@ -29,7 +31,7 @@ public class CloudEvents {
       byte[] bytes = EVENT_FORMAT.serialize(cloudEvent);
       return MAPPER.readTree(bytes);
     } catch (Exception e) {
-      throw new CliException("CloudEvent serialization failed: " + e.getMessage(), e);
+      throw new CliException(msg.cloudEventSerializationFailed(e.getMessage()), e);
     }
   }
 }

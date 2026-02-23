@@ -1,5 +1,7 @@
 package com.streamx.cli.ingestion;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +24,7 @@ public class ConcatenatedJsonParser {
       Iterator<JsonNode> it = mapper.readValues(parser, JsonNode.class);
       it.forEachRemaining(result::add);
     } catch (Exception e) {
-      throw new CliException("Failed to parse JSON sequence: " + e.getMessage(), e);
+      throw new CliException(msg.failedToParseJson(e.getMessage()), e);
     }
 
     return result;
@@ -42,11 +44,11 @@ public class ConcatenatedJsonParser {
             try {
               parser.close();
             } catch (Exception e) {
-              throw new CliException("Failed to close JSON parser: " + e.getMessage(), e);
+              throw new CliException(msg.failedToCloseJsonParser(e.getMessage()), e);
             }
           });
     } catch (Exception e) {
-      throw new CliException("Failed to parse JSON sequence: " + e.getMessage(), e);
+      throw new CliException(msg.failedToParseJson(e.getMessage()), e);
     }
   }
 
@@ -57,7 +59,7 @@ public class ConcatenatedJsonParser {
         try {
           return iterator.hasNext();
         } catch (Exception e) {
-          throw new CliException("Failed to parse JSON sequence: " + e.getMessage(), e);
+          throw new CliException(msg.failedToParseJson(e.getMessage()), e);
         }
       }
 
@@ -66,7 +68,7 @@ public class ConcatenatedJsonParser {
         try {
           return iterator.next();
         } catch (Exception e) {
-          throw new CliException("Failed to parse JSON sequence: " + e.getMessage(), e);
+          throw new CliException(msg.failedToParseJson(e.getMessage()), e);
         }
       }
     };
