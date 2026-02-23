@@ -12,16 +12,19 @@ public class StreamxClientFactory {
   public static StreamxClient create(
       IngestionClientConfig ingestionClientConfig
   ) throws CliException {
-    CloseableHttpClient httpClient = HttpClients.createDefault();
-
-    StreamxClientBuilder builder = StreamxClient.builder(ingestionClientConfig.url())
-        .setApacheHttpClient(httpClient);
-
-    ingestionClientConfig.authToken().ifPresent(token -> builder.setAuthToken(token.get()));
-
     try {
+      CloseableHttpClient httpClient = HttpClients.createDefault();
+
+      StreamxClientBuilder builder = StreamxClient.builder(ingestionClientConfig.url())
+          .setApacheHttpClient(httpClient);
+
+      ingestionClientConfig.authToken().ifPresent(token -> builder.setAuthToken(token.get()));
+
       return builder.build();
-    } catch (Exception e) {
+
+      // Catch Throwable instead of Exception here because otherwise
+      // we won't catch errors from HttpClients.createDefault()
+    } catch (Throwable e) {
       throw new CliException(msg.unableToCreateStreamxClient(e.getMessage()), e);
     }
   }
