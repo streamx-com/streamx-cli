@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.local.run;
 
-import static com.streamx.cli.commands.util.MeshTestsUtils.cleanUpMesh;
+import static com.streamx.cli.test.MeshTestsUtils.cleanUpMesh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.quarkus.test.junit.main.LaunchResult;

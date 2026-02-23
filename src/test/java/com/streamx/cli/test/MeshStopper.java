@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.util;
+package com.streamx.cli.test;
 
 import com.streamx.runner.StreamxRunner;
 import io.quarkus.runtime.ApplicationLifecycleManager;

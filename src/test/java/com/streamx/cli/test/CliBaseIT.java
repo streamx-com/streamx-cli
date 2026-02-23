@@ -1,9 +1,5 @@
 package com.streamx.cli.test;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +8,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 public abstract class CliBaseIT {
 
@@ -44,7 +43,11 @@ public abstract class CliBaseIT {
     );
   }
 
-  protected ProcessResult execWithStdin(InputStream stdin, long timeoutSeconds, String... args) throws Exception {
+  protected ProcessResult execWithStdin(
+      InputStream stdin,
+      long timeoutSeconds,
+      String... args
+  ) throws Exception {
     var command = new ArrayList<>(resolveBaseCommand());
     command.addAll(List.of(args));
 
@@ -91,7 +94,9 @@ public abstract class CliBaseIT {
           target.write(buf, 0, len);
           target.flush();
         }
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+        // ignore
+      }
     });
     return new StreamCapture(thread, buffer);
   }

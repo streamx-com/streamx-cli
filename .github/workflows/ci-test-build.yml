@@ -35,7 +35,7 @@ jobs:
 
       - name: Run tests
         run: |
-          ./mvnw clean test
+          ./mvnw clean verify
   windows-test-build:
     runs-on: windows-latest
     steps:
@@ -53,4 +53,4 @@ jobs:
 
       - name: Run tests
         run: |
-          ./mvnw clean test
+          ./mvnw clean verify

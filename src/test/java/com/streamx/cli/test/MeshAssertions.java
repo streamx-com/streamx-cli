@@ -1,10 +1,11 @@
 package com.streamx.cli.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.common.policies.data.TopicStats;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MeshAssertions {
 

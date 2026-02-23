@@ -1,7 +1,7 @@
 package com.streamx.cli.commands.publish.stream;
 
-import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static com.streamx.cli.i18n.MessageProvider.msg;
+import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,13 +15,13 @@ import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @TestProfile(MeshTestProfile.class)
@@ -30,51 +30,14 @@ public class StreamCommandIT extends CliBaseIT {
   ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
   ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
 
-  String eventsJson = """
-        {
-          "specversion": "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "com.streamx.blueprints.data.published.v1",
-          "datacontenttype": "application/json",
-          "subject": "cat:Accent Furniture",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{\\"id\\":\\"Accent Furniture\\",\\"slug\\":\\"accent-furniture\\",\\"name\\":\\"Accent Furniture\\"}",
-            "type": "data/category"
-          }
-        }
-        {
-          "specversion": "1.0",
-          "id": "Bar & Serving Carts",
-          "source": "streamx-commerce-accelerator",
-          "type": "com.streamx.blueprints.data.published.v1",
-          "datacontenttype": "application/json",
-          "subject": "cat:Bar & Serving Carts",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{\\"id\\":\\"Bar & Serving Carts\\",\\"slug\\":\\"bar-&-serving-carts\\",\\"name\\":\\"Bar & Serving Carts\\"}",
-            "type": "data/category"
-          }
-        }
-        """;
-
-  String invalidEventsJson = """
-        { // invalid json
-          specversion: "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "com.streamx.blueprints.data.published.v1",
-          "datacontenttype": "application/json",
-          "subject": "cat:Accent Furniture",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-        """;
-
   @Test
   void shouldStreamEventsFromFilePath(@TempDir Path tempDir) throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
     Path eventsFile = tempDir.resolve("events");
-    Files.writeString(eventsFile, eventsJson);
+    Files.writeString(eventsFile, eventsJsonString);
 
     ProcessResult result = exec(
         "publish",
@@ -84,16 +47,19 @@ public class StreamCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    long eventsCount = jsonParser.parse(eventsJson).size();
-    assertEventsPublished(eventsCount);
-    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
+    assertEventsPublished(events.size());
+    assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
   }
 
 
   @Test
   void shouldStreamEventsFromFileUri(@TempDir Path tempDir) throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
     Path eventsFile = tempDir.resolve("events");
-    Files.writeString(eventsFile, eventsJson);
+    Files.writeString(eventsFile, eventsJsonString);
 
     ProcessResult result = exec(
         "publish",
@@ -103,17 +69,20 @@ public class StreamCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    long eventsCount = jsonParser.parse(eventsJson).size();
-    assertEventsPublished(eventsCount);
-    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
+    assertEventsPublished(events.size());
+    assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
   }
 
 
   @Test
   void shouldStreamEventsFromHttpUri() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
     HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
     server.createContext("/events", exchange -> {
-      byte[] responseBytes = eventsJson.getBytes();
+      byte[] responseBytes = eventsJsonString.getBytes();
       exchange.getResponseHeaders().set("Content-Type", "application/json");
       exchange.sendResponseHeaders(200, responseBytes.length);
       try (var outputStream = exchange.getResponseBody()) {
@@ -130,9 +99,8 @@ public class StreamCommandIT extends CliBaseIT {
 
       result.assertSuccess();
 
-      long eventsCount = jsonParser.parse(eventsJson).size();
-      assertEventsPublished(eventsCount);
-      assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
+      assertEventsPublished(events.size());
+      assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
     } finally {
       server.stop(0);
     }
@@ -165,6 +133,18 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailOnInvalidJson() throws Exception {
+    String invalidEventsJson = """
+        { // invalid json
+          specversion: "1.0",
+          "id": "Accent Furniture",
+          "source": "streamx-commerce-accelerator",
+          "type": "com.streamx.blueprints.data.published.v1",
+          "datacontenttype": "application/json",
+          "subject": "cat:Accent Furniture",
+          "time": "2026-01-01T00:00:00.000000Z",
+          "data": {
+        """;
+
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
@@ -258,8 +238,12 @@ public class StreamCommandIT extends CliBaseIT {
 
     @Test
     void shouldFailWhenSourceFileNotReadable(@TempDir Path tempDir) throws Exception {
+      List<CloudEvent> events = cloudEventGenerator.generate(5);
+      List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+      String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
       Path unreadableFile = tempDir.resolve("unreadable.json");
-      Files.writeString(unreadableFile, eventsJson);
+      Files.writeString(unreadableFile, eventsJsonString);
       unreadableFile.toFile().setReadable(false);
 
       ProcessResult result = exec("publish", "stream", unreadableFile.toString());

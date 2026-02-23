@@ -2,8 +2,6 @@ package com.streamx.cli.test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import net.datafaker.Faker;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -12,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.datafaker.Faker;
 
 public class CloudEventGenerator {
 

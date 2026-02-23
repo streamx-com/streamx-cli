@@ -20,9 +20,11 @@ final class BuildExecutableOnce {
         return;
       }
       try {
-        boolean NATIVE = Boolean.getBoolean("native.image");
-        String mvn = System.getProperty("os.name").toLowerCase().contains("win") ? "mvn.cmd" : "mvn";
-        String[] command = NATIVE
+        boolean isNativeImage = Boolean.getBoolean("native.image");
+        String mvn = System.getProperty("os.name").toLowerCase().contains("win")
+            ? "mvn.cmd"
+            : "mvn";
+        String[] command = isNativeImage
             ? new String[]{mvn, "clean", "package", "-Pnative", "-DskipTests"}
             : new String[]{mvn, "clean", "package", "-DskipTests"};
 
