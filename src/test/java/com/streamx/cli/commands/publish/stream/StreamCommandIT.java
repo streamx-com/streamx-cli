@@ -146,6 +146,32 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
+    assertThat(result.stderr()).contains("Failed to parse JSON");
+    assertEventsPublished(0);
+  }
+
+  @Test
+  void shouldFailOnInvalidCloudEvent() throws Exception {
+    String invalidEventsJson = """
+        {
+          "specversion": "1.0",
+          "invalid_id": "Accent Furniture",
+          "invalid_source": "streamx-commerce-accelerator",
+          "invalid_type": "com.streamx.blueprints.data.published.v1",
+          "datacontenttype": "application/json",
+          "subject": "cat:Accent Furniture",
+          "time": "2026-01-01T00:00:00.000000Z",
+          "data": {
+            "content": "{}",
+            "type": "data/category"
+          }
+        }
+        """;
+
+    ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains("CloudEvent deserialization failed");
     assertEventsPublished(0);
   }
 
