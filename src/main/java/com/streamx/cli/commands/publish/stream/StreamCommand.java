@@ -21,9 +21,7 @@ import java.io.SequenceInputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Spliterator;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -73,27 +71,23 @@ public class StreamCommand extends AbstractSilentCommand {
         Publisher publisher = streamxClient.newPublisher();
 
         try (Stream<JsonNode> jsonStream = jsonParser.parse(sourceStream)) {
-          Spliterator<JsonNode> spliterator = jsonStream.spliterator();
-          long knownSize = spliterator.getExactSizeIfKnown();
+          List<CloudEvent> allEvents = jsonStream
+              .map(CloudEvents::fromJson)
+              .toList();
+
           int counter = 0;
           List<CloudEvent> chunk = new ArrayList<>();
 
-          Stream<CloudEvent> eventStream = StreamSupport.stream(spliterator, false)
-              .map(CloudEvents::fromJson);
-
-          try (eventStream) {
-            for (var iterator = eventStream.iterator(); iterator.hasNext(); ) {
-              CloudEvent event = iterator.next();
-              chunk.add(event);
-              if (chunk.size() >= CHUNK_SIZE) {
-                counter = sendChunk(publisher, chunk, counter, knownSize);
-                chunk.clear();
-              }
+          for (CloudEvent event : allEvents) {
+            chunk.add(event);
+            if (chunk.size() >= CHUNK_SIZE) {
+              counter = sendChunk(publisher, chunk, counter);
+              chunk.clear();
             }
+          }
 
-            if (!chunk.isEmpty()) {
-              sendChunk(publisher, chunk, counter, knownSize);
-            }
+          if (!chunk.isEmpty()) {
+            sendChunk(publisher, chunk, counter);
           }
         }
 
@@ -111,8 +105,7 @@ public class StreamCommand extends AbstractSilentCommand {
   private int sendChunk(
       Publisher publisher,
       List<CloudEvent> chunk,
-      int counter,
-      long knownSize
+      int counter
   ) {
     if (this.verbose) {
       System.out.println(msg.sendingChunk(chunk.size()));
@@ -123,24 +116,17 @@ public class StreamCommand extends AbstractSilentCommand {
         publisher.send(List.of(event));
         counter++;
         System.out.println(msg.eventPublished(
-            formatProgress(counter, knownSize),
+            String.valueOf(counter),
             event.getType(), event.getSource().toString(), event.getId()));
       } catch (Exception e) {
         counter++;
         System.err.println(msg.eventPublishFailed(
-            formatProgress(counter, knownSize),
+            String.valueOf(counter),
             event.getType(), event.getSource().toString(), event.getId(), e.getMessage()));
         throw new CliException(msg.failedToSendEvent(e.getMessage()), e);
       }
     }
     return counter;
-  }
-
-  private String formatProgress(int current, long knownSize) {
-    if (knownSize >= 0) {
-      return current + "/" + knownSize;
-    }
-    return String.valueOf(current);
   }
 
   private InputStream getSourceStream() throws CliException {

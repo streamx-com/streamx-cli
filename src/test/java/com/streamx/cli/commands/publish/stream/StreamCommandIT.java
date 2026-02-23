@@ -135,7 +135,6 @@ public class StreamCommandIT extends CliBaseIT {
     String stdIn = concatenatedJsonSerializer.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
-
     result.assertSuccess();
   }
 
