@@ -38,7 +38,7 @@ public class StreamCommand extends AbstractSilentCommand {
       arity = "0..1",
       defaultValue = CommandLine.Parameters.NULL_VALUE
   )
-  public URI source;
+  public String source;
 
   // TODO: Should we make chunk size configurable via CLI options?
   private static final int CHUNK_SIZE = 100;
@@ -145,7 +145,14 @@ public class StreamCommand extends AbstractSilentCommand {
     InputStream input;
     if (source != null) {
       try {
-        input = source.toURL().openStream();
+        URI uri = URI.create(source);
+        if (uri.getScheme() != null) {
+          input = uri.toURL().openStream();
+        } else {
+          input = java.nio.file.Files.newInputStream(java.nio.file.Path.of(source));
+        }
+      } catch (CliException e) {
+        throw e;
       } catch (Exception e) {
         throw new CliException("Unable to open source input stream: " + source, e);
       }
