@@ -3,6 +3,7 @@ package com.streamx.cli.commands.publish.stream;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEvents;
@@ -146,7 +147,12 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains("Failed to parse JSON");
+
+    String expectedStderr = "Failed to parse JSON: "
+        + "Unexpected character ('/' (code 47)): "
+        + "maybe a (non-standard) comment? (line: 1, column: 3)\n";
+    assertEquals(expectedStderr, result.stderr());
+
     assertEventsPublished(0);
   }
 
@@ -171,7 +177,11 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains("CloudEvent deserialization failed");
+
+    String expectedStderr = "CloudEvent deserialization failed: "
+        + "Missing mandatory id attribute (line: 1, column: 313)\n";
+    assertEquals(expectedStderr, result.stderr());
+
     assertEventsPublished(0);
   }
 

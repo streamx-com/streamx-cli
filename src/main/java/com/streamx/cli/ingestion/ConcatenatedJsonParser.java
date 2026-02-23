@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.framework.CliException;
+import com.streamx.cli.util.JacksonUtils;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,7 +25,8 @@ public class ConcatenatedJsonParser {
       Iterator<JsonNode> it = mapper.readValues(parser, JsonNode.class);
       it.forEachRemaining(result::add);
     } catch (Exception e) {
-      throw new CliException(msg.failedToParseJson(e.getMessage()), e);
+      String message = JacksonUtils.formatException(e);
+      throw new CliException(msg.failedToParseJson(message), e);
     }
 
     return result;
@@ -48,7 +50,8 @@ public class ConcatenatedJsonParser {
             }
           });
     } catch (Exception e) {
-      throw new CliException(msg.failedToParseJson(e.getMessage()), e);
+      String message = JacksonUtils.formatException(e);
+      throw new CliException(msg.failedToParseJson(message), e);
     }
   }
 
@@ -59,7 +62,8 @@ public class ConcatenatedJsonParser {
         try {
           return iterator.hasNext();
         } catch (Exception e) {
-          throw new CliException(msg.failedToParseJson(e.getMessage()), e);
+          String message = JacksonUtils.formatException(e);
+          throw new CliException(msg.failedToParseJson(message), e);
         }
       }
 
@@ -68,7 +72,8 @@ public class ConcatenatedJsonParser {
         try {
           return iterator.next();
         } catch (Exception e) {
-          throw new CliException(msg.failedToParseJson(e.getMessage()), e);
+          String message = JacksonUtils.formatException(e);
+          throw new CliException(msg.failedToParseJson(message), e);
         }
       }
     };

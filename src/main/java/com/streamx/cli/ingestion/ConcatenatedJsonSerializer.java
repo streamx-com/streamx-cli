@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.framework.CliException;
+import com.streamx.cli.util.JacksonUtils;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.List;
@@ -22,7 +23,8 @@ public class ConcatenatedJsonSerializer {
         mapper.writeValue(generator, node);
       }
     } catch (Exception e) {
-      throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
+      String message = JacksonUtils.formatException(e);
+      throw new CliException(msg.failedToSerializeJsonSequence(message), e);
     }
 
     return writer.toString();
@@ -36,13 +38,15 @@ public class ConcatenatedJsonSerializer {
         try {
           mapper.writeValue(generator, node);
         } catch (Exception e) {
-          throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
+          String message = JacksonUtils.formatException(e);
+          throw new CliException(msg.failedToSerializeJsonSequence(message), e);
         }
       });
     } catch (CliException e) {
       throw e;
     } catch (Exception e) {
-      throw new CliException(msg.failedToSerializeJsonSequence(e.getMessage()), e);
+      String message = JacksonUtils.formatException(e);
+      throw new CliException(msg.failedToSerializeJsonSequence(message), e);
     }
   }
 }
