@@ -18,8 +18,8 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <com.streamx.version>2.0.15-SNAPSHOT</com.streamx.version>
-    <io.cloudevents.version>4.0.1</io.cloudevents.version>
+    <streamx.version>2.0.15-SNAPSHOT</streamx.version>
+    <cloudevents.version>4.0.1</cloudevents.version>
   </properties>
 
   <dependencyManagement>
@@ -122,46 +122,32 @@
     </dependency>
 
     <dependency>
-      <groupId>io.cloudevents</groupId>
-      <artifactId>cloudevents-core</artifactId>
-      <version>4.0.1</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cloudevents</groupId>
-      <artifactId>cloudevents-json-jackson</artifactId>
-      <version>4.0.1</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>streamx-runner</artifactId>
-      <version>${com.streamx.version}</version>
+      <version>${streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>mesh-model</artifactId>
-      <version>${com.streamx.version}</version>
+      <version>${streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.streamx</groupId>
       <artifactId>ingestion-client</artifactId>
-      <version>${com.streamx.version}</version>
+      <version>${streamx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-core</artifactId>
-      <version>${io.cloudevents.version}</version>
+      <version>${cloudevents.version}</version>
     </dependency>
     <dependency>
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-json-jackson</artifactId>
-      <version>${io.cloudevents.version}</version>
+      <version>${cloudevents.version}</version>
     </dependency>
 
     <dependency>

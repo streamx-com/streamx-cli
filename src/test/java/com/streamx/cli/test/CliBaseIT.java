@@ -2,6 +2,7 @@ package com.streamx.cli.test;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +20,11 @@ public abstract class CliBaseIT {
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
   private Process process;
+
+  @BeforeAll
+  static void ensureBuilt() {
+    BuildExecutableOnce.ensureBuilt();
+  }
 
   @AfterEach
   void cleanupProcess() {

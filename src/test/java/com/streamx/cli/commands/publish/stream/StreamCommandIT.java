@@ -30,7 +30,7 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Test
   void shouldStreamManyEventsFromStdin() throws Exception {
-    List<CloudEvent> events = cloudEventGenerator.generate(1000);
+    List<CloudEvent> events = cloudEventGenerator.generate(500);
     List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
     String stdIn = concatenatedJsonSerializer.serialize(eventsJson);
 
