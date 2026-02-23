@@ -13,7 +13,7 @@ public class MeshAssertions {
 
   private static final AtomicLong prevEventCount = new AtomicLong(0);
 
-  public static void assertEventsPublished(long count) {
+  public static synchronized void assertEventsPublished(long count) {
     try (PulsarAdmin admin = PulsarAdmin.builder()
         .serviceHttpUrl(PULSAR_WEB_URL)
         .build()) {
