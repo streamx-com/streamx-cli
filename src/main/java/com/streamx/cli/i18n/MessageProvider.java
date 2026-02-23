@@ -209,4 +209,25 @@ public interface MessageProvider {
 
   @Message(id = 154, value = "%s events published")
   String eventsPublished(long count);
+
+  @Message(id = 155, value = "Invalid source URI: '%s'")
+  String invalidSourceUri(String source);
+
+  @Message(id = 156, value = "Source file not found: '%s'")
+  String sourceFileNotFound(String path);
+
+  @Message(id = 157, value = "Source file is not readable: '%s'")
+  String sourceFileNotReadable(String path);
+
+  @Message(id = 158, value = "Source path is a directory. Is should be a file: '%s'")
+  String sourceIsDirectory(String path);
+
+  @Message(id = 159, value = "Source URI not found (404): '%s'")
+  String sourceUriNotFound(String uri);
+
+  @Message(id = 160, value = "Source URI not accessible: '%s' (HTTP %s)")
+  String sourceUriNotAccessible(String uri, String statusCode);
+
+  @Message(id = 161, value = "Source URI not reachable: '%s' - %s")
+  String sourceUriNotReachable(String uri, String reason);
 }

@@ -10,6 +10,7 @@ import com.streamx.cli.ingestion.CloudEvents;
 import com.streamx.cli.ingestion.ConcatenatedJsonParser;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.ingestion.IngestionClientPicocliOptions;
+import com.streamx.cli.ingestion.SourceValidator;
 import com.streamx.cli.ingestion.StreamxClientFactory;
 import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
@@ -45,11 +46,12 @@ public class StreamCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    if (this.verbose) {
-      System.out.println(msg.runningStreamCommand());
+    if (source != null) {
+      SourceValidator.validate(source);
     }
 
     if (this.verbose) {
+      System.out.println(msg.runningStreamCommand());
       System.out.println(msg.resolvingStreamxClientConfig());
     }
 

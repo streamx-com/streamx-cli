@@ -23,8 +23,8 @@ final class BuildExecutableOnce {
         boolean NATIVE = Boolean.getBoolean("native.image");
         String mvn = System.getProperty("os.name").toLowerCase().contains("win") ? "mvn.cmd" : "mvn";
         String[] command = NATIVE
-            ? new String[]{mvn, "package", "-Pnative", "-DskipTests"}
-            : new String[]{mvn, "package", "-DskipTests"};
+            ? new String[]{mvn, "clean", "package", "-Pnative", "-DskipTests"}
+            : new String[]{mvn, "clean", "package", "-DskipTests"};
 
         int exitCode = new ProcessBuilder(command)
             .inheritIO()

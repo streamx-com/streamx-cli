@@ -15,6 +15,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import java.net.InetSocketAddress;
@@ -168,5 +169,103 @@ public class StreamCommandIT extends CliBaseIT {
 
     result.assertExitCode(1);
     assertEventsPublished(0);
+  }
+
+  @Nested
+  class InvalidSource {
+    @Test
+    void shouldFailWhenFileNotFound() throws Exception {
+      String nonExistentFile = "/tmp/non-existent-events-file.json";
+
+      ProcessResult result = exec("publish", "stream", nonExistentFile);
+
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.sourceFileNotFound(nonExistentFile));
+    }
+
+    @Test
+    void shouldFailWhenSourceIsDirectory(@TempDir Path tempDir) throws Exception {
+      ProcessResult result = exec("publish", "stream", tempDir.toString());
+
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.sourceIsDirectory(tempDir.toString()));
+    }
+
+    @Test
+    void shouldFailWhenFileUriNotFound() throws Exception {
+      String nonExistentPath = "/tmp/non-existent-events-file.json";
+      String fileUri = "file://" + nonExistentPath;
+
+      ProcessResult result = exec("publish", "stream", fileUri);
+
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.sourceFileNotFound(nonExistentPath));
+    }
+
+    @Test
+    void shouldFailWhenHttpUriReturns404() throws Exception {
+      HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+      server.createContext("/missing", exchange -> {
+        exchange.sendResponseHeaders(404, -1);
+        exchange.close();
+      });
+      server.start();
+
+      try {
+        int port = server.getAddress().getPort();
+        String uri = "http://localhost:" + port + "/missing";
+
+        ProcessResult result = exec("publish", "stream", uri);
+
+        result.assertExitCode(1);
+        assertThat(result.stderr()).contains(msg.sourceUriNotFound(uri));
+      } finally {
+        server.stop(0);
+      }
+    }
+
+    @Test
+    void shouldFailWhenHttpUriReturns500() throws Exception {
+      HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+      server.createContext("/error", exchange -> {
+        exchange.sendResponseHeaders(500, -1);
+        exchange.close();
+      });
+      server.start();
+
+      try {
+        int port = server.getAddress().getPort();
+        String uri = "http://localhost:" + port + "/error";
+
+        ProcessResult result = exec("publish", "stream", uri);
+
+        result.assertExitCode(1);
+        assertThat(result.stderr()).contains(msg.sourceUriNotAccessible(uri, "500"));
+      } finally {
+        server.stop(0);
+      }
+    }
+
+    @Test
+    void shouldFailWhenHttpUriNotReachable() throws Exception {
+      String uri = "http://localhost:1/unreachable";
+
+      ProcessResult result = exec("publish", "stream", uri);
+
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.sourceUriNotReachable(uri, "Connection refused"));
+    }
+
+    @Test
+    void shouldFailWhenSourceFileNotReadable(@TempDir Path tempDir) throws Exception {
+      Path unreadableFile = tempDir.resolve("unreadable.json");
+      Files.writeString(unreadableFile, eventsJson);
+      unreadableFile.toFile().setReadable(false);
+
+      ProcessResult result = exec("publish", "stream", unreadableFile.toString());
+
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.sourceFileNotReadable(unreadableFile.toString()));
+    }
   }
 }
