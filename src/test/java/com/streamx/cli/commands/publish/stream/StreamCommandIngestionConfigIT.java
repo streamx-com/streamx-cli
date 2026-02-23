@@ -1,0 +1,112 @@
+package com.streamx.cli.commands.publish.stream;
+
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.streamx.cli.ingestion.CloudEvents;
+import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
+import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.CloudEventGenerator;
+import com.streamx.cli.test.MeshTestEnv;
+import com.streamx.cli.test.profiles.MeshTestWithAuthProfile;
+import io.cloudevents.CloudEvent;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@QuarkusTest
+@TestProfile(MeshTestWithAuthProfile.class)
+public class StreamCommandIngestionConfigIT extends CliBaseIT {
+  CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
+  ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
+
+  @Inject
+  MeshTestEnv meshTestEnv;
+
+  @Test
+  void shouldFailInNoAuthTokenProvided() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
+    ProcessResult result = execWithStdin(
+        eventsJsonString,
+        "publish",
+        "stream"
+    );
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.failedToSendEvent(
+        "Authentication failed. Make sure that the given token is valid."
+    ));
+    assertEventsPublished(0);
+  }
+
+  @Test
+  void shouldSucceedIfAuthTokenProvided() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
+    ProcessResult result = execWithStdin(
+        eventsJsonString,
+        "publish",
+        "stream",
+        "--auth-token",
+        meshTestEnv.awaitAuthToken()
+    );
+
+    result.assertSuccess();
+    assertEventsPublished(5);
+  }
+
+  @Test
+  void shouldFailIfInvalidIngestionUrlProvided() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
+    ProcessResult result = execWithStdin(
+        eventsJsonString,
+        "publish",
+        "stream",
+        "--auth-token",
+        meshTestEnv.awaitAuthToken(),
+        "--ingestion-url",
+        "http://localhost:4242"
+    );
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.failedToSendEvent(
+        "POST request with URI: " +
+            "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
+    ));
+    assertEventsPublished(0);
+  }
+
+  @Test
+  void shouldSucceedIfValidIngestionUrlProvided() throws Exception {
+    List<CloudEvent> events = cloudEventGenerator.generate(5);
+    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
+    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+
+    ProcessResult result = execWithStdin(
+        eventsJsonString,
+        "publish",
+        "stream",
+        "--auth-token",
+        meshTestEnv.awaitAuthToken(),
+        "--ingestion-url",
+        "http://localhost:8080"
+    );
+
+    result.assertSuccess();
+    assertEventsPublished(5);
+  }
+}

@@ -1,0 +1,54 @@
+descriptors:
+  relay:
+    type: "processing"
+    containers:
+      service:
+        incoming:
+          events: {}
+        outgoing:
+          relayed-events: {}
+
+  web-server-sink:
+    type: "edge"
+    containers:
+      sink:
+        image: "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm"
+        incoming:
+          resources: {}
+        servicePorts:
+          - "8087:8080"
+
+sources:
+  cli:
+    outgoing:
+      - ref: "inbox.pages"
+        produces:
+          - "com.streamx.blueprints.data.published.v1"
+          - "com.streamx.blueprints.data.unpublished.v1"
+
+ingestion:
+  rest-ingestion:
+    containers:
+      proxy:
+        environment: {}
+
+processing:
+  pages-relay:
+    descriptor: relay
+    containers:
+      service:
+        incoming:
+          events:
+            ref: inbox.pages
+        outgoing:
+          relayed-events:
+            ref: outbox.pages
+
+edge:
+  web-server-sink:
+    descriptor: web-server-sink
+    containers:
+      sink:
+        incoming:
+          resources:
+            ref: outbox.pages

@@ -6,11 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEvents;
-import com.streamx.cli.ingestion.ConcatenatedJsonParser;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
-import com.streamx.cli.test.MeshTestProfile;
+import com.streamx.cli.test.profiles.MeshTestProfile;
 import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.io.TempDir;
 @TestProfile(MeshTestProfile.class)
 public class StreamCommandIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
-  ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
   ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
 
   @Test

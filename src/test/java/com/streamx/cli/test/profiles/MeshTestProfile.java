@@ -1,5 +1,6 @@
-package com.streamx.cli.test;
+package com.streamx.cli.test.profiles;
 
+import com.streamx.cli.test.MeshTestEnv;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import java.util.Map;
 
