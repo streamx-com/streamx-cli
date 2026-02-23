@@ -12,7 +12,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;

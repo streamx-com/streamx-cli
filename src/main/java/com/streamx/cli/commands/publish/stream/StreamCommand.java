@@ -1,5 +1,7 @@
 package com.streamx.cli.commands.publish.stream;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
@@ -46,17 +48,17 @@ public class StreamCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     if (this.verbose) {
-      System.out.println("Running stream command");
+      System.out.println(msg.runningStreamCommand());
     }
 
     if (this.verbose) {
-      System.out.println("Resolving StreamX client config");
+      System.out.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
     if (this.verbose) {
-      System.out.println("Initializing StreamX client with config:");
+      System.out.println(msg.initializingStreamxClient());
       System.out.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
@@ -99,10 +101,10 @@ public class StreamCommand extends AbstractSilentCommand {
       } catch (CliException e) {
         throw e;
       } catch (Exception e) {
-        throw new CliException("Unable to stream: " + e.getMessage(), e);
+        throw new CliException(msg.unableToStream(e.getMessage()), e);
       }
     } catch (StreamxClientException e) {
-      throw new CliException("Unable to create StreamX client: " + ingestionClientConfig.url(), e);
+      throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
     }
   }
 
@@ -113,22 +115,22 @@ public class StreamCommand extends AbstractSilentCommand {
       long knownSize
   ) {
     if (this.verbose) {
-      System.out.printf("Sending chunk of %s events%n", chunk.size());
+      System.out.println(msg.sendingChunk(chunk.size()));
     }
 
     for (CloudEvent event : chunk) {
       try {
         publisher.send(List.of(event));
         counter++;
-        System.out.printf("Event published (%s): type='%s', source='%s', id='%s'%n",
+        System.out.println(msg.eventPublished(
             formatProgress(counter, knownSize),
-            event.getType(), event.getSource(), event.getId());
+            event.getType(), event.getSource().toString(), event.getId()));
       } catch (Exception e) {
         counter++;
-        System.err.printf("Event publish failed (%s): type='%s', source='%s', id='%s' - %s%n",
+        System.err.println(msg.eventPublishFailed(
             formatProgress(counter, knownSize),
-            event.getType(), event.getSource(), event.getId(), e.getMessage());
-        throw new CliException("Failed to send event: " + e.getMessage(), e);
+            event.getType(), event.getSource().toString(), event.getId(), e.getMessage()));
+        throw new CliException(msg.failedToSendEvent(e.getMessage()), e);
       }
     }
     return counter;
@@ -154,10 +156,10 @@ public class StreamCommand extends AbstractSilentCommand {
       } catch (CliException e) {
         throw e;
       } catch (Exception e) {
-        throw new CliException("Unable to open source input stream: " + source, e);
+        throw new CliException(msg.unableToOpenSourceInputStream(source), e);
       }
     } else if (System.console() != null) {
-      System.err.println("Paste JSON content below. Press Ctrl+D when done:");
+      System.err.println(msg.pasteJsonContent());
       input = System.in;
     } else {
       input = System.in;
@@ -166,7 +168,7 @@ public class StreamCommand extends AbstractSilentCommand {
     try {
       int firstByte = input.read();
       if (firstByte == -1) {
-        throw new CliException("Input is empty.");
+        throw new CliException(msg.inputIsEmpty());
       }
 
       return new SequenceInputStream(
@@ -176,7 +178,7 @@ public class StreamCommand extends AbstractSilentCommand {
     } catch (CliException e) {
       throw e;
     } catch (Exception e) {
-      throw new CliException("Unable to read input stream: " + e.getMessage(), e);
+      throw new CliException(msg.unableToReadInputStream(e.getMessage()), e);
     }
   }
 }

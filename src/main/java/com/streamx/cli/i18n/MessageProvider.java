@@ -167,4 +167,43 @@ public interface MessageProvider {
 
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
+
+  @Message(id = 141, value = "Running stream command")
+  String runningStreamCommand();
+
+  @Message(id = 142, value = "Resolving StreamX client config")
+  String resolvingStreamxClientConfig();
+
+  @Message(id = 143, value = "Initializing StreamX client with config:")
+  String initializingStreamxClient();
+
+  @Message(id = 144, value = "Sending chunk of %s events")
+  String sendingChunk(int size);
+
+  @Message(id = 145, value = "Event published (%s): type='%s', source='%s', id='%s'")
+  String eventPublished(String progress, String type, String source, String id);
+
+  @Message(id = 146, value = "Event publish failed (%s): type='%s', source='%s', id='%s' - %s")
+  String eventPublishFailed(String progress, String type, String source, String id, String error);
+
+  @Message(id = 147, value = "Failed to send event: %s")
+  String failedToSendEvent(String reason);
+
+  @Message(id = 148, value = "Unable to stream: %s")
+  String unableToStream(String reason);
+
+  @Message(id = 149, value = "Unable to create StreamX client: %s")
+  String unableToCreateStreamxClient(String url);
+
+  @Message(id = 150, value = "Paste JSON content below. Press Ctrl+D when done:")
+  String pasteJsonContent();
+
+  @Message(id = 151, value = "Input is empty.")
+  String inputIsEmpty();
+
+  @Message(id = 152, value = "Unable to open source input stream: %s")
+  String unableToOpenSourceInputStream(String source);
+
+  @Message(id = 153, value = "Unable to read input stream: %s")
+  String unableToReadInputStream(String reason);
 }
