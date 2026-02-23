@@ -87,8 +87,10 @@ public class StreamCommand extends AbstractSilentCommand {
           }
 
           if (!chunk.isEmpty()) {
-            sendChunk(publisher, chunk, counter);
+            counter = sendChunk(publisher, chunk, counter);
           }
+
+          System.out.println(msg.eventsPublished(counter));
         }
 
         return new CommandResult<>(null);

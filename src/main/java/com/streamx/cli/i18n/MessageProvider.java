@@ -206,4 +206,7 @@ public interface MessageProvider {
 
   @Message(id = 153, value = "Unable to read input stream: %s")
   String unableToReadInputStream(String reason);
+
+  @Message(id = 154, value = "%s events published")
+  String eventsPublished(long count);
 }

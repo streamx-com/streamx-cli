@@ -1,6 +1,8 @@
 package com.streamx.cli.commands.publish.stream;
 
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
+import static com.streamx.cli.i18n.MessageProvider.msg;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEvents;
@@ -83,6 +85,7 @@ public class StreamCommandIT extends CliBaseIT {
 
     long eventsCount = jsonParser.parse(eventsJson).size();
     assertEventsPublished(eventsCount);
+    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
   }
 
 
@@ -101,6 +104,7 @@ public class StreamCommandIT extends CliBaseIT {
 
     long eventsCount = jsonParser.parse(eventsJson).size();
     assertEventsPublished(eventsCount);
+    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
   }
 
 
@@ -127,6 +131,7 @@ public class StreamCommandIT extends CliBaseIT {
 
       long eventsCount = jsonParser.parse(eventsJson).size();
       assertEventsPublished(eventsCount);
+      assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
     } finally {
       server.stop(0);
     }
@@ -141,6 +146,7 @@ public class StreamCommandIT extends CliBaseIT {
     result.assertSuccess();
 
     assertEventsPublished(1);
+    assertThat(result.stdout()).contains(msg.eventsPublished((1)));
   }
 
   @Test
@@ -153,6 +159,7 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
     result.assertSuccess();
     assertEventsPublished(eventsCount);
+    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
   }
 
   @Test
