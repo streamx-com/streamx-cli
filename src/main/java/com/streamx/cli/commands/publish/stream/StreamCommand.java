@@ -13,18 +13,15 @@ import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -146,14 +143,17 @@ public class StreamCommand extends AbstractSilentCommand {
 
   private InputStream getSourceStream() throws CliException {
     InputStream input;
-    if (source == null) {
-      input = System.in;
-    } else {
+    if (source != null) {
       try {
         input = source.toURL().openStream();
       } catch (Exception e) {
         throw new CliException("Unable to open source input stream: " + source, e);
       }
+    } else if (System.console() != null) {
+      System.err.println("Paste JSON content below. Press Ctrl+D when done:");
+      input = System.in;
+    } else {
+      input = System.in;
     }
 
     try {
@@ -166,6 +166,8 @@ public class StreamCommand extends AbstractSilentCommand {
           new ByteArrayInputStream(new byte[]{(byte) firstByte}),
           input
       );
+    } catch (CliException e) {
+      throw e;
     } catch (Exception e) {
       throw new CliException("Unable to read input stream: " + e.getMessage(), e);
     }
