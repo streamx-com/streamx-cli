@@ -1,7 +1,10 @@
 package com.streamx.cli.commands.publish.stream;
 
+import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEvents;
+import com.streamx.cli.ingestion.ConcatenatedJsonParser;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
@@ -21,7 +24,8 @@ import java.util.List;
 @TestProfile(MeshTestProfile.class)
 public class StreamCommandIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
-  ConcatenatedJsonSerializer concatenatedJsonSerializer = new ConcatenatedJsonSerializer();
+  ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
+  ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
 
   String eventsJson = """
         {
@@ -76,6 +80,9 @@ public class StreamCommandIT extends CliBaseIT {
     );
 
     result.assertSuccess();
+
+    long eventsCount = jsonParser.parse(eventsJson).size();
+    assertEventsPublished(eventsCount);
   }
 
 
@@ -91,6 +98,9 @@ public class StreamCommandIT extends CliBaseIT {
     );
 
     result.assertSuccess();
+
+    long eventsCount = jsonParser.parse(eventsJson).size();
+    assertEventsPublished(eventsCount);
   }
 
 
@@ -114,6 +124,9 @@ public class StreamCommandIT extends CliBaseIT {
       ProcessResult result = exec("publish", "stream", uri);
 
       result.assertSuccess();
+
+      long eventsCount = jsonParser.parse(eventsJson).size();
+      assertEventsPublished(eventsCount);
     } finally {
       server.stop(0);
     }
@@ -126,16 +139,20 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
 
     result.assertSuccess();
+
+    assertEventsPublished(1);
   }
 
   @Test
   void shouldStreamManyEventsFromStdin() throws Exception {
-    List<CloudEvent> events = cloudEventGenerator.generate(500);
+    int eventsCount = 500;
+    List<CloudEvent> events = cloudEventGenerator.generate(eventsCount);
     List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String stdIn = concatenatedJsonSerializer.serialize(eventsJson);
+    String stdIn = jsonSerializer.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
     result.assertSuccess();
+    assertEventsPublished(eventsCount);
   }
 
   @Test
@@ -143,5 +160,6 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
+    assertEventsPublished(0);
   }
 }
