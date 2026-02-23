@@ -4,7 +4,7 @@ import com.streamx.cli.test.MeshTestEnv;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import java.util.Map;
 
-public class MeshTestProfile implements QuarkusTestProfile {
+public class DefaultMeshTestProfile implements QuarkusTestProfile {
   public static final String PROFILE_NAME = "mesh-test";
 
   @Override

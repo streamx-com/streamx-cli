@@ -1,8 +1,8 @@
 package com.streamx.cli.test;
 
 import com.github.dockerjava.api.DockerClient;
-import com.streamx.runner.validation.DockerEnvironmentValidator;
 import com.streamx.runner.validation.DockerContainerValidator;
+import com.streamx.runner.validation.DockerEnvironmentValidator;
 import java.util.Set;
 
 public class MeshTestsUtils {

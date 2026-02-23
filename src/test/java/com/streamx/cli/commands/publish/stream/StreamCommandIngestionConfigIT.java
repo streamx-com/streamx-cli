@@ -1,6 +1,8 @@
 package com.streamx.cli.commands.publish.stream;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
+import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEvents;
@@ -8,20 +10,16 @@ import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
 import com.streamx.cli.test.MeshTestEnv;
-import com.streamx.cli.test.profiles.MeshTestWithAuthProfile;
+import com.streamx.cli.test.profiles.MeshWithAuthTestProfile;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
-import static org.assertj.core.api.Assertions.assertThat;
-
 @QuarkusTest
-@TestProfile(MeshTestWithAuthProfile.class)
+@TestProfile(MeshWithAuthTestProfile.class)
 public class StreamCommandIngestionConfigIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
   ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
@@ -84,8 +82,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.failedToSendEvent(
-        "POST request with URI: " +
-            "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
+        "POST request with URI: "
+            + "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
     ));
     assertEventsPublished(0);
   }

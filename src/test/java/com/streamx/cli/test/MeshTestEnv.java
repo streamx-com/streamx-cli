@@ -1,8 +1,8 @@
 package com.streamx.cli.test;
 
 import com.streamx.cli.mesh.MeshManager;
-import com.streamx.cli.test.profiles.MeshTestProfile;
-import com.streamx.cli.test.profiles.MeshTestWithAuthProfile;
+import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
+import com.streamx.cli.test.profiles.MeshWithAuthTestProfile;
 import io.quarkus.arc.profile.IfBuildProfile;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
@@ -12,17 +12,14 @@ import jakarta.inject.Inject;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
 @IfBuildProfile(anyOf = {
-    MeshTestProfile.PROFILE_NAME,
-    MeshTestWithAuthProfile.PROFILE_NAME
+    DefaultMeshTestProfile.PROFILE_NAME,
+    MeshWithAuthTestProfile.PROFILE_NAME
 })
 public class MeshTestEnv {
 
