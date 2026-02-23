@@ -2,6 +2,7 @@ package com.streamx.cli.test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Build jar or native image before running integration tests
 final class BuildExecutableOnce {
   private static volatile boolean done;
   private static volatile boolean success;

@@ -113,6 +113,8 @@ public abstract class CliBaseIT {
 
   private static Path findNativeExecutable() {
     try (var files = Files.list(TARGET)) {
+
+      // TODO - check after native image build will be implemented
       return files
           .filter(p -> p.getFileName().toString().endsWith("-runner"))
           .filter(Files::isExecutable)
