@@ -11,7 +11,7 @@ import com.streamx.cli.framework.CliException;
 import io.cloudevents.CloudEvent;
 import org.junit.jupiter.api.Test;
 
-class CloudEventsTest {
+class CloudEventsSerdeTest {
 
   @Test
   void shouldDeserializeValidCloudEvent() throws Exception {
@@ -24,7 +24,7 @@ class CloudEventsTest {
         }
         """);
 
-    CloudEvent event = CloudEvents.fromJson(node);
+    CloudEvent event = CloudEventsSerde.fromJson(node);
 
     assertNotNull(event);
     assertEquals("1.0", event.getSpecVersion().toString());
@@ -46,7 +46,7 @@ class CloudEventsTest {
         }
         """);
 
-    CloudEvent event = CloudEvents.fromJson(node);
+    CloudEvent event = CloudEventsSerde.fromJson(node);
 
     assertNotNull(event);
     assertNotNull(event.getData());
@@ -61,7 +61,7 @@ class CloudEventsTest {
         }
         """);
 
-    assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
+    assertThrows(CliException.class, () -> CloudEventsSerde.fromJson(node));
   }
 
   @Test
@@ -72,7 +72,7 @@ class CloudEventsTest {
         }
         """);
 
-    CliException ex = assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
+    CliException ex = assertThrows(CliException.class, () -> CloudEventsSerde.fromJson(node));
     assertTrue(ex.getMessage().startsWith("CloudEvent deserialization failed:"));
     assertNotNull(ex.getCause());
   }
@@ -81,6 +81,6 @@ class CloudEventsTest {
   void shouldThrowCliExceptionForEmptyObject() throws Exception {
     JsonNode node = new ObjectMapper().readTree("{}");
 
-    assertThrows(CliException.class, () -> CloudEvents.fromJson(node));
+    assertThrows(CliException.class, () -> CloudEventsSerde.fromJson(node));
   }
 }

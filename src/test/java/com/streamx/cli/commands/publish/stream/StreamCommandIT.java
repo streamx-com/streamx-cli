@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.ingestion.CloudEvents;
-import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
+import com.streamx.cli.ingestion.CloudEventsSerde;
+import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
@@ -27,13 +27,12 @@ import org.junit.jupiter.api.io.TempDir;
 @TestProfile(DefaultMeshTestProfile.class)
 public class StreamCommandIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
-  ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
 
   @Test
   void shouldStreamEventsFromFilePath(@TempDir Path tempDir) throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     Path eventsFile = tempDir.resolve("events");
     Files.writeString(eventsFile, eventsJsonString);
@@ -54,8 +53,8 @@ public class StreamCommandIT extends CliBaseIT {
   @Test
   void shouldStreamEventsFromFileUri(@TempDir Path tempDir) throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     Path eventsFile = tempDir.resolve("events");
     Files.writeString(eventsFile, eventsJsonString);
@@ -76,8 +75,8 @@ public class StreamCommandIT extends CliBaseIT {
   @Test
   void shouldStreamEventsFromHttpUri() throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
     server.createContext("/events", exchange -> {
@@ -107,7 +106,7 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Test
   void shouldStreamSingleEventFromStdin() throws Exception {
-    String stdIn = CloudEvents.toJson(cloudEventGenerator.generate(1).getFirst()).toString();
+    String stdIn = CloudEventsSerde.toJson(cloudEventGenerator.generate(1).getFirst()).toString();
 
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
 
@@ -121,8 +120,8 @@ public class StreamCommandIT extends CliBaseIT {
   void shouldStreamManyEventsFromStdin() throws Exception {
     int eventsCount = 500;
     List<CloudEvent> events = cloudEventGenerator.generate(eventsCount);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String stdIn = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String stdIn = ConcatenatedJsonSerde.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
     result.assertSuccess();
@@ -273,8 +272,8 @@ public class StreamCommandIT extends CliBaseIT {
     @Test
     void shouldFailWhenSourceFileNotReadable(@TempDir Path tempDir) throws Exception {
       List<CloudEvent> events = cloudEventGenerator.generate(5);
-      List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-      String eventsJsonString = jsonSerializer.serialize(eventsJson);
+      List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+      String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
       Path unreadableFile = tempDir.resolve("unreadable.json");
       Files.writeString(unreadableFile, eventsJsonString);

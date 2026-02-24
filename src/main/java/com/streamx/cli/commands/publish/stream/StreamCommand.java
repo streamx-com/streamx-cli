@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.ingestion.CloudEvents;
-import com.streamx.cli.ingestion.ConcatenatedJsonParser;
+import com.streamx.cli.ingestion.CloudEventsSerde;
+import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.ingestion.IngestionClientPicocliOptions;
 import com.streamx.cli.ingestion.SourceValidator;
@@ -69,12 +69,11 @@ public class StreamCommand extends AbstractSilentCommand {
         byte[] bytes = sourceStream.readAllBytes();
         sourceStream = new ByteArrayInputStream(bytes);
 
-        ConcatenatedJsonParser jsonParser = new ConcatenatedJsonParser();
         Publisher publisher = streamxClient.newPublisher();
 
-        try (Stream<JsonNode> jsonStream = jsonParser.parse(sourceStream)) {
+        try (Stream<JsonNode> jsonStream = ConcatenatedJsonSerde.parse(sourceStream)) {
           List<CloudEvent> allEvents = jsonStream
-              .map(CloudEvents::fromJson)
+              .map(CloudEventsSerde::fromJson)
               .toList();
 
           int counter = 0;

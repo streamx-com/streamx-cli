@@ -11,7 +11,7 @@ import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
-public class CloudEvents {
+public class CloudEventsSerde {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final EventFormat EVENT_FORMAT = EventFormatProvider

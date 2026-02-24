@@ -5,8 +5,8 @@ import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.ingestion.CloudEvents;
-import com.streamx.cli.ingestion.ConcatenatedJsonSerializer;
+import com.streamx.cli.ingestion.CloudEventsSerde;
+import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
 import com.streamx.cli.test.MeshTestEnv;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 @TestProfile(MeshWithAuthTestProfile.class)
 public class StreamCommandIngestionConfigIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
-  ConcatenatedJsonSerializer jsonSerializer = new ConcatenatedJsonSerializer();
 
   @Inject
   MeshTestEnv meshTestEnv;
@@ -30,8 +29,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
   @Test
   void shouldFailInNoAuthTokenProvided() throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(
         eventsJsonString,
@@ -49,8 +48,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
   @Test
   void shouldSucceedIfAuthTokenProvided() throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(
         eventsJsonString,
@@ -67,8 +66,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
   @Test
   void shouldFailIfInvalidIngestionUrlProvided() throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(
         eventsJsonString,
@@ -91,8 +90,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
   @Test
   void shouldSucceedIfValidIngestionUrlProvided() throws Exception {
     List<CloudEvent> events = cloudEventGenerator.generate(5);
-    List<JsonNode> eventsJson = events.stream().map(CloudEvents::toJson).toList();
-    String eventsJsonString = jsonSerializer.serialize(eventsJson);
+    List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+    String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
 
     ProcessResult result = execWithStdin(
         eventsJsonString,
