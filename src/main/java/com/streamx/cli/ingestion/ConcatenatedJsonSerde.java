@@ -58,33 +58,6 @@ public class ConcatenatedJsonSerde {
     }
   }
 
-  private static Spliterator<JsonNode> getSpliterator(Iterator<JsonNode> iterator) {
-    Iterator<JsonNode> wrappedIterator = new Iterator<>() {
-      @Override
-      public boolean hasNext() {
-        try {
-          return iterator.hasNext();
-        } catch (Exception e) {
-          String message = JacksonUtils.formatException(e);
-          throw new CliException(msg.failedToParseJson(message), e);
-        }
-      }
-
-      @Override
-      public JsonNode next() {
-        try {
-          return iterator.next();
-        } catch (Exception e) {
-          String message = JacksonUtils.formatException(e);
-          throw new CliException(msg.failedToParseJson(message), e);
-        }
-      }
-    };
-
-    return Spliterators.spliteratorUnknownSize(wrappedIterator, Spliterator.ORDERED);
-  }
-
-
   public static String serialize(List<JsonNode> nodes) {
     ObjectMapper mapper = new ObjectMapper();
     StringWriter writer = new StringWriter();
@@ -119,5 +92,31 @@ public class ConcatenatedJsonSerde {
       String message = JacksonUtils.formatException(e);
       throw new CliException(msg.failedToSerializeJsonSequence(message), e);
     }
+  }
+
+  private static Spliterator<JsonNode> getSpliterator(Iterator<JsonNode> iterator) {
+    Iterator<JsonNode> wrappedIterator = new Iterator<>() {
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (Exception e) {
+          String message = JacksonUtils.formatException(e);
+          throw new CliException(msg.failedToParseJson(message), e);
+        }
+      }
+
+      @Override
+      public JsonNode next() {
+        try {
+          return iterator.next();
+        } catch (Exception e) {
+          String message = JacksonUtils.formatException(e);
+          throw new CliException(msg.failedToParseJson(message), e);
+        }
+      }
+    };
+
+    return Spliterators.spliteratorUnknownSize(wrappedIterator, Spliterator.ORDERED);
   }
 }
