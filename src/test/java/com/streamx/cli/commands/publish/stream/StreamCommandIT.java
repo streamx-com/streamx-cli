@@ -81,7 +81,6 @@ public class StreamCommandIT extends CliBaseIT {
     HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
     server.createContext("/events", exchange -> {
       byte[] responseBytes = eventsJsonString.getBytes();
-      exchange.getResponseHeaders().set("Content-Type", "application/json");
       exchange.sendResponseHeaders(200, responseBytes.length);
       try (var outputStream = exchange.getResponseBody()) {
         outputStream.write(responseBytes);
