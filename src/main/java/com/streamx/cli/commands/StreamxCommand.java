@@ -10,7 +10,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "streamx",
     mixinStandardHelpOptions = true,
-    description = "StreamX CLI. More info at https://streamx.dev",
+    header = "StreamX CLI. More info at https://streamx.dev",
     subcommands = {
         LocalCommand.class,
         SettingsCommand.class,

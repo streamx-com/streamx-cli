@@ -28,23 +28,25 @@ import picocli.CommandLine.Command;
 
 @Command(name = "stream",
     mixinStandardHelpOptions = true,
-    description = "Publishes stream of events")
+    header = "Publishes stream of events.")
 public class StreamCommand extends AbstractSilentCommand {
-  @CommandLine.Mixin
-  IngestionClientPicocliOptions ingestionOptions;
-  
   @CommandLine.Parameters(
       index = "0",
-      description = "Events source - can be a file path, file:// URI, or http(s):// URL."
-          + " If omitted, reads from stdin",
+      description = "Events source. It can be a file path or resource URI.",
       arity = "0..1",
       defaultValue = CommandLine.Parameters.NULL_VALUE
   )
   public String source;
 
+  @CommandLine.ArgGroup(
+      exclusive = false,
+      heading = "%nDestination config:%n"
+  )
+  IngestionClientPicocliOptions ingestionOptions;
+
   @CommandLine.Option(
       names = {"--chunk-size", "-c"},
-      description = "Number of events per chunk (default: ${DEFAULT-VALUE})",
+      description = "Number of events per chunk (default: ${DEFAULT-VALUE}).",
       defaultValue = "100"
   )
   int chunkSize;

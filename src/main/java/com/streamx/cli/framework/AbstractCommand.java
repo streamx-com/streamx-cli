@@ -35,13 +35,13 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
 
   @CommandLine.Option(
       names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
-      description = "Print debug information"
+      description = "Print debug information."
   )
   public boolean verbose;
 
   @CommandLine.Option(
       names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
-      description = "Specify output format: text, json, yaml",
+      description = "Specify output format: text, json, yaml.",
       defaultValue = "text"
   )
   // Explicitly set default value here as a fallback for commands with the hidden output option.

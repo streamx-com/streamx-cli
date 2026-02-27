@@ -19,7 +19,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "set",
     mixinStandardHelpOptions = true,
-    description = "Set configuration property"
+    header = "Set configuration property"
 )
 public class SetCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(index = "0", description = "Property key")
