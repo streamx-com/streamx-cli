@@ -28,21 +28,26 @@ import picocli.CommandLine.Command;
 
 @Command(name = "stream",
     mixinStandardHelpOptions = true,
-    description = "Stream a bunch of events")
+    description = "Publishes stream of events")
 public class StreamCommand extends AbstractSilentCommand {
   @CommandLine.Mixin
   IngestionClientPicocliOptions ingestionOptions;
-
+  
   @CommandLine.Parameters(
       index = "0",
-      description = "Events source URI",
+      description = "Events source - can be a file path, file:// URI, or http(s):// URL."
+          + " If omitted, reads from stdin",
       arity = "0..1",
       defaultValue = CommandLine.Parameters.NULL_VALUE
   )
   public String source;
 
-  // TODO: Should we make chunk size configurable via CLI options?
-  private static final int CHUNK_SIZE = 100;
+  @CommandLine.Option(
+      names = {"--chunk-size", "-c"},
+      description = "Number of events per chunk (default: ${DEFAULT-VALUE})",
+      defaultValue = "100"
+  )
+  int chunkSize;
 
   @Override
   public CommandResult<Void> runCommand() {
@@ -81,7 +86,7 @@ public class StreamCommand extends AbstractSilentCommand {
 
           for (CloudEvent event : allEvents) {
             chunk.add(event);
-            if (chunk.size() >= CHUNK_SIZE) {
+            if (chunk.size() >= chunkSize) {
               counter = sendChunk(publisher, chunk, counter);
               chunk.clear();
             }
