@@ -14,7 +14,7 @@ public interface MessageProvider {
   @Message(id = 100, value = "Unsupported output format")
   String unsupportedOutputFormat();
 
-  @Message(id = 101, value = "Try '%s%s' for more information on the available options.%n")
+  @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,
       String helpOptionName
@@ -44,11 +44,11 @@ public interface MessageProvider {
         Timeout exceeded waiting for the container "%s" after %d seconds.
                 
         Try increasing the timeout by setting the """
-          + StreamxBaseConfig.PN_CONTAINER_STARTUP_TIMEOUT_SECONDS + " property."
+          + StreamxBaseConfig.PN_CONTAINER_STARTUP_TIMEOUT_SECONDS + " property"
   )
   String dockerContainerStartupFailed(String containerName, Long timeoutSecs);
 
-  @Message(id = 111, value = "Failed to start mesh containers. %s")
+  @Message(id = 111, value = "Failed to start mesh containers. %s.")
   String failedToStartMeshContainers(String reason);
 
   @Message(id = 112, value = """
@@ -59,25 +59,25 @@ public interface MessageProvider {
          * Docker is running""")
   String invalidDockerEnvironment();
 
-  @Message(id = 113, value = "🟢 %s ready.")
+  @Message(id = 113, value = "🟢 %s ready")
   String dockerContainerStarted(String containerName);
 
-  @Message(id = 114, value = "🟢 %s stopped.")
+  @Message(id = 114, value = "🟢 %s stopped")
   String dockerContainerStopped(String containerName);
 
-  @Message(id = 115, value = "❌ %s failed.")
+  @Message(id = 115, value = "❌ %s failed")
   String dockerContainerFailed(String containerName);
 
   @Message(id = 116, value = "Mesh file deleted. Stopping...")
   String meshFileDeleted();
 
-  @Message(id = 117, value = "Mesh stopped.")
+  @Message(id = 117, value = "Mesh stopped")
   String meshStopped();
 
   @Message(id = 118, value = "Unknown action: %s. Skipping...")
   String skippingUnknownAction(String action);
 
-  @Message(id = 119, value = "Failed to watch mesh changes.")
+  @Message(id = 119, value = "Failed to watch mesh changes")
   String failedToWatchMeshChanges();
 
   @Message(id = 120, value = "Setting up system containers...")
@@ -93,7 +93,7 @@ public interface MessageProvider {
       Unable to read mesh definition from %s.
       
       Details:
-      %s""")
+      %s.""")
   String unableToReadMeshDefinition(String fromPath, String details);
 
   @Message(id = 124, value = "Mesh definition is invalid. Skip reloading...")
@@ -108,10 +108,10 @@ public interface MessageProvider {
   @Message(id = 127, value = "Mesh file changed. Processing incremental reload...")
   String meshFileChangedIncrementalReload();
 
-  @Message(id = 128, value = "Mesh reloaded.")
+  @Message(id = 128, value = "Mesh reloaded")
   String meshReloaded();
 
-  @Message(id = 129, value = "Mesh reload failed.")
+  @Message(id = 129, value = "Mesh reload failed")
   String meshReloadFailed();
 
   @Message(id = 130, value = """
@@ -120,19 +120,19 @@ public interface MessageProvider {
       Full logs can be found in %s""")
   String fullLogsCanBeFoundIn(String originalMessage, String logPath);
 
-  @Message(id = 131, value = "Execution exception occurred.")
+  @Message(id = 131, value = "Execution exception occurred")
   String executionExceptionOccurred();
 
   @Message(id = 132, value = "Input path must not be null")
   String inputPathMustNotBeNull();
 
-  @Message(id = 133, value = "Path %s does not have %s parent levels.")
+  @Message(id = 133, value = "Path %s does not have %s parent levels")
   String pathDoesNotHaveParentLevels(String path, int parentLevelsCount);
 
-  @Message(id = 134, value = "Failed to initialize streamx-maven properties.")
+  @Message(id = 134, value = "Failed to initialize streamx-maven properties")
   String failedToInitializeStreamxMavenProperties();
 
-  @Message(id = 135, value = "No version information included.")
+  @Message(id = 135, value = "No version information included")
   String noVersionInformationIncluded();
 
   @Message(id = 136, value = "Expression cannot be null")
@@ -168,8 +168,8 @@ public interface MessageProvider {
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
 
-  @Message(id = 141, value = "Running stream command")
-  String runningStreamCommand();
+  @Message(id = 141, value = "Running publish stream command")
+  String runningPublishStreamCommand();
 
   @Message(id = 142, value = "Resolving StreamX client config")
   String resolvingStreamxClientConfig();
@@ -180,17 +180,17 @@ public interface MessageProvider {
   @Message(id = 144, value = "Sending chunk of %s events")
   String sendingChunk(int size);
 
-  @Message(id = 145, value = "Event published (%s): type='%s', source='%s', id='%s'")
-  String eventPublished(String progress, String type, String source, String id);
+  @Message(id = 145, value = "Event published (%s): type='%s', subject='%s'")
+  String eventPublished(String progress, String type, String subject);
 
-  @Message(id = 146, value = "Event publish failed (%s): type='%s', source='%s', id='%s' - %s")
-  String eventPublishFailed(String progress, String type, String source, String id, String error);
+  @Message(id = 146, value = "Event publish failed (%s): type='%s', subject='%s' - %s")
+  String eventPublishFailed(String progress, String type, String subject, String error);
 
   @Message(id = 147, value = "Failed to send event: %s")
   String failedToSendEvent(String reason);
 
-  @Message(id = 148, value = "Unable to stream: %s")
-  String unableToStream(String reason);
+  @Message(id = 148, value = "Unable to publish stream: %s")
+  String unableToPublishStream(String reason);
 
   @Message(id = 149, value = "Unable to create StreamX client: %s")
   String unableToCreateStreamxClient(String url);
@@ -198,7 +198,7 @@ public interface MessageProvider {
   @Message(id = 150, value = "Paste JSON content below. Press Ctrl+D when done:")
   String pasteJsonContent();
 
-  @Message(id = 151, value = "Input is empty.")
+  @Message(id = 151, value = "Input is empty")
   String inputIsEmpty();
 
   @Message(id = 152, value = "Unable to open source input stream: %s")
@@ -206,9 +206,6 @@ public interface MessageProvider {
 
   @Message(id = 153, value = "Unable to read input stream: %s")
   String unableToReadInputStream(String reason);
-
-  @Message(id = 154, value = "%s events published")
-  String eventsPublished(long count);
 
   @Message(id = 155, value = "Invalid source URI: '%s'")
   String invalidSourceUri(String source);
@@ -219,7 +216,7 @@ public interface MessageProvider {
   @Message(id = 157, value = "Source file is not readable: '%s'")
   String sourceFileNotReadable(String path);
 
-  @Message(id = 158, value = "Source path is a directory. Is should be a file: '%s'")
+  @Message(id = 158, value = "Publishing stream from directory is not supported. Path: '%s'")
   String sourceIsDirectory(String path);
 
   @Message(id = 159, value = "Source URI not found (404): '%s'")
@@ -251,4 +248,25 @@ public interface MessageProvider {
 
   @Message(id = 168, value = "*****")
   String ingestionTokenMasked();
+
+  @Message(id = 169, value = """
+        Stream publishing completed
+          Total events:  %d
+          Successful:    %d
+          Failed:        %d""")
+  String streamPublishingCompleted(int total, int successful, int failed);
+
+  @Message(id = 173, value = "First %d error(s):")
+  String streamFirstErrors(int count);
+
+  @Message(id = 174, value = "  Event #%d [type=%s, subject=%s]: %s")
+  String streamEventError(
+      int eventNumber,
+      String type,
+      String subject,
+      String errorMessage
+  );
+
+  @Message(id = 175, value = "  ... and %d more error(s) not shown")
+  String streamMoreErrorsNotShown(int count);
 }

@@ -35,10 +35,11 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     ProcessResult result = execWithStdin(
         eventsJsonString,
         "publish",
-        "stream"
+        "stream",
+        "--verbose"
     );
 
-    result.assertExitCode(1);
+    result.assertExitCode(0);
     assertThat(result.stderr()).contains(msg.failedToSendEvent(
         "Authentication failed. Make sure that the given token is valid."
     ));
@@ -55,6 +56,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
+        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken()
     );
@@ -73,13 +75,14 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
+        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken(),
         "--ingestion-url",
         "http://localhost:4242"
     );
 
-    result.assertExitCode(1);
+    result.assertExitCode(0);
     assertThat(result.stderr()).contains(msg.failedToSendEvent(
         "POST request with URI: "
             + "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
@@ -97,6 +100,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
+        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken(),
         "--ingestion-url",

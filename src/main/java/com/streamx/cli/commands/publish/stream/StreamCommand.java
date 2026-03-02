@@ -3,14 +3,13 @@ package com.streamx.cli.commands.publish.stream;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.ingestion.IngestionClientPicocliOptions;
-import com.streamx.cli.ingestion.SourceValidator;
 import com.streamx.cli.ingestion.StreamxClientFactory;
 import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
@@ -29,7 +28,11 @@ import picocli.CommandLine.Command;
 @Command(name = "stream",
     mixinStandardHelpOptions = true,
     header = "Publishes stream of events.")
-public class StreamCommand extends AbstractSilentCommand {
+public class StreamCommand extends AbstractCommand<StreamCommandResult> {
+
+  @CommandLine.Mixin
+  IngestionClientPicocliOptions ingestionOptions;
+
   @CommandLine.Parameters(
       index = "0",
       description = "Events source. It can be a file path or resource URI.",
@@ -37,12 +40,6 @@ public class StreamCommand extends AbstractSilentCommand {
       defaultValue = CommandLine.Parameters.NULL_VALUE
   )
   public String source;
-
-  @CommandLine.ArgGroup(
-      exclusive = false,
-      heading = "%nDestination config:%n"
-  )
-  IngestionClientPicocliOptions ingestionOptions;
 
   @CommandLine.Option(
       names = {"--chunk-size", "-c"},
@@ -52,13 +49,13 @@ public class StreamCommand extends AbstractSilentCommand {
   int chunkSize;
 
   @Override
-  public CommandResult<Void> runCommand() {
+  public CommandResult<StreamCommandResult> runCommand() {
     if (source != null) {
       SourceValidator.validate(source);
     }
 
     if (this.verbose) {
-      System.out.println(msg.runningStreamCommand());
+      System.out.println(msg.runningPublishStreamCommand());
       System.out.println(msg.resolvingStreamxClientConfig());
     }
 
@@ -73,70 +70,103 @@ public class StreamCommand extends AbstractSilentCommand {
       try {
         InputStream sourceStream = getSourceStream();
 
-        byte[] bytes = sourceStream.readAllBytes();
-        sourceStream = new ByteArrayInputStream(bytes);
-
         Publisher publisher = streamxClient.newPublisher();
 
         try (Stream<JsonNode> jsonStream = ConcatenatedJsonSerde.parse(sourceStream)) {
-          List<CloudEvent> allEvents = jsonStream
-              .map(CloudEventsSerde::fromJson)
-              .toList();
-
-          int counter = 0;
+          StreamPublishingTracker tracker = new StreamPublishingTracker();
           List<CloudEvent> chunk = new ArrayList<>();
 
-          for (CloudEvent event : allEvents) {
-            chunk.add(event);
-            if (chunk.size() >= chunkSize) {
-              counter = sendChunk(publisher, chunk, counter);
-              chunk.clear();
-            }
-          }
+          jsonStream
+              .map(CloudEventsSerde::fromJson)
+              .forEach(event -> {
+                chunk.add(event);
+                if (chunk.size() >= chunkSize) {
+                  sendChunk(publisher, chunk, tracker);
+                  chunk.clear();
+                }
+              });
 
           if (!chunk.isEmpty()) {
-            counter = sendChunk(publisher, chunk, counter);
+            sendChunk(publisher, chunk, tracker);
           }
 
-          System.out.println(msg.eventsPublished(counter));
+          return new CommandResult<>(new StreamCommandResult(
+              tracker.getSuccessCount(),
+              tracker.getFailureCount(),
+              tracker.getErrors()
+          ));
         }
-
-        return new CommandResult<>(null);
-      } catch (CliException e) {
-        throw e;
       } catch (Exception e) {
-        throw new CliException(msg.unableToStream(e.getMessage()), e);
+        throw new CliException(msg.unableToPublishStream(e.getMessage()), e);
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
     }
   }
 
-  private int sendChunk(
+  @Override
+  public String getTextOutput(CommandResult<StreamCommandResult> result) {
+    StreamCommandResult data = result.getData();
+    StringBuilder sb = new StringBuilder();
+
+    int total = data.successCount() + data.failureCount();
+    sb.append(msg.streamPublishingCompleted(
+        total,
+        data.successCount(),
+        data.failureCount()
+    )).append('\n');
+
+    List<StreamCommandResult.EventError> errors = data.firstErrors();
+    if (!errors.isEmpty()) {
+      sb.append('\n');
+      sb.append(msg.streamFirstErrors(errors.size())).append('\n');
+      for (StreamCommandResult.EventError error : errors) {
+        sb.append(msg.streamEventError(
+            error.eventNumber(),
+            error.type(),
+            error.subject(),
+            error.errorMessage()
+        )).append('\n');
+      }
+      if (data.failureCount() > StreamCommandResult.MAX_STORED_ERRORS) {
+        sb.append(msg.streamMoreErrorsNotShown(
+            data.failureCount() - StreamCommandResult.MAX_STORED_ERRORS
+        )).append('\n');
+      }
+    }
+
+    return sb.toString();
+  }
+
+  private void sendChunk(
       Publisher publisher,
       List<CloudEvent> chunk,
-      int counter
+      StreamPublishingTracker tracker
   ) {
     if (this.verbose) {
       System.out.println(msg.sendingChunk(chunk.size()));
     }
 
     for (CloudEvent event : chunk) {
+      int eventNumber = tracker.nextEventNumber();
       try {
         publisher.send(List.of(event));
-        counter++;
+        tracker.recordSuccess();
         System.out.println(msg.eventPublished(
-            String.valueOf(counter),
-            event.getType(), event.getSource().toString(), event.getId()));
+            String.valueOf(eventNumber),
+            event.getType(),
+            event.getSubject()
+        ));
       } catch (Exception e) {
-        counter++;
+        tracker.recordFailure(
+            event.getType(),
+            event.getSubject(),
+            e.getMessage());
         System.err.println(msg.eventPublishFailed(
-            String.valueOf(counter),
-            event.getType(), event.getSource().toString(), event.getId(), e.getMessage()));
-        throw new CliException(msg.failedToSendEvent(e.getMessage()), e);
+            String.valueOf(eventNumber),
+            event.getType(), event.getSubject(), e.getMessage()));
       }
     }
-    return counter;
   }
 
   private InputStream getSourceStream() throws CliException {

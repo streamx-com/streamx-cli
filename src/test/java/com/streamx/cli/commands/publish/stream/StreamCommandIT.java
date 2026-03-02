@@ -46,7 +46,9 @@ public class StreamCommandIT extends CliBaseIT {
     result.assertSuccess();
 
     assertEventsPublished(events.size());
-    assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
+    assertThat(result.stdout()).contains(
+        msg.streamPublishingCompleted(events.size(), events.size(), 0)
+    );
   }
 
 
@@ -68,7 +70,9 @@ public class StreamCommandIT extends CliBaseIT {
     result.assertSuccess();
 
     assertEventsPublished(events.size());
-    assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
+    assertThat(result.stdout()).contains(
+        msg.streamPublishingCompleted(events.size(), events.size(), 0)
+    );
   }
 
 
@@ -97,7 +101,9 @@ public class StreamCommandIT extends CliBaseIT {
       result.assertSuccess();
 
       assertEventsPublished(events.size());
-      assertThat(result.stdout()).contains(msg.eventsPublished(events.size()));
+      assertThat(result.stdout()).contains(
+          msg.streamPublishingCompleted(events.size(), events.size(), 0)
+      );
     } finally {
       server.stop(0);
     }
@@ -112,7 +118,9 @@ public class StreamCommandIT extends CliBaseIT {
     result.assertSuccess();
 
     assertEventsPublished(1);
-    assertThat(result.stdout()).contains(msg.eventsPublished((1)));
+    assertThat(result.stdout()).contains(
+        msg.streamPublishingCompleted(1, 1, 0)
+    );
   }
 
   @Test
@@ -125,7 +133,9 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(stdIn, "publish", "stream");
     result.assertSuccess();
     assertEventsPublished(eventsCount);
-    assertThat(result.stdout()).contains(msg.eventsPublished((eventsCount)));
+    assertThat(result.stdout()).contains(
+        msg.streamPublishingCompleted(events.size(), events.size(), 0)
+    );
   }
 
   @Test
@@ -146,8 +156,8 @@ public class StreamCommandIT extends CliBaseIT {
 
     result.assertExitCode(1);
 
-    String expectedStderr = "Failed to parse JSON: "
-        + "Unexpected character ('/' (code 47)): "
+    String expectedStderr = "Unable to publish stream: "
+        + "Failed to parse JSON: Unexpected character ('/' (code 47)): "
         + "maybe a (non-standard) comment? (line: 1, column: 3)\n";
     assertEquals(expectedStderr, result.stderr());
 
@@ -176,7 +186,8 @@ public class StreamCommandIT extends CliBaseIT {
 
     result.assertExitCode(1);
 
-    String expectedStderr = "CloudEvent deserialization failed: "
+    String expectedStderr = "Unable to publish stream: "
+        + "CloudEvent deserialization failed: "
         + "Missing mandatory id attribute (line: 1, column: 313)\n";
     assertEquals(expectedStderr, result.stderr());
 

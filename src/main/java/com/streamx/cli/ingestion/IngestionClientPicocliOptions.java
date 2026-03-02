@@ -9,22 +9,21 @@ public class IngestionClientPicocliOptions {
 
   @CommandLine.Option(
       names = {"--ingestion-url", "-u"},
-      description = "StreamX ingestion URL (default: ${DEFAULT-VALUE}).",
-      defaultValue = IngestionClientConfig.STREAMX_INGESTION_URL
+      description = "StreamX ingestion URL.",
+      defaultValue = "${streamx.ingestion.url}",
+      fallbackValue = CommandLine.Parameters.NULL_VALUE
   )
   public String url;
 
   @CommandLine.Option(
       names = {"--auth-token", "-a"},
-      description = "Authentication token (default: ${DEFAULT-VALUE}).",
-      defaultValue = IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN
+      description = "Authentication token."
   )
   public String authToken;
 
   @CommandLine.Option(
       names = {"--insecure", "-k"},
-      description = "Skip TLS verification (default: ${DEFAULT-VALUE}).",
-      defaultValue = IngestionClientConfig.STREAMX_INGESTION_INSECURE
+      description = "Skip TLS verification."
   )
   public Boolean insecure;
 

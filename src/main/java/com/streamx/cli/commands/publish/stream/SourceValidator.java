@@ -1,4 +1,4 @@
-package com.streamx.cli.ingestion;
+package com.streamx.cli.commands.publish.stream;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
