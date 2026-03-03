@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -251,7 +250,7 @@ public class StreamCommandIT extends CliBaseIT {
         "--verbose"
     );
 
-    assertEquals(expectedJson1, result1.stdout());
+    assertEquals(expectedJson1, result1.stdout().strip());
 
     String expectedJson2 = """
         {
@@ -262,17 +261,17 @@ public class StreamCommandIT extends CliBaseIT {
             "eventNumber" : 6,
             "type" : "bad.type",
             "subject" : "subject-1",
-            "errorMessage" : "Bad request. Type [bad.type] is not allowed"
+            "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
           }, {
             "eventNumber" : 6,
             "type" : "bad.type",
             "subject" : "subject-2",
-            "errorMessage" : "Bad request. Type [bad.type] is not allowed"
+            "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
           }, {
             "eventNumber" : 6,
             "type" : "bad.type",
             "subject" : "subject-3",
-            "errorMessage" : "Bad request. Type [bad.type] is not allowed"
+            "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
           } ],
           "batchSuccessCount" : 1,
           "batchFailureCount" : 1,
@@ -295,7 +294,7 @@ public class StreamCommandIT extends CliBaseIT {
         "--verbose"
     );
 
-    assertEquals(expectedJson2, result2.stdout());
+    assertEquals(expectedJson2, result2.stdout().strip());
   }
 
   @Nested

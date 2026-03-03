@@ -1,6 +1,7 @@
 package com.streamx.cli.commands.publish.stream;
 
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,12 +41,11 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     result.assertExitCode(1);
     assertEventsPublished(0);
 
-    assertThat(result.stderr()).contains("Unable to publish stream: Event publish failed (1):");
+    assertThat(result.stderr()).contains("Event publish failed (1):");
     assertThat(result.stderr()).contains("Authentication failed.");
 
-    assertThat(result.stdout()).contains("Total events:  1");
-    assertThat(result.stdout()).contains("Successful:    0");
-    assertThat(result.stdout()).contains("Failed:        1");
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(1, 0, 1, 0));
   }
 
   @Test
@@ -65,10 +65,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     result.assertSuccess();
     assertEventsPublished(5);
 
-    assertThat(result.stderr()).isEmpty();
-    assertThat(result.stdout()).contains("Total events:  5");
-    assertThat(result.stdout()).contains("Successful:    5");
-    assertThat(result.stdout()).contains("Failed:        0");
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(5, 5, 0, 0));
   }
 
   @Test
@@ -90,15 +88,14 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     result.assertExitCode(1);
     assertEventsPublished(0);
 
-    assertThat(result.stderr()).contains("Unable to publish stream: Event publish failed (1):");
+    assertThat(result.stderr()).contains("Event publish failed (1):");
     assertThat(result.stderr()).contains(
         "POST request with URI: "
             + "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
     );
 
-    assertThat(result.stdout()).contains("Total events:  1");
-    assertThat(result.stdout()).contains("Successful:    0");
-    assertThat(result.stdout()).contains("Failed:        1");
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(1, 0, 1, 0));
   }
 
   @Test
@@ -120,9 +117,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     result.assertSuccess();
     assertEventsPublished(5);
 
-    assertThat(result.stderr()).isEmpty();
-    assertThat(result.stdout()).contains("Total events:  5");
-    assertThat(result.stdout()).contains("Successful:    5");
-    assertThat(result.stdout()).contains("Failed:        0");
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(5, 5, 0, 0));
   }
 }

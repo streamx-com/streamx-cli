@@ -111,40 +111,43 @@ class StreamPublishingTracker {
           totalBatches,
           batchSuccessCount,
           batchFailureCount
-      )).append('\n');
+      ));
     } else {
       summary.append(msg.streamPublishingCompleted(
           total,
           successCount,
           failureCount,
           unknownCount
-      )).append('\n');
+      ));
     }
 
     if (!batchErrors.isEmpty()) {
       summary.append('\n');
-      summary.append(msg.streamFirstBatchErrors(batchErrors.size())).append('\n');
+      summary.append(msg.streamFirstBatchErrors(batchErrors.size()));
 
       for (BatchError error : batchErrors) {
+        summary.append('\n');
         summary.append(msg.streamBatchError(
             error.batchNumber(),
             error.eventCount(),
             error.errorMessage()
-        )).append('\n');
+        ));
       }
 
       if (batchFailureCount > MAX_STORED_ERRORS) {
+        summary.append('\n');
         summary.append(msg.streamMoreErrorsNotShown(
             batchFailureCount - MAX_STORED_ERRORS
-        )).append('\n');
+        ));
       }
     }
 
     if (!isBatchMode() && !eventErrors.isEmpty()) {
       summary.append('\n');
-      summary.append(msg.streamFirstErrors(eventErrors.size())).append('\n');
+      summary.append(msg.streamFirstErrors(eventErrors.size()));
 
       for (EventError error : eventErrors) {
+        summary.append('\n');
         summary.append(msg.streamEventError(
             error.eventNumber(),
             error.type(),
@@ -154,9 +157,10 @@ class StreamPublishingTracker {
       }
 
       if (failureCount > MAX_STORED_ERRORS) {
+        summary.append('\n');
         summary.append(msg.streamMoreErrorsNotShown(
             failureCount - MAX_STORED_ERRORS
-        )).append('\n');
+        ));
       }
     }
 
