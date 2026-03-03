@@ -2,7 +2,9 @@ package com.streamx.cli.commands.publish.stream;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.commands.publish.stream.StreamCommandResult.BatchError;
 import com.streamx.cli.commands.publish.stream.StreamCommandResult.EventError;
+import io.cloudevents.CloudEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,23 +12,16 @@ class StreamPublishingTracker {
 
   private int successCount;
   private int failureCount;
-  private final List<EventError> errors = new ArrayList<>();
+  private int unknownCount;
+  private final List<EventError> eventErrors = new ArrayList<>();
+
+  private int batchSuccessCount;
+  private int batchFailureCount;
+  private final List<BatchError> batchErrors = new ArrayList<>();
 
   /** Set limit for stored error details to avoid OOM
-  when publishing very large streams of events. */
+   when publishing very large streams of events. */
   public static final int MAX_STORED_ERRORS = 1000;
-
-  public int getSuccessCount() {
-    return successCount;
-  }
-
-  public int getFailureCount() {
-    return failureCount;
-  }
-
-  public List<EventError> getErrors() {
-    return errors;
-  }
 
   void recordSuccess() {
     successCount++;
@@ -34,33 +29,122 @@ class StreamPublishingTracker {
 
   void recordFailure(String type, String subject, String errorMessage) {
     failureCount++;
-    if (errors.size() < MAX_STORED_ERRORS) {
-      errors.add(new EventError(currentEventNumber(), type, subject, errorMessage));
+    if (eventErrors.size() < MAX_STORED_ERRORS) {
+      eventErrors.add(new EventError(currentEventNumber(), type, subject, errorMessage));
+    }
+  }
+
+  void recordBatchSuccess(List<CloudEvent> events) {
+    batchSuccessCount++;
+    for (CloudEvent event : events) {
+      successCount++;
+    }
+  }
+
+  void recordBatchFailure(List<CloudEvent> events, String errorMessage) {
+    int batchNumber = nextBatchNumber();
+    batchFailureCount++;
+
+    if (batchErrors.size() < MAX_STORED_ERRORS) {
+      batchErrors.add(new BatchError(batchNumber, events.size(), errorMessage));
+    }
+
+    unknownCount += events.size();
+
+    for (CloudEvent event : events) {
+      if (eventErrors.size() < MAX_STORED_ERRORS) {
+        eventErrors.add(new EventError(
+            currentEventNumber(),
+            event.getType(),
+            event.getSubject(),
+            msg.eventPublishResultIsUnknown(batchNumber)
+        ));
+      }
     }
   }
 
   int currentEventNumber() {
-    return successCount + failureCount;
+    return successCount + failureCount + unknownCount;
   }
 
   int nextEventNumber() {
     return currentEventNumber() + 1;
   }
 
+  int currentBatchNumber() {
+    return batchSuccessCount + batchFailureCount;
+  }
+
+  int nextBatchNumber() {
+    return currentBatchNumber() + 1;
+  }
+
+  boolean isBatchMode() {
+    return batchSuccessCount + batchFailureCount > 0;
+  }
+
+  StreamCommandResult toResult() {
+    return new StreamCommandResult(
+        successCount,
+        failureCount,
+        unknownCount,
+        eventErrors,
+        batchSuccessCount,
+        batchFailureCount,
+        batchErrors
+    );
+  }
+
   public String toSummary() {
     StringBuilder summary = new StringBuilder();
 
-    int total = successCount + failureCount;
-    summary.append(msg.streamPublishingCompleted(
-        total,
-        successCount,
-        failureCount
-    )).append('\n');
+    int total = successCount + failureCount + unknownCount;
 
-    if (!errors.isEmpty()) {
+    if (isBatchMode()) {
+      int totalBatches = batchSuccessCount + batchFailureCount;
+
+      summary.append(msg.streamBatchPublishingCompleted(
+          total,
+          successCount,
+          failureCount,
+          unknownCount,
+          totalBatches,
+          batchSuccessCount,
+          batchFailureCount
+      )).append('\n');
+    } else {
+      summary.append(msg.streamPublishingCompleted(
+          total,
+          successCount,
+          failureCount,
+          unknownCount
+      )).append('\n');
+    }
+
+    if (!batchErrors.isEmpty()) {
       summary.append('\n');
-      summary.append(msg.streamFirstErrors(errors.size())).append('\n');
-      for (StreamCommandResult.EventError error : errors) {
+      summary.append(msg.streamFirstBatchErrors(batchErrors.size())).append('\n');
+
+      for (BatchError error : batchErrors) {
+        summary.append(msg.streamBatchError(
+            error.batchNumber(),
+            error.eventCount(),
+            error.errorMessage()
+        )).append('\n');
+      }
+
+      if (batchFailureCount > MAX_STORED_ERRORS) {
+        summary.append(msg.streamMoreErrorsNotShown(
+            batchFailureCount - MAX_STORED_ERRORS
+        )).append('\n');
+      }
+    }
+
+    if (!isBatchMode() && !eventErrors.isEmpty()) {
+      summary.append('\n');
+      summary.append(msg.streamFirstErrors(eventErrors.size())).append('\n');
+
+      for (EventError error : eventErrors) {
         summary.append(msg.streamEventError(
             error.eventNumber(),
             error.type(),

@@ -253,10 +253,11 @@ public interface MessageProvider {
         Stream publishing completed
           Total events:  %d
           Successful:    %d
-          Failed:        %d""")
-  String streamPublishingCompleted(int total, int successful, int failed);
+          Failed:        %d
+          Unknown:    %d""")
+  String streamPublishingCompleted(int total, int successful, int failed, int unknown);
 
-  @Message(id = 173, value = "First %d error(s):")
+  @Message(id = 173, value = "First %d error(s) are shown:")
   String streamFirstErrors(int count);
 
   @Message(id = 174, value = "  Event #%d [type=%s, subject=%s]: %s")
@@ -272,4 +273,38 @@ public interface MessageProvider {
 
   @Message(id = 176, value = "One or more events failed to publish")
   String eventsPartiallyFailedToPublish();
+
+  @Message(id = 177, value = "Batch #%s published (%s event(s))")
+  String batchPublished(String batchNumber, String eventCount);
+
+  @Message(id = 178, value = "Batch #%s failed (%s event(s)): %s")
+  String batchPublishFailed(String batchNumber, String eventCount, String errorMessage);
+
+  @Message(id = 179, value = """
+      Stream publishing completed
+        Total events:          %d
+        Successful:            %d
+        Failed:                %d
+        Unknown:               %d
+        Total batches:         %d
+        Successful batches:    %d
+        Failed batches:        %d""")
+  String streamBatchPublishingCompleted(
+      int totalEvents,
+      int successCount,
+      int failureCount,
+      int unknownCount,
+      int totalBatches,
+      int batchSuccessCount,
+      int batchFailureCount
+  );
+
+  @Message(id = 180, value = "First %d batch(es) publish errors are shown:")
+  String streamFirstBatchErrors(int count);
+
+  @Message(id = 181, value = "  Batch #%d (%d event(s)): %s")
+  String streamBatchError(int batchNumber, int eventCount, String errorMessage);
+
+  @Message(id = 182, value = "Event publish result is unknown. Failed batch number: %s")
+  String eventPublishResultIsUnknown(int batchNumber);
 }

@@ -33,4 +33,19 @@ public class MeshAssertions {
           "Failed to create Pulsar admin client: " + e.getMessage(), e);
     }
   }
+
+  public static synchronized void resetPublishedEventsBaseline() {
+    try (PulsarAdmin admin = PulsarAdmin.builder()
+        .serviceHttpUrl(PULSAR_WEB_URL)
+        .build()) {
+      TopicStats stats = admin.topics().getStats(PULSAR_TOPIC);
+      prevEventCount.set(stats.getMsgInCounter());
+    } catch (PulsarAdminException e) {
+      throw new AssertionError(
+          "Failed to retrieve stats for topic: " + PULSAR_TOPIC + " — " + e.getMessage(), e);
+    } catch (Exception e) {
+      throw new RuntimeException(
+          "Failed to create Pulsar admin client: " + e.getMessage(), e);
+    }
+  }
 }

@@ -17,6 +17,7 @@ import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -46,16 +47,22 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
   )
   public boolean continueOnError;
 
+  @CommandLine.Option(
+      names = {"--batch-size", "-b"},
+      description = "Publish events in batches if > 1. Per-event error reporting is omitted",
+      defaultValue = "1"
+  )
+  public Integer batchSize;
+
   StreamPublishingTracker tracker = new StreamPublishingTracker();
 
   CommandResult<StreamCommandResult> prepareResult() {
-    CommandResult<StreamCommandResult> result = new CommandResult<>(new StreamCommandResult(
-        tracker.getSuccessCount(),
-        tracker.getFailureCount(),
-        tracker.getErrors()
-    ));
+    StreamCommandResult streamResult = tracker.toResult();
+    CommandResult<StreamCommandResult> result = new CommandResult<>(streamResult);
 
-    boolean someEventsFailed = !tracker.getErrors().isEmpty();
+    boolean someEventsFailed = !streamResult.eventErrors().isEmpty()
+        || !streamResult.batchErrors().isEmpty();
+
     if (someEventsFailed) {
       result.setError(new CliException(msg.eventsPartiallyFailedToPublish()));
     }
@@ -76,15 +83,15 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
     }
 
     if (this.verbose) {
-      System.out.println(msg.runningPublishStreamCommand());
-      System.out.println(msg.resolvingStreamxClientConfig());
+      System.err.println(msg.runningPublishStreamCommand());
+      System.err.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
     if (this.verbose) {
-      System.out.println(msg.initializingStreamxClient());
-      System.out.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
+      System.err.println(msg.initializingStreamxClient());
+      System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
     InputStream sourceStream = SourceStream.get(source);
@@ -93,6 +100,7 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
       try {
         try (Stream<JsonNode> jsonStream = ConcatenatedJsonSerde.parse(sourceStream)) {
           Publisher publisher = streamxClient.newPublisher();
+          List<CloudEvent> batch = new ArrayList<>();
 
           jsonStream
               .map(json -> {
@@ -101,9 +109,9 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
                 } catch (CliException e) {
                   int eventNumber = tracker.nextEventNumber();
                   String errorMessage = msg.eventPublishFailed(
-                      String.valueOf(eventNumber), "-", "-", e.getMessage()
+                      String.valueOf(eventNumber), "''", "''", e.getMessage()
                   );
-                  tracker.recordFailure("-", "-", errorMessage);
+                  tracker.recordFailure("''", "''", errorMessage);
                   System.err.println(errorMessage);
 
                   if (!continueOnError) {
@@ -115,18 +123,38 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
               .filter(Objects::nonNull)
               .forEach(event -> {
                 try {
-                  sendEvent(publisher, event, tracker);
+                  if (batchSize > 1) {
+                    batch.add(event);
+                    if (batch.size() >= batchSize) {
+                      List<CloudEvent> toSend = new ArrayList<>(batch);
+                      batch.clear();
+                      sendBatch(publisher, toSend);
+                    }
+                  } else {
+                    sendEvent(publisher, event);
+                  }
                 } catch (CliException e) {
                   if (!continueOnError) {
                     throw new AbortStreamException(e);
                   }
                 }
               });
+
+          // Flush remaining events that didn't fill a full batch
+          if (!batch.isEmpty()) {
+            try {
+              sendBatch(publisher, batch);
+            } catch (CliException e) {
+              if (!continueOnError) {
+                return prepareResult();
+              }
+            }
+          }
         }
       } catch (AbortStreamException e) {
         return prepareResult();
       } catch (Exception e) {
-        tracker.recordFailure("-", "-", e.getMessage());
+        tracker.recordFailure("''", "''", e.getMessage());
         System.err.println(e.getMessage());
 
         if (!continueOnError) {
@@ -140,17 +168,13 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
     return prepareResult();
   }
 
-  private void sendEvent(
-      Publisher publisher,
-      CloudEvent event,
-      StreamPublishingTracker tracker
-  ) {
+  private void sendEvent(Publisher publisher, CloudEvent event) {
     int eventNumber = tracker.nextEventNumber();
     try {
       publisher.send(List.of(event));
       tracker.recordSuccess();
 
-      System.out.println(msg.eventPublished(
+      System.err.println(msg.eventPublished(
           String.valueOf(eventNumber),
           event.getType(),
           event.getSubject()
@@ -173,9 +197,33 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
     }
   }
 
+  private void sendBatch(Publisher publisher, List<CloudEvent> events) {
+    int batchNumber = tracker.nextBatchNumber();
+    try {
+      publisher.send(events);
+      tracker.recordBatchSuccess(events);
+
+      System.err.println(msg.batchPublished(
+          String.valueOf(batchNumber),
+          String.valueOf(events.size())
+      ));
+    } catch (StreamxClientException e) {
+      tracker.recordBatchFailure(events, e.getMessage());
+
+      String errorMessage = msg.batchPublishFailed(
+          String.valueOf(batchNumber),
+          String.valueOf(events.size()),
+          e.getMessage()
+      );
+
+      System.err.println(errorMessage);
+
+      throw new CliException(errorMessage);
+    }
+  }
+
   @Override
   public String getTextOutput(CommandResult<StreamCommandResult> result) {
     return tracker.toSummary();
   }
-
 }

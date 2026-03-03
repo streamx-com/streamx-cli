@@ -5,13 +5,25 @@ import java.util.List;
 public record StreamCommandResult(
     int successCount,
     int failureCount,
-    List<EventError> errors
+    int unknownCount,
+    List<EventError> eventErrors,
+
+    int batchSuccessCount,
+    int batchFailureCount,
+    List<BatchError> batchErrors
 ) {
 
   public record EventError(
       int eventNumber,
       String type,
       String subject,
+      String errorMessage
+  ) {
+  }
+
+  public record BatchError(
+      int batchNumber,
+      int eventCount,
       String errorMessage
   ) {
   }

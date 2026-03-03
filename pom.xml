@@ -18,7 +18,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <streamx.version>2.0.25</streamx.version>
+    <streamx.version>2.0.25-SNAPSHOT</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
   </properties>
 
@@ -224,38 +224,38 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>streamx-maven-snapshots</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
-    </repository>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>streamx-maven-releases</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-releases</url>
-    </repository>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>streamx-maven-public-releases</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases</url>
-    </repository>
-  </repositories>
+<!--  <repositories>-->
+<!--    <repository>-->
+<!--      <releases>-->
+<!--        <enabled>false</enabled>-->
+<!--      </releases>-->
+<!--      <snapshots>-->
+<!--        <enabled>true</enabled>-->
+<!--      </snapshots>-->
+<!--      <id>streamx-maven-snapshots</id>-->
+<!--      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>-->
+<!--    </repository>-->
+<!--    <repository>-->
+<!--      <releases>-->
+<!--        <enabled>true</enabled>-->
+<!--      </releases>-->
+<!--      <snapshots>-->
+<!--        <enabled>false</enabled>-->
+<!--      </snapshots>-->
+<!--      <id>streamx-maven-releases</id>-->
+<!--      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-releases</url>-->
+<!--    </repository>-->
+<!--    <repository>-->
+<!--      <releases>-->
+<!--        <enabled>true</enabled>-->
+<!--      </releases>-->
+<!--      <snapshots>-->
+<!--        <enabled>false</enabled>-->
+<!--      </snapshots>-->
+<!--      <id>streamx-maven-public-releases</id>-->
+<!--      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases</url>-->
+<!--    </repository>-->
+<!--  </repositories>-->
 
   <build>
     <resources>

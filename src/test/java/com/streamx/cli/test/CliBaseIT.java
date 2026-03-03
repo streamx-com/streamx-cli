@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class CliBaseIT {
 
@@ -19,6 +20,11 @@ public abstract class CliBaseIT {
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
   private Process process;
+
+  @BeforeEach
+  void resetEventBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
+  }
 
   @BeforeAll
   static void ensureBuilt() {

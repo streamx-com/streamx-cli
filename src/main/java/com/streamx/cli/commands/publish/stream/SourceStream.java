@@ -1,13 +1,14 @@
 package com.streamx.cli.commands.publish.stream;
 
-import com.streamx.cli.framework.CliException;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.framework.CliException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
-
-import static com.streamx.cli.i18n.MessageProvider.msg;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class SourceStream {
   public static InputStream get(String source) throws CliException {
@@ -18,10 +19,8 @@ public class SourceStream {
         if (uri.getScheme() != null) {
           input = uri.toURL().openStream();
         } else {
-          input = java.nio.file.Files.newInputStream(java.nio.file.Path.of(source));
+          input = Files.newInputStream(Path.of(source));
         }
-      } catch (CliException e) {
-        throw e;
       } catch (Exception e) {
         throw new CliException(msg.unableToOpenSourceInputStream(source), e);
       }
@@ -42,8 +41,6 @@ public class SourceStream {
           new ByteArrayInputStream(new byte[]{(byte) firstByte}),
           input
       );
-    } catch (CliException e) {
-      throw e;
     } catch (Exception e) {
       throw new CliException(msg.unableToReadInputStream(e.getMessage()), e);
     }
