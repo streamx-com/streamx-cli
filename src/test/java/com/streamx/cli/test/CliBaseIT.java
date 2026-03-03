@@ -22,7 +22,7 @@ public abstract class CliBaseIT {
   private Process process;
 
   @BeforeEach
-  void resetEventBaseline() {
+  void resetPublishedEventsBaseline() {
     MeshAssertions.resetPublishedEventsBaseline();
   }
 

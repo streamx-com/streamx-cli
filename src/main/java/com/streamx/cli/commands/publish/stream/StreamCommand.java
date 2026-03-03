@@ -15,13 +15,11 @@ import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

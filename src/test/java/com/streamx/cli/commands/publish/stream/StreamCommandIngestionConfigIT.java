@@ -1,7 +1,7 @@
 package com.streamx.cli.commands.publish.stream;
 
-import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static com.streamx.cli.i18n.MessageProvider.msg;
+import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;

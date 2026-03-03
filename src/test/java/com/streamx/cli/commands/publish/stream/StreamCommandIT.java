@@ -15,12 +15,10 @@ import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -460,33 +458,33 @@ public class StreamCommandIT extends CliBaseIT {
       );
 
       String invalidEvents = """
-        {
-          "specversion": "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "bad.type",
-          "datacontenttype": "application/json",
-          "subject": "${relativePath}",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{}",
-            "type": "data/category"
+          {
+            "specversion": "1.0",
+            "id": "Accent Furniture",
+            "source": "streamx-commerce-accelerator",
+            "type": "bad.type",
+            "datacontenttype": "application/json",
+            "subject": "${relativePath}",
+            "time": "2026-01-01T00:00:00.000000Z",
+            "data": {
+              "content": "{}",
+              "type": "data/category"
+            }
           }
-        }
-        {
-          "specversion": "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "ugly.type",
-          "datacontenttype": "application/json",
-          "subject": "${relativePath}",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{}",
-            "type": "data/category"
+          {
+            "specversion": "1.0",
+            "id": "Accent Furniture",
+            "source": "streamx-commerce-accelerator",
+            "type": "ugly.type",
+            "datacontenttype": "application/json",
+            "subject": "${relativePath}",
+            "time": "2026-01-01T00:00:00.000000Z",
+            "data": {
+              "content": "{}",
+              "type": "data/category"
+            }
           }
-        }
-        """;
+          """;
 
       String validEvent2 = ConcatenatedJsonSerde.serialize(
           cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
@@ -510,33 +508,33 @@ public class StreamCommandIT extends CliBaseIT {
       );
 
       String invalidEvents = """
-        {
-          "specversion": "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "bad.type",
-          "datacontenttype": "application/json",
-          "subject": "${relativePath}",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{}",
-            "type": "data/category"
+          {
+            "specversion": "1.0",
+            "id": "Accent Furniture",
+            "source": "streamx-commerce-accelerator",
+            "type": "bad.type",
+            "datacontenttype": "application/json",
+            "subject": "${relativePath}",
+            "time": "2026-01-01T00:00:00.000000Z",
+            "data": {
+              "content": "{}",
+              "type": "data/category"
+            }
           }
-        }
-        {
-          "specversion": "1.0",
-          "id": "Accent Furniture",
-          "source": "streamx-commerce-accelerator",
-          "type": "ugly.type",
-          "datacontenttype": "application/json",
-          "subject": "${relativePath}",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": {
-            "content": "{}",
-            "type": "data/category"
+          {
+            "specversion": "1.0",
+            "id": "Accent Furniture",
+            "source": "streamx-commerce-accelerator",
+            "type": "ugly.type",
+            "datacontenttype": "application/json",
+            "subject": "${relativePath}",
+            "time": "2026-01-01T00:00:00.000000Z",
+            "data": {
+              "content": "{}",
+              "type": "data/category"
+            }
           }
-        }
-        """;
+          """;
 
       String validEvent2 = ConcatenatedJsonSerde.serialize(
           cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
