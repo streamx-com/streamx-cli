@@ -55,17 +55,24 @@ public abstract class CliBaseIT {
     pb.redirectErrorStream(false);
     process = pb.start();
 
-    try (OutputStream os = process.getOutputStream()) {
-      stdin.transferTo(os);
-      os.flush();
-    }
-
+    // Start capturing stdout/stderr BEFORE writing stdin
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
     StreamCapture stderrCapture = captureAndForward(process.getErrorStream(), System.err);
+
+    // Write stdin on a separate thread to avoid deadlock
+    Thread stdinWriter = Thread.ofVirtual().start(() -> {
+      try (OutputStream os = process.getOutputStream()) {
+        stdin.transferTo(os);
+        os.flush();
+      } catch (Exception ignored) {
+        // Process may have exited early
+      }
+    });
 
     boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
     Assertions.assertTrue(finished, "Process timed out after %d seconds".formatted(timeoutSeconds));
 
+    stdinWriter.join();
     String stdout = stdoutCapture.join();
     String stderr = stderrCapture.join();
 

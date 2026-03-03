@@ -1,6 +1,5 @@
 package com.streamx.cli.commands.publish.stream;
 
-import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,15 +34,18 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     ProcessResult result = execWithStdin(
         eventsJsonString,
         "publish",
-        "stream",
-        "--verbose"
+        "stream"
     );
 
-    result.assertExitCode(0);
-    assertThat(result.stderr()).contains(msg.failedToSendEvent(
-        "Authentication failed. Make sure that the given token is valid."
-    ));
+    result.assertExitCode(1);
     assertEventsPublished(0);
+
+    assertThat(result.stderr()).contains("Unable to publish stream: Event publish failed (1):");
+    assertThat(result.stderr()).contains("Authentication failed.");
+
+    assertThat(result.stdout()).contains("Total events:  1");
+    assertThat(result.stdout()).contains("Successful:    0");
+    assertThat(result.stdout()).contains("Failed:        1");
   }
 
   @Test
@@ -56,13 +58,17 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
-        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken()
     );
 
     result.assertSuccess();
     assertEventsPublished(5);
+
+    assertThat(result.stderr()).isEmpty();
+    assertThat(result.stdout()).contains("Total events:  5");
+    assertThat(result.stdout()).contains("Successful:    5");
+    assertThat(result.stdout()).contains("Failed:        0");
   }
 
   @Test
@@ -75,19 +81,24 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
-        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken(),
         "--ingestion-url",
         "http://localhost:4242"
     );
 
-    result.assertExitCode(0);
-    assertThat(result.stderr()).contains(msg.failedToSendEvent(
+    result.assertExitCode(1);
+    assertEventsPublished(0);
+
+    assertThat(result.stderr()).contains("Unable to publish stream: Event publish failed (1):");
+    assertThat(result.stderr()).contains(
         "POST request with URI: "
             + "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
-    ));
-    assertEventsPublished(0);
+    );
+
+    assertThat(result.stdout()).contains("Total events:  1");
+    assertThat(result.stdout()).contains("Successful:    0");
+    assertThat(result.stdout()).contains("Failed:        1");
   }
 
   @Test
@@ -100,7 +111,6 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         eventsJsonString,
         "publish",
         "stream",
-        "--verbose",
         "--auth-token",
         meshTestEnv.awaitAuthToken(),
         "--ingestion-url",
@@ -109,5 +119,10 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
 
     result.assertSuccess();
     assertEventsPublished(5);
+
+    assertThat(result.stderr()).isEmpty();
+    assertThat(result.stdout()).contains("Total events:  5");
+    assertThat(result.stdout()).contains("Successful:    5");
+    assertThat(result.stdout()).contains("Failed:        0");
   }
 }

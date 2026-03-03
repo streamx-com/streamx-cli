@@ -16,11 +16,11 @@ import picocli.CommandLine.Command;
 
 @Command(name = "run",
     mixinStandardHelpOptions = true,
-    header = "Run a StreamX Mesh locally.")
+    header = "Run a StreamX Mesh locally")
 public class RunCommand extends AbstractSilentCommand {
   @CommandLine.Option(
       names = {"-f", "--file"},
-      description = "Path to mesh definition file.",
+      description = "Path to mesh definition file",
       defaultValue = "mesh.yaml"
   )
   public Path meshPath;

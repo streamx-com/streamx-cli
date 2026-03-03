@@ -3,7 +3,6 @@ package com.streamx.cli.commands.publish.stream;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.ingestion.CloudEventsSerde;
@@ -15,10 +14,12 @@ import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -155,25 +156,41 @@ public class StreamCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
 
     result.assertExitCode(1);
-
-    String expectedStderr = "Unable to publish stream: "
-        + "Failed to parse JSON: Unexpected character ('/' (code 47)): "
-        + "maybe a (non-standard) comment? (line: 1, column: 3)\n";
-    assertEquals(expectedStderr, result.stderr());
-
     assertEventsPublished(0);
+
+    assertThat(result.stderr()).contains("Failed to parse JSON: Unexpected character");
+    assertThat(result.stdout()).contains(
+        msg.streamPublishingCompleted(1, 0, 1)
+    );
   }
 
   @Test
-  void shouldFailOnInvalidCloudEvent() throws Exception {
-    String invalidEventsJson = """
+  void shouldFailOnFirstInvalidEvent() throws Exception {
+    String validEvent1 = ConcatenatedJsonSerde.serialize(
+        cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
+    );
+
+    String invalidEvents = """
         {
           "specversion": "1.0",
-          "invalid_id": "Accent Furniture",
-          "invalid_source": "streamx-commerce-accelerator",
-          "invalid_type": "com.streamx.blueprints.data.published.v1",
+          "id": "Accent Furniture",
+          "source": "streamx-commerce-accelerator",
+          "type": "bad.type",
           "datacontenttype": "application/json",
-          "subject": "cat:Accent Furniture",
+          "subject": "${relativePath}",
+          "time": "2026-01-01T00:00:00.000000Z",
+          "data": {
+            "content": "{}",
+            "type": "data/category"
+          }
+        }
+        {
+          "specversion": "1.0",
+          "id": "Accent Furniture",
+          "source": "streamx-commerce-accelerator",
+          "type": "ugly.type",
+          "datacontenttype": "application/json",
+          "subject": "${relativePath}",
           "time": "2026-01-01T00:00:00.000000Z",
           "data": {
             "content": "{}",
@@ -182,17 +199,72 @@ public class StreamCommandIT extends CliBaseIT {
         }
         """;
 
-    ProcessResult result = execWithStdin(invalidEventsJson, "publish", "stream");
+    String validEvent2 = ConcatenatedJsonSerde.serialize(
+        cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
+    );
+
+    String input = validEvent1 + invalidEvents + validEvent2;
+
+    ProcessResult result = execWithStdin(input, "publish", "stream");
 
     result.assertExitCode(1);
+    assertEventsPublished(1);
 
-    String expectedStderr = "Unable to publish stream: "
-        + "CloudEvent deserialization failed: "
-        + "Missing mandatory id attribute (line: 1, column: 313)\n";
-    assertEquals(expectedStderr, result.stderr());
-
-    assertEventsPublished(0);
+    assertThat(result.stdout()).contains(msg.streamPublishingCompleted(2, 1, 1));
+    assertThat(result.stderr()).contains("Bad request. Type [bad.type] is not allowed");
   }
+
+  @Test
+  void shouldContinueOnInvalidEventsIfContinueOnErrorFlagProvided() throws Exception {
+    String validEvent1 = ConcatenatedJsonSerde.serialize(
+        cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
+    );
+
+    String invalidEvents = """
+        {
+          "specversion": "1.0",
+          "id": "Accent Furniture",
+          "source": "streamx-commerce-accelerator",
+          "type": "bad.type",
+          "datacontenttype": "application/json",
+          "subject": "${relativePath}",
+          "time": "2026-01-01T00:00:00.000000Z",
+          "data": {
+            "content": "{}",
+            "type": "data/category"
+          }
+        }
+        {
+          "specversion": "1.0",
+          "id": "Accent Furniture",
+          "source": "streamx-commerce-accelerator",
+          "type": "ugly.type",
+          "datacontenttype": "application/json",
+          "subject": "${relativePath}",
+          "time": "2026-01-01T00:00:00.000000Z",
+          "data": {
+            "content": "{}",
+            "type": "data/category"
+          }
+        }
+        """;
+
+    String validEvent2 = ConcatenatedJsonSerde.serialize(
+        cloudEventGenerator.generate(1).stream().map(CloudEventsSerde::toJson).toList()
+    );
+
+    String input = validEvent1 + invalidEvents + validEvent2;
+
+    ProcessResult result = execWithStdin(input, "publish", "stream", "--continue-on-error");
+
+    result.assertExitCode(0);
+    assertEventsPublished(2);
+
+    assertThat(result.stdout()).contains(msg.streamPublishingCompleted(4, 2, 2));
+    assertThat(result.stderr()).contains("Bad request. Type [bad.type] is not allowed");
+    assertThat(result.stderr()).contains("Bad request. Type [ugly.type] is not allowed");
+  }
+
 
   @Nested
   class InvalidSource {

@@ -5,10 +5,8 @@ import java.util.List;
 public record StreamCommandResult(
     int successCount,
     int failureCount,
-    List<EventError> firstErrors
+    List<EventError> errors
 ) {
-
-  public static final int MAX_STORED_ERRORS = 100;
 
   public record EventError(
       int eventNumber,

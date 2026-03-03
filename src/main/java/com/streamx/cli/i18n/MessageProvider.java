@@ -269,4 +269,7 @@ public interface MessageProvider {
 
   @Message(id = 175, value = "  ... and %d more error(s) not shown")
   String streamMoreErrorsNotShown(int count);
+
+  @Message(id = 176, value = "One or more events failed to publish")
+  String eventsPartiallyFailedToPublish();
 }
