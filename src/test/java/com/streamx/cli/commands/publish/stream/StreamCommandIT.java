@@ -211,17 +211,20 @@ public class StreamCommandIT extends CliBaseIT {
             "failureCount" : 0,
             "unknownCount" : 3,
             "eventErrors" : [ {
-              "eventNumber" : 6,
+              "eventNumber" : null,
+              "batchNumber" : 2,
               "type" : "bad.type",
               "subject" : "subject-1",
               "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
             }, {
-              "eventNumber" : 6,
+              "eventNumber" : null,
+              "batchNumber" : 2,
               "type" : "bad.type",
               "subject" : "subject-2",
               "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
             }, {
-              "eventNumber" : 6,
+              "eventNumber" : null,
+              "batchNumber" : 2,
               "type" : "bad.type",
               "subject" : "subject-3",
               "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
@@ -256,17 +259,20 @@ public class StreamCommandIT extends CliBaseIT {
           "failureCount" : 0,
           "unknownCount" : 3,
           "eventErrors" : [ {
-            "eventNumber" : 6,
+            "eventNumber" : null,
+            "batchNumber" : 2,
             "type" : "bad.type",
             "subject" : "subject-1",
             "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
           }, {
-            "eventNumber" : 6,
+            "eventNumber" : null,
+            "batchNumber" : 2,
             "type" : "bad.type",
             "subject" : "subject-2",
             "errorMessage" : "Event publish result is unknown. Failed batch number: 2"
           }, {
-            "eventNumber" : 6,
+            "eventNumber" : null,
+            "batchNumber" : 2,
             "type" : "bad.type",
             "subject" : "subject-3",
             "errorMessage" : "Event publish result is unknown. Failed batch number: 2"

@@ -30,7 +30,7 @@ class StreamPublishingTracker {
   void recordFailure(String type, String subject, String errorMessage) {
     failureCount++;
     if (eventErrors.size() < MAX_STORED_ERRORS) {
-      eventErrors.add(new EventError(currentEventNumber(), type, subject, errorMessage));
+      eventErrors.add(new EventError(currentEventNumber(), null, type, subject, errorMessage));
     }
   }
 
@@ -54,7 +54,8 @@ class StreamPublishingTracker {
     for (CloudEvent event : events) {
       if (eventErrors.size() < MAX_STORED_ERRORS) {
         eventErrors.add(new EventError(
-            currentEventNumber(),
+            null,
+            batchNumber,
             event.getType(),
             event.getSubject(),
             msg.eventPublishResultIsUnknown(batchNumber)

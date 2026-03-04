@@ -14,7 +14,8 @@ public record StreamCommandResult(
 ) {
 
   public record EventError(
-      int eventNumber,
+      Integer eventNumber,
+      Integer batchNumber,
       String type,
       String subject,
       String errorMessage
