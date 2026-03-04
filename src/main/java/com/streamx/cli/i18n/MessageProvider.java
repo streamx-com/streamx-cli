@@ -48,7 +48,7 @@ public interface MessageProvider {
   )
   String dockerContainerStartupFailed(String containerName, Long timeoutSecs);
 
-  @Message(id = 111, value = "Failed to start mesh containers. %s.")
+  @Message(id = 111, value = "Failed to start mesh containers. %s")
   String failedToStartMeshContainers(String reason);
 
   @Message(id = 112, value = """
@@ -90,10 +90,10 @@ public interface MessageProvider {
   String stoppingMesh();
 
   @Message(id = 123, value = """
-      Unable to read mesh definition from %s.
+      Unable to read mesh definition from %s
       
       Details:
-      %s.""")
+      %s""")
   String unableToReadMeshDefinition(String fromPath, String details);
 
   @Message(id = 124, value = "Mesh definition is invalid. Skip reloading...")
@@ -145,12 +145,12 @@ public interface MessageProvider {
   String meshFileNotFound(String path);
 
   @Message(id = 139, value = """
-      StreamX configuration properties:
+      StreamX settings properties:
       =================================
       """)
   String listSettingsHeader();
 
-  @Message(id = 140, value = "No StreamX configuration properties found")
+  @Message(id = 140, value = "No StreamX settings properties found")
   String listSettingsNoPropertiesFound();
 
   @Message(id = 105, value = "No such settings property found: %s")

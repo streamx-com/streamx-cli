@@ -118,13 +118,13 @@ public abstract class CliBaseIT {
     if (NATIVE) {
       Path executable = findNativeExecutable();
       Assertions.assertTrue(Files.isExecutable(executable),
-          "Native executable not found at %s. Run 'mvn package -Pnative -DskipTests' first."
+          "Native executable not found at %s. Run 'mvn package -Pnative -DskipTests' first"
               .formatted(executable));
       return List.of(executable.toAbsolutePath().toString());
     } else {
       Path jar = TARGET.resolve("quarkus-app/quarkus-run.jar");
       Assertions.assertTrue(jar.toFile().exists(),
-          "JAR not found at %s. Run 'mvn package -DskipTests' first.".formatted(jar));
+          "JAR not found at %s. Run 'mvn package -DskipTests' first".formatted(jar));
       return List.of("java", "-jar", jar.toAbsolutePath().toString());
     }
   }

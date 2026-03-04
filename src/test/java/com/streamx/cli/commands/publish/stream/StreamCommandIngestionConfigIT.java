@@ -42,7 +42,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     assertEventsPublished(0);
 
     assertThat(result.stderr()).contains("Event publish failed (1):");
-    assertThat(result.stderr()).contains("Authentication failed.");
+    assertThat(result.stderr()).contains("Authentication failed");
 
     assertThat(result.stdout())
         .contains(msg.streamPublishingCompleted(1, 0, 1, 0));

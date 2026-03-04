@@ -100,10 +100,10 @@ public class InterpolationSupportTest {
   @Test
   void testExpandWithNoInterpolation() {
     // Case with no interpolation markers
-    String rawValue = "No interpolation here.";
+    String rawValue = "No interpolation here";
     String result = interpolationSupport.expand(rawValue);
 
-    assertEquals("No interpolation here.", result);
+    assertEquals("No interpolation here", result);
   }
 
   @Test
