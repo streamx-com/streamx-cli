@@ -36,9 +36,7 @@ class StreamPublishingTracker {
 
   void recordBatchSuccess(List<CloudEvent> events) {
     batchSuccessCount++;
-    for (CloudEvent event : events) {
-      successCount++;
-    }
+    successCount += events.size();
   }
 
   void recordBatchFailure(List<CloudEvent> events, String errorMessage) {
