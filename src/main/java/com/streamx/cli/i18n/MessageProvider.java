@@ -201,11 +201,14 @@ public interface MessageProvider {
   @Message(id = 151, value = "Input is empty")
   String inputIsEmpty();
 
-  @Message(id = 152, value = "Unable to open source input stream: %s")
-  String unableToOpenSourceInputStream(String source);
+  @Message(id = 152, value = "Unable to open source input stream: %s - %s")
+  String unableToOpenSourceInputStream(String source, String reason);
 
   @Message(id = 153, value = "Unable to read input stream: %s")
   String unableToReadInputStream(String reason);
+
+  @Message(id = 154, value = "Connection refused")
+  String connectionRefused();
 
   @Message(id = 155, value = "Invalid source URI: '%s'")
   String invalidSourceUri(String source);
@@ -218,15 +221,6 @@ public interface MessageProvider {
 
   @Message(id = 158, value = "Publishing stream from directory is not supported. Path: '%s'")
   String sourceIsDirectory(String path);
-
-  @Message(id = 159, value = "Source URI not found (404): '%s'")
-  String sourceUriNotFound(String uri);
-
-  @Message(id = 160, value = "Source URI not accessible: '%s' (HTTP %s)")
-  String sourceUriNotAccessible(String uri, String statusCode);
-
-  @Message(id = 161, value = "Source URI not reachable: '%s' - %s")
-  String sourceUriNotReachable(String uri, String reason);
 
   @Message(id = 162, value = "CloudEvent deserialization failed: %s")
   String cloudEventDeserializationFailed(String reason);

@@ -669,7 +669,10 @@ public class StreamCommandIT extends CliBaseIT {
         ProcessResult result = exec("publish", "stream", uri);
 
         result.assertExitCode(1);
-        assertThat(result.stderr()).contains(msg.sourceUriNotFound(uri));
+        assertThat(result.stderr()).contains(msg.unableToOpenSourceInputStream(
+            uri,
+            "HTTP 404 Not Found"
+        ));
       } finally {
         server.stop(0);
       }
@@ -691,7 +694,11 @@ public class StreamCommandIT extends CliBaseIT {
         ProcessResult result = exec("publish", "stream", uri);
 
         result.assertExitCode(1);
-        assertThat(result.stderr()).contains(msg.sourceUriNotAccessible(uri, "500"));
+        assertThat(result.stderr())
+            .contains(msg.unableToOpenSourceInputStream(
+                uri,
+                "HTTP 500 Internal Server Error"
+            ));
       } finally {
         server.stop(0);
       }
@@ -704,7 +711,8 @@ public class StreamCommandIT extends CliBaseIT {
       ProcessResult result = exec("publish", "stream", uri);
 
       result.assertExitCode(1);
-      assertThat(result.stderr()).contains(msg.sourceUriNotReachable(uri, "Connection refused"));
+      assertThat(result.stderr())
+          .contains(msg.unableToOpenSourceInputStream(uri, msg.connectionRefused()));
     }
 
     @Test
