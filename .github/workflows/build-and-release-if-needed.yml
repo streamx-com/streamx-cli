@@ -104,7 +104,7 @@ jobs:
           path: src/main/resources/META-INF/native-image/
 
   build:
-    needs: reachability-metadata
+    needs: [setup, reachability-metadata]
     strategy:
       fail-fast: false
       matrix:
@@ -269,7 +269,7 @@ jobs:
           git push
 
   brew-install-test:
-    needs: release
+    needs: [setup, release]
     name: ${{ matrix.name }}-brew-install-test
     runs-on: ${{ matrix.os }}
     strategy:
