@@ -42,6 +42,9 @@ release:
     changelog:
       formatted: ALWAYS
       format: '- {{commitShortHash}} {{commitTitle}}'
+      contributors:
+        format: '- {{contributorName}} ({{contributorUsernameAsLink}})'
+        enabled: true
 
 packagers:
   brew:
