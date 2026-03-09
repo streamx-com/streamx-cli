@@ -12,7 +12,7 @@ For more information, see the [StreamX CLI Reference](https://www.streamx.dev/gu
 
 ### Install from releases page (macOS, Linux)
 
-You can find all the available releases on [GitHub releases page](https://github.com/streamx-com/streamx-cli/releases).
+You can find all the available stable releases on [GitHub releases page](https://github.com/streamx-com/streamx-cli/releases).
 
 ### Using Homebrew (macOS, Linux)
 
