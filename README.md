@@ -1,5 +1,9 @@
 # StreamX CLI v2.x
 
+[StreamX](https://streamx.dev) is a globally distributed experience delivery that outperforms traditional CDNs.
+
+![logo](./logo.svg)
+
 This project provides utilities for managing the mesh:
 * It allows you to run a defined mesh from commands.
 * It allows you to ingest data into a mesh.
