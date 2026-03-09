@@ -79,6 +79,29 @@ jobs:
           gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get GitHub App bot details
+        env:
+          APP_ID: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
+        run: |
+          # Generate JWT
+          NOW=$(date +%s)
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 -w0 | tr '/+' '_-' | tr -d '=')
+          PAYLOAD=$(echo -n "{\"iat\":$((NOW-60)),\"exp\":$((NOW+600)),\"iss\":${APP_ID}}" | base64 -w0 | tr '/+' '_-' | tr -d '=')
+          SIGNATURE=$(echo -n "${HEADER}.${PAYLOAD}" | openssl dgst -sha256 -sign <(echo "$APP_PRIVATE_KEY") | base64 -w0 | tr '/+' '_-' | tr -d '=')
+          JWT="${HEADER}.${PAYLOAD}.${SIGNATURE}"
+          
+          # Get app slug
+          APP_SLUG=$(curl -s -H "Authorization: Bearer $JWT" https://api.github.com/app | jq -r '.slug')
+          
+          # Get bot user ID
+          BOT_USER_ID=$(curl -s https://api.github.com/users/${APP_SLUG}[bot] | jq '.id')
+          
+          echo "App slug: $APP_SLUG"
+          echo "Bot user: ${APP_SLUG}[bot]"
+          echo "Bot user ID: $BOT_USER_ID"
+          echo "Commit email: ${BOT_USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+
       - name: Run tests with native-image-agent
         run: |
           .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
