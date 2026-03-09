@@ -53,36 +53,49 @@ jobs:
         run: |
           pip install pyjwt cryptography --break-system-packages -q
           
-          JWT=$(python3 -c "
-          import jwt, time, os
+          JWT=$(python3 << 'PYEOF'
+          import jwt, time, os, sys
           now = int(time.time())
-          payload = {'iat': now - 60, 'exp': now + 600, 'iss': os.environ['APP_ID']}
+          app_id = int(os.environ['APP_ID'])
+          payload = {'iat': now - 60, 'exp': now + 600, 'iss': app_id}
           key = os.environ['APP_PRIVATE_KEY']
-          print(jwt.encode(payload, key, algorithm='RS256'))
-          ")
+          try:
+              token = jwt.encode(payload, key, algorithm='RS256')
+              print(token)
+          except Exception as e:
+              print(f"JWT generation failed: {e}", file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+          )
           
           echo "=== App metadata ==="
-          GH_TOKEN="$JWT" gh api /app --jq '{
-            id: .id,
-            slug: .slug,
-            name: .name,
-            owner: .owner.login,
-            permissions: .permissions,
-            events: .events
-          }'
+          curl -sf \
+            -H "Authorization: Bearer $JWT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/app | jq '{
+              id: .id,
+              slug: .slug,
+              name: .name,
+              owner: .owner.login,
+              permissions: .permissions,
+              events: .events
+            }'
           
-          SLUG=$(GH_TOKEN="$JWT" gh api /app --jq '.slug')
+          SLUG=$(curl -sf \
+            -H "Authorization: Bearer $JWT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/app | jq -r '.slug')
           
           echo ""
           echo "=== Bot user info ==="
-          gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '{
+          curl -sf https://api.github.com/users/${SLUG}%5Bbot%5D | jq '{
             login: .login,
             id: .id,
             node_id: .node_id,
             type: .type
           }'
           
-          BOT_ID=$(gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '.id')
+          BOT_ID=$(curl -sf https://api.github.com/users/${SLUG}%5Bbot%5D | jq -r '.id')
           
           echo ""
           echo "=== Correct commit author config ==="
