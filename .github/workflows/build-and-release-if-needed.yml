@@ -186,7 +186,7 @@ jobs:
             echo "type=stable" >> $GITHUB_OUTPUT
             echo "jreleaser_config=.github/jreleaser/jreleaser.yml" >> $GITHUB_OUTPUT
             echo "brew_tap=homebrew-tap" >> $GITHUB_OUTPUT
-            echo "brew_tap_slug=valkovich-ds/tap" >> $GITHUB_OUTPUT
+            echo "brew_tap_slug=streamx-com/tap" >> $GITHUB_OUTPUT
           fi
           echo "Release type: $(grep type <<< "$(cat $GITHUB_OUTPUT)" | head -1)"
 
@@ -244,7 +244,7 @@ jobs:
           HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           BREW_TAP: ${{ steps.release-type.outputs.brew_tap }}
         run: |
-          git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/valkovich-ds/${BREW_TAP}.git
+          git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/streamx-com/${BREW_TAP}.git
           cd ${BREW_TAP}/Formula
           
           VERSION=$(cd ../../ && ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
