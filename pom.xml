@@ -7,7 +7,7 @@
 
   <groupId>com.streamx.cli</groupId>
   <artifactId>streamx-cli</artifactId>
-  <version>0.2.11-SNAPSHOT</version>
+  <version>0.2.11-rc.1.8e01f5b</version>
 
   <scm>
     <connection>scm:git:https://github.com/streamx-com/streamx-cli.git</connection>
