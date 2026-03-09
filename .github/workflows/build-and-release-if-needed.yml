@@ -180,7 +180,7 @@ jobs:
           if [[ "$TAG" == *-rc.* ]]; then
             echo "type=preview" >> $GITHUB_OUTPUT
             echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
-            echo "brew_tap=homebrew-preview" >> $GITHUB_OUTPUT
+            echo "brew_tap=homebrew-preview-tap" >> $GITHUB_OUTPUT
             echo "brew_tap_slug=streamx-com/preview-tap" >> $GITHUB_OUTPUT
           else
             echo "type=stable" >> $GITHUB_OUTPUT
