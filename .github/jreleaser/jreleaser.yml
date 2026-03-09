@@ -34,9 +34,6 @@ release:
   github:
     overwrite: true
     tagName: '{{projectVersion}}'
-    commitAuthor:
-      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
-      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     milestone:
       close: false
     changelog:
@@ -49,9 +46,6 @@ release:
 packagers:
   brew:
     active: ALWAYS
-    commitAuthor:
-      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
-      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     repository:
       owner: streamx-com
       name: homebrew-tap

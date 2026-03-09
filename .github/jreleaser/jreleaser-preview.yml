@@ -36,9 +36,6 @@ release:
     name: homebrew-preview-tap
     overwrite: true
     tagName: '{{projectVersion}}'
-    commitAuthor:
-      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
-      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     prerelease:
       enabled: true
     milestone:
@@ -53,9 +50,6 @@ release:
 packagers:
   brew:
     active: ALWAYS
-    commitAuthor:
-      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
-      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     repository:
       owner: streamx-com
       name: homebrew-preview-tap
