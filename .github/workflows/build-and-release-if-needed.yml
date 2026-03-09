@@ -210,8 +210,6 @@ jobs:
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          JRELEASER_COMMIT_AUTHOR_NAME: ${{ vars.GH_STREAMX_RELEASE_BOT_NAME }}
-          JRELEASER_COMMIT_AUTHOR_EMAIL: ${{ vars.GH_STREAMX_RELEASE_BOT_EMAIL }}
         run: |
           chmod +x artifacts/streamx-*
           

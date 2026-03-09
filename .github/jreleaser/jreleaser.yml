@@ -34,6 +34,9 @@ release:
   github:
     overwrite: true
     tagName: '{{projectVersion}}'
+    commitAuthor:
+      name: "streamx-cli-release-bot"
+      email: "2963489+streamx-cli-release-bot@users.noreply.github.com"
     milestone:
       close: false
     changelog:
@@ -46,6 +49,9 @@ release:
 packagers:
   brew:
     active: ALWAYS
+    commitAuthor:
+      name: "streamx-cli-release-bot"
+      email: "2963489+streamx-cli-release-bot@users.noreply.github.com"
     repository:
       owner: streamx-com
       name: homebrew-tap
