@@ -10,15 +10,28 @@ For more information, see the [StreamX CLI Reference](https://www.streamx.dev/gu
 
 ## Installation
 
-**Install latest version:**
+### Install from releases page (macOS, Linux)
 
-`curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/refs/heads/main/install.sh | sh`
+You can find all the available releases on [GitHub releases page](https://github.com/streamx-com/streamx-cli/releases).
 
-**Install specific version:**
+### Using Homebrew (macOS, Linux)
 
-See the [available versions list](https://github.com/streamx-com/streamx-cli/releases)
+**Install latest stable version:**
 
-`curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/refs/heads/main/install.sh | VERSION=<version> sh`
+```sh
+brew install streamx-com/tap/streamx 
+```
+
+**Install specific stable version:**
+
+```sh
+
+brew install streamx-com/tap/streamx@<version>
+```
+
+**Install preview version:**
+
+Use the commands above as for stable releases, but replace `streamx-com/tap` to `streamx-com/preview-tap`.
 
 ## Configuration
 
