@@ -1,8 +1,8 @@
-# **StreamX CLI v2.x**
+# StreamX CLI v2.x
 
 This project provides utilities for managing the mesh:
-* It allows to run a defined mesh from commands,
-* It allows to ingest data into mesh.
+* It allows you to run a defined mesh from commands,
+* It allows you to ingest data into a mesh.
 
 For more information, see the [StreamX CLI Reference](https://www.streamx.dev/guides/main/streamx-command-line-interface-reference.html).
 
@@ -31,7 +31,7 @@ brew install streamx-com/tap/streamx@<version>
 
 **Install preview version:**
 
-Use the commands above as for stable releases, but replace `streamx-com/tap` to `streamx-com/preview-tap`.
+Use the commands above as for stable releases, but replace `streamx-com/tap` with `streamx-com/preview-tap`.
 
 ## Configuration
 
