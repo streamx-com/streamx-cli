@@ -18,11 +18,6 @@ permissions:
 
 jobs:
   trigger-release:
-    # TODO - apply better security for the release workflow if needed:
-    # https://github.com/orgs/community/discussions/155451#discussioncomment-12677922
-    # We also can restrict who can create tags.
-    # If such a paranoid security not needed, remove this TODO.
-    if: contains(fromJSON('["valkovich-ds", "marekczajkowski", "michalcukierman", "kamilchociej"]'), github.actor)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6

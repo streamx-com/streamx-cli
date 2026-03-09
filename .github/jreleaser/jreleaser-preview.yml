@@ -32,6 +32,8 @@ distributions:
 
 release:
   github:
+    owner: valkovich-ds
+    name: homebrew-preview-tap
     overwrite: true
     tagName: '{{projectVersion}}'
     prerelease:
