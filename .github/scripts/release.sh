@@ -45,7 +45,8 @@ if [[ "$TYPE" == "preview" ]]; then
   LAST_RC=$(git tag -l "${BASE}-rc.*" | sed "s/${BASE}-rc\.//" | sed 's/\..*//' | sort -n | tail -1)
   NEXT_RC=$(( ${LAST_RC:-0} + 1 ))
 
-  PREVIEW="${BASE}-rc.${NEXT_RC}"
+  SHORT_SHA=$(git rev-parse --short HEAD)
+  PREVIEW="${BASE}-rc.${NEXT_RC}.${SHORT_SHA}"
 
   echo ""
   echo "Preview version: $PREVIEW"
