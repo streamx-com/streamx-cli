@@ -51,16 +51,16 @@ jobs:
           APP_ID: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
           APP_PRIVATE_KEY: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
         run: |
-          # Generate JWT for app-level authentication
-          NOW=$(date +%s)
-          IAT=$((NOW - 60))
-          EXP=$((NOW + 600))
-
-          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
-          PAYLOAD=$(echo -n "{\"iat\":${IAT},\"exp\":${EXP},\"iss\":\"${APP_ID}\"}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
-          SIGNATURE=$(echo -n "${HEADER}.${PAYLOAD}" | openssl dgst -sha256 -sign <(echo "$APP_PRIVATE_KEY") | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
-          JWT="${HEADER}.${PAYLOAD}.${SIGNATURE}"
-
+          pip install pyjwt cryptography --break-system-packages -q
+          
+          JWT=$(python3 -c "
+          import jwt, time, os
+          now = int(time.time())
+          payload = {'iat': now - 60, 'exp': now + 600, 'iss': os.environ['APP_ID']}
+          key = os.environ['APP_PRIVATE_KEY']
+          print(jwt.encode(payload, key, algorithm='RS256'))
+          ")
+          
           echo "=== App metadata ==="
           GH_TOKEN="$JWT" gh api /app --jq '{
             id: .id,
@@ -70,9 +70,9 @@ jobs:
             permissions: .permissions,
             events: .events
           }'
-
+          
           SLUG=$(GH_TOKEN="$JWT" gh api /app --jq '.slug')
-
+          
           echo ""
           echo "=== Bot user info ==="
           gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '{
@@ -81,9 +81,9 @@ jobs:
             node_id: .node_id,
             type: .type
           }'
-
+          
           BOT_ID=$(gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '.id')
-
+          
           echo ""
           echo "=== Correct commit author config ==="
           echo "name: ${SLUG}[bot]"
