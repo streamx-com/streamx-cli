@@ -32,7 +32,7 @@ distributions:
 
 release:
   github:
-    owner: valkovich-ds
+    owner: streamx-com
     name: homebrew-preview-tap
     overwrite: true
     tagName: '{{projectVersion}}'
@@ -57,8 +57,7 @@ packagers:
       name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
       email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     repository:
-      owner: valkovich-ds
-      #      owner: streamx-com
+      owner: streamx-com
       name: homebrew-preview-tap
       branch: main
       branchPush: main
