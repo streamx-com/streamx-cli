@@ -29,8 +29,14 @@ brew install streamx-com/tap/streamx
 **Install specific stable version:**
 
 ```sh
+# Add brew tap
+brew tap streamx-com/tap
 
-brew install streamx-com/tap/streamx@<version>
+# List available formulas
+brew search streamx-com/tap
+
+# Install the specific versioned formula from the previous step
+brew install <formula>
 ```
 
 **Install preview version:**
