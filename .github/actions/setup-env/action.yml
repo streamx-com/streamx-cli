@@ -22,10 +22,7 @@ runs:
     - name: Set up JDK
       uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '25'
-
-        # Mandrel distribution (recommended by Quarkus) isn't available on intel macOS.
-        # As there is no difference in native-image size, we just use the graalvm-community.
-        distribution: 'graalvm-community'
+        java-version: '25.0.1'
+        distribution: 'mandrel'
         cache: 'maven'
         github-token: ${{ inputs.github_token }}
