@@ -30,6 +30,19 @@ distributions:
       - path: artifacts/streamx-{{projectVersion}}-macos-x86_64.zip
         platform: osx-x86_64
 
+  streamx-jar:
+    type: JAVA_BINARY
+    executable:
+      name: streamx
+      windowsExtension: bat
+    java:
+      version: '21'
+    packagers:
+      brew:
+        active: NEVER
+    artifacts:
+      - path: artifacts/streamx-jar-{{projectVersion}}.zip
+
 release:
   github:
     owner: streamx-com

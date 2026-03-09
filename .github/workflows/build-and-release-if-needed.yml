@@ -103,6 +103,13 @@ jobs:
           name: reachability-metadata
           path: src/main/resources/META-INF/native-image/
 
+      - name: Upload runner JAR
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: streamx-runner-jar
+          path: target/*-runner.jar
+
   build:
     needs: [setup, reachability-metadata]
     strategy:
@@ -190,12 +197,18 @@ jobs:
           fi
           echo "Release type: $(grep type <<< "$(cat $GITHUB_OUTPUT)" | head -1)"
 
-      - name: Download all artifacts
+      - name: Download native binary artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           pattern: streamx-*
           merge-multiple: true
+
+      - name: Download JAR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: streamx-runner-jar
+          path: target/
 
       - name: Generate GitHub App token
         id: app-token
@@ -213,7 +226,7 @@ jobs:
         run: |
           chmod +x artifacts/streamx-*
           
-          echo "Pre-create platform ZIPs manually"
+          echo "Pre-create platform ZIPs for native binaries"
           VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
           for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
             mkdir -p staging/$PLATFORM/bin
@@ -224,6 +237,13 @@ jobs:
             cd ..
           done
           
+          echo "Pre-create Java binary ZIP"
+          mkdir -p staging-jar/streamx-jar/lib
+          cp target/*-runner.jar staging-jar/streamx-jar/lib/streamx.jar
+          cd staging-jar
+          zip -r ../artifacts/streamx-jar-${VERSION}.zip streamx-jar/
+          cd ..
+
           ./mvnw jreleaser:full-release \
             -Djreleaser.config.file=${{ steps.release-type.outputs.jreleaser_config }} \
             -Djreleaser.strict=true
