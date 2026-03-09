@@ -197,20 +197,19 @@ jobs:
           pattern: streamx-*
           merge-multiple: true
 
-      #      - name: Generate GitHub App token
-      #        id: app-token
-      #        uses: actions/create-github-app-token@v1
-      #        with:
-      #          app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
-      #          private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
-      #          owner: streamx-com
-      #          repositories: homebrew-tap,homebrew-preview-tap
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
+          private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
+          owner: streamx-com
+          repositories: homebrew-tap,homebrew-preview-tap
 
       - name: Release with JReleaser
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN_VALKOVICH_DS_TEST }}
+          JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           chmod +x artifacts/streamx-*
           
@@ -242,7 +241,7 @@ jobs:
       # Because of this, we create a separate formula for each version.
       - name: Create versioned Homebrew formula
         env:
-          HOMEBREW_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN_VALKOVICH_DS_TEST }}
+          HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           BREW_TAP: ${{ steps.release-type.outputs.brew_tap }}
         run: |
           git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/valkovich-ds/${BREW_TAP}.git

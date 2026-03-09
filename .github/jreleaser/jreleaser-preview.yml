@@ -32,6 +32,8 @@ distributions:
 
 release:
   github:
+    # Publish github release to homebrew-preview-tap repo
+    # to avoid too many releases in the main repo.
     owner: valkovich-ds
     name: homebrew-preview-tap
     overwrite: true

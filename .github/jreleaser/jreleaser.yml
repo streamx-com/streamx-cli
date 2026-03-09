@@ -44,8 +44,7 @@ packagers:
   brew:
     active: ALWAYS
     repository:
-      owner: valkovich-ds
-#      owner: streamx-com
+      owner: streamx-com
       name: homebrew-tap
       branch: main
       branchPush: main
