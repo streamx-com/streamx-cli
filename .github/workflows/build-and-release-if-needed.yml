@@ -210,8 +210,8 @@ jobs:
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          JRELEASER_COMMIT_AUTHOR_NAME: ${{ secrets.GH_STREAMX_RELEASE_BOT_NAME }}
-          JRELEASER_COMMIT_AUTHOR_EMAIL: ${{ secrets.GH_STREAMX_RELEASE_BOT_EMAIL }}
+          JRELEASER_COMMIT_AUTHOR_NAME: ${{ vars.GH_STREAMX_RELEASE_BOT_NAME }}
+          JRELEASER_COMMIT_AUTHOR_EMAIL: ${{ vars.GH_STREAMX_RELEASE_BOT_EMAIL }}
         run: |
           chmod +x artifacts/streamx-*
           
@@ -263,8 +263,8 @@ jobs:
           CLASS_SUFFIX=$(echo "$VERSION" | sed 's/[^a-zA-Z0-9]//g')
           sed -i "s/class Streamx/class StreamxAT${CLASS_SUFFIX}/" "$FILENAME"
           
-          git config user.name "${{ secrets.GH_STREAMX_RELEASE_BOT_NAME }}"
-          git config user.email "${{ secrets.GH_STREAMX_RELEASE_BOT_EMAIL }}"
+          git config user.name "${{ vars.GH_STREAMX_RELEASE_BOT_NAME }}"
+          git config user.email "${{ vars.GH_STREAMX_RELEASE_BOT_EMAIL }}"
           git add "$FILENAME"
           git commit -m "Add versioned formula for ${VERSION}"
           git push
