@@ -32,12 +32,13 @@ distributions:
 
 release:
   github:
-    # Publish github release to homebrew-preview-tap repo
-    # to avoid too many releases in the main repo.
     owner: valkovich-ds
     name: homebrew-preview-tap
     overwrite: true
     tagName: '{{projectVersion}}'
+    commitAuthor:
+      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
+      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     prerelease:
       enabled: true
     milestone:
@@ -49,6 +50,9 @@ release:
 packagers:
   brew:
     active: ALWAYS
+    commitAuthor:
+      name: "{{Env.JRELEASER_COMMIT_AUTHOR_NAME}}"
+      email: "{{Env.JRELEASER_COMMIT_AUTHOR_EMAIL}}"
     repository:
       owner: valkovich-ds
       #      owner: streamx-com

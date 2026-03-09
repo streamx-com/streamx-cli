@@ -23,6 +23,6 @@ runs:
       uses: graalvm/setup-graalvm@v1
       with:
         java-version: '25.0.1'
-        distribution: 'mandrel'
+        distribution: 'graalvm-community'
         cache: 'maven'
         github-token: ${{ inputs.github_token }}
