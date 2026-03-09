@@ -15,6 +15,22 @@ platform:
     osx-x86_64: macos-x86_64
     osx-aarch_64: macos-aarch64
 
+assemble:
+  javaArchive:
+    streamx-jar:
+      active: ALWAYS
+      exported: true
+      stereotype: CLI
+      archiveName: streamx-jar-{{projectVersion}}
+      java:
+        version: '21'
+      mainJar:
+        path: artifacts/streamx-jar.jar
+      fileSets:
+        - input: .
+          includes:
+            - LICENSE.txt
+
 distributions:
   streamx:
     type: BINARY
@@ -34,13 +50,8 @@ distributions:
     type: JAVA_BINARY
     executable:
       name: streamx
-    java:
-      mainClass: io.quarkus.runner.GeneratedMain
-      version: '21'
     brew:
       active: NEVER
-    artifacts:
-      - path: artifacts/streamx-jar-{{projectVersion}}.zip
 
 release:
   github:

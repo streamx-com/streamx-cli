@@ -236,16 +236,8 @@ jobs:
             cd ..
           done
           
-          echo "Pre-create Java binary ZIP"
-          mkdir -p staging-jar/streamx-jar/lib
-          cp target/*-runner.jar staging-jar/streamx-jar/lib/streamx.jar
-          cd staging-jar
-          zip -r ../artifacts/streamx-jar-${VERSION}.zip streamx-jar/
-          cd ..
-
-          ./mvnw jreleaser:full-release \
-            -Djreleaser.config.file=${{ steps.release-type.outputs.jreleaser_config }} \
-            -Djreleaser.strict=true
+          echo "Prepare Java binary JAR"
+          cp target/*-runner.jar artifacts/streamx-jar.jar
 
       - name: Upload JReleaser output
         if: always()
