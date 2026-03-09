@@ -220,7 +220,7 @@ jobs:
           for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
             mkdir -p staging/$PLATFORM/bin
             cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
-            cp LICENSE staging/$PLATFORM/
+            cp LICENSE.txt staging/$PLATFORM/
             cd staging
             zip -r ../artifacts/streamx-${VERSION}-${PLATFORM}.zip $PLATFORM/
             cd ..
