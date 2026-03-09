@@ -46,19 +46,23 @@ jobs:
     runs-on: ubuntu-24.04
     name: Get GitHub App info
     steps:
-      - name: Generate App token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
-          private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
-
-      - name: Get App metadata
+      - name: Get App and Bot info
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_ID: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
         run: |
+          # Generate JWT for app-level authentication
+          NOW=$(date +%s)
+          IAT=$((NOW - 60))
+          EXP=$((NOW + 600))
+
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
+          PAYLOAD=$(echo -n "{\"iat\":${IAT},\"exp\":${EXP},\"iss\":\"${APP_ID}\"}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
+          SIGNATURE=$(echo -n "${HEADER}.${PAYLOAD}" | openssl dgst -sha256 -sign <(echo "$APP_PRIVATE_KEY") | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
+          JWT="${HEADER}.${PAYLOAD}.${SIGNATURE}"
+
           echo "=== App metadata ==="
-          gh api /app --jq '{
+          GH_TOKEN="$JWT" gh api /app --jq '{
             id: .id,
             slug: .slug,
             name: .name,
@@ -67,24 +71,23 @@ jobs:
             events: .events
           }'
 
-          SLUG=$(gh api /app --jq '.slug')
+          SLUG=$(GH_TOKEN="$JWT" gh api /app --jq '.slug')
 
           echo ""
           echo "=== Bot user info ==="
-          gh api "/users/${SLUG}[bot]" --jq '{
+          gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '{
             login: .login,
             id: .id,
             node_id: .node_id,
             type: .type
           }'
 
-          BOT_ID=$(gh api "/users/${SLUG}[bot]" --jq '.id')
+          BOT_ID=$(gh api --header "Authorization:" "/users/${SLUG}[bot]" --jq '.id')
 
           echo ""
           echo "=== Correct commit author config ==="
           echo "name: ${SLUG}[bot]"
           echo "email: ${BOT_ID}+${SLUG}[bot]@users.noreply.github.com"
-          
   setup:
     runs-on: ubuntu-24.04
     name: setup
