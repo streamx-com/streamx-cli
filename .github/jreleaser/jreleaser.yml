@@ -34,12 +34,10 @@ distributions:
     type: JAVA_BINARY
     executable:
       name: streamx
-      windowsExtension: bat
     java:
       version: '21'
-    packagers:
-      brew:
-        active: NEVER
+    brew:
+      active: NEVER
     artifacts:
       - path: artifacts/streamx-jar-{{projectVersion}}.zip
 
