@@ -42,65 +42,6 @@ permissions:
   contents: write
 
 jobs:
-  app-info:
-    runs-on: ubuntu-24.04
-    name: Get GitHub App info
-    steps:
-      - name: Get App and Bot info
-        env:
-          APP_ID: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
-          APP_PRIVATE_KEY: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
-        run: |
-          pip install pyjwt cryptography --break-system-packages -q
-          
-          JWT=$(python3 << 'PYEOF'
-          import jwt, time, os, sys
-          now = int(time.time())
-          app_id = int(os.environ['APP_ID'])
-          payload = {'iat': now - 60, 'exp': now + 600, 'iss': app_id}
-          key = os.environ['APP_PRIVATE_KEY']
-          try:
-              token = jwt.encode(payload, key, algorithm='RS256')
-              print(token)
-          except Exception as e:
-              print(f"JWT generation failed: {e}", file=sys.stderr)
-              sys.exit(1)
-          PYEOF
-          )
-          
-          echo "=== App metadata ==="
-          curl -sf \
-            -H "Authorization: Bearer $JWT" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/app | jq '{
-              id: .id,
-              slug: .slug,
-              name: .name,
-              owner: .owner.login,
-              permissions: .permissions,
-              events: .events
-            }'
-          
-          SLUG=$(curl -sf \
-            -H "Authorization: Bearer $JWT" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/app | jq -r '.slug')
-          
-          echo ""
-          echo "=== Bot user info ==="
-          curl -sf https://api.github.com/users/${SLUG}%5Bbot%5D | jq '{
-            login: .login,
-            id: .id,
-            node_id: .node_id,
-            type: .type
-          }'
-          
-          BOT_ID=$(curl -sf https://api.github.com/users/${SLUG}%5Bbot%5D | jq -r '.id')
-          
-          echo ""
-          echo "=== Correct commit author config ==="
-          echo "name: ${SLUG}[bot]"
-          echo "email: ${BOT_ID}+${SLUG}[bot]@users.noreply.github.com"
   setup:
     runs-on: ubuntu-24.04
     name: setup
@@ -320,8 +261,8 @@ jobs:
           CLASS_SUFFIX=$(echo "$VERSION" | sed 's/[^a-zA-Z0-9]//g')
           sed -i "s/class Streamx/class StreamxAT${CLASS_SUFFIX}/" "$FILENAME"
           
-          git config user.name "streamx-cli-release-bot"
-          git config user.email "2963489+streamx-cli-release-bot@users.noreply.github.com"
+          git config user.name "streamx-cli-release-bot[bot]"
+          git config user.email "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
           git add "$FILENAME"
           git commit -m "Add versioned formula for ${VERSION}"
           git push

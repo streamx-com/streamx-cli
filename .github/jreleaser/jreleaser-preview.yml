@@ -37,8 +37,8 @@ release:
     overwrite: true
     tagName: '{{projectVersion}}'
     commitAuthor:
-      name: "streamx-cli-release-bot"
-      email: "2963489+streamx-cli-release-bot@users.noreply.github.com"
+      name: "streamx-cli-release-bot[bot]"
+      email: "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
     prerelease:
       enabled: true
     milestone:
@@ -54,8 +54,8 @@ packagers:
   brew:
     active: ALWAYS
     commitAuthor:
-      name: "streamx-cli-release-bot"
-      email: "2963489+streamx-cli-release-bot@users.noreply.github.com"
+      name: "streamx-cli-release-bot[bot]"
+      email: "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
     repository:
       owner: streamx-com
       name: homebrew-preview-tap
