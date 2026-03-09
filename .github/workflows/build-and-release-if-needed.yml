@@ -204,7 +204,7 @@ jobs:
           app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
           private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
           owner: streamx-com
-          repositories: homebrew-tap,homebrew-preview-tap
+          repositories: homebrew-tap,homebrew-preview-tap,streamx-cli,streamx-cli-preview
 
       - name: Release with JReleaser
         env:

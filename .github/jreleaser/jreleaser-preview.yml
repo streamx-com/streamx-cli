@@ -33,7 +33,7 @@ distributions:
 release:
   github:
     owner: streamx-com
-    name: homebrew-preview-tap
+    name: streamx-cli-preview
     overwrite: true
     tagName: '{{projectVersion}}'
     commitAuthor:
