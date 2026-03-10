@@ -25,8 +25,6 @@ assemble:
       executable:
         name: streamx
         windowsExtension: bat
-      java:
-        version: '21'
       mainJar:
         path: artifacts/streamx-jar.jar
       fileSets:
