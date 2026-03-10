@@ -390,3 +390,6 @@ jobs:
             --dir .
           unzip streamx-jar-*.zip
           streamx-jar-*/bin/streamx --version | grep -q "${{ github.ref_name }}"
+
+      - name: Test install script
+        run: ./install.sh.test "${{ github.ref_name }}"

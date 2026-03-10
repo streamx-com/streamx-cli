@@ -18,7 +18,7 @@ Please read the [contributing guidelines](./CONTRIBUTING.md) if you're a develop
 
 You can find all the available stable releases on [GitHub releases page](https://github.com/streamx-com/streamx-cli/releases).
 
-### Using Homebrew (macOS, Linux)
+### Install using Homebrew (macOS, Linux)
 
 **Install latest stable version:**
 
@@ -42,6 +42,26 @@ brew install <formula>
 **Install preview version:**
 
 Use the commands above as for stable releases, but replace `streamx-com/tap` with `streamx-com/preview-tap`.
+
+### Install using curl (macOS, Linux)
+
+**Install latest stable version to current directory:**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/main/install.sh | sh
+```
+
+**Install globally (requires sudo):**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/main/install.sh | sudo sh -s -- --dest /usr/local/bin
+```
+
+**Install specific version:**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/main/install.sh | sh -s -- --version 1.0.0
+```
 
 ## Configuration
 
