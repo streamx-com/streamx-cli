@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install-test.sh - Tests for install.sh
 #
-# Usage: ./install.sh.test <version>
+# Usage: ./install-test.sh <version>
 #
 # Requires the release to already be published on GitHub.
 
@@ -99,7 +99,8 @@ assert_version "${OVERWRITE_DIR}/streamx" "$VERSION"
 # ---------------------------------------------------------------------------
 info "Test 5: --help flag"
 
-if sh "$INSTALL_SCRIPT" --help | grep -q "Usage"; then
+HELP_OUTPUT=$(sh "$INSTALL_SCRIPT" --help 2>&1 || true)
+if echo "$HELP_OUTPUT" | grep -q "Usage"; then
   pass "--help prints usage"
 else
   fail "--help did not print usage"
