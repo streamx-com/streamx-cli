@@ -87,3 +87,10 @@ packagers:
       branchPush: main
     formulaName: streamx
     multiPlatform: true
+
+files:
+  artifacts:
+    - path: artifacts/streamx-linux-x86_64
+    - path: artifacts/streamx-linux-aarch64
+    - path: artifacts/streamx-macos-aarch64
+    - path: artifacts/streamx-macos-x86_64
