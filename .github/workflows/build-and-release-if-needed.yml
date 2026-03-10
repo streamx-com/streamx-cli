@@ -47,6 +47,7 @@ jobs:
     name: setup
     outputs:
       platforms: ${{ steps.matrix.outputs.platforms }}
+      build_native: ${{ steps.flags.outputs.build_native }}
     steps:
       - name: Define platform matrix
         id: matrix
@@ -58,6 +59,32 @@ jobs:
             { "os": "macos-26-intel",   "name": "macos-amd64",  "artifact": "streamx-macos-x86_64" }
           ]'
           echo "platforms=$(echo "$PLATFORMS" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+      - name: Determine build flags
+        id: flags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BUILD_NATIVE=false
+          
+          # Always build native binaries on tags and main branch pushes
+          if [[ "${{ github.ref }}" == refs/tags/* ]] \
+            || [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            BUILD_NATIVE=true
+          fi
+          
+          # For any PR-related event, check if the PR already has an approval
+          if [[ "$BUILD_NATIVE" == "false" && -n "${{ github.event.pull_request.number }}" ]]; then
+            APPROVED=$(gh pr view ${{ github.event.pull_request.number }} \
+              --repo ${{ github.repository }} \
+              --json reviewDecision --jq '.reviewDecision')
+            if [[ "$APPROVED" == "APPROVED" ]]; then
+              BUILD_NATIVE=true
+            fi
+          fi
+          
+          echo "build_native=$BUILD_NATIVE" >> "$GITHUB_OUTPUT"
+          echo "Build native: $BUILD_NATIVE"
 
   build-jar:
     needs: setup
@@ -97,21 +124,21 @@ jobs:
       #
       # More detailed explanation: https://github.com/streamx-com/streamx-cli/pull/13#discussion_r2882693570
       - name: Upload reachability metadata
-        if: startsWith(github.ref, 'refs/tags/')
+        if: needs.setup.outputs.build_native == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: reachability-metadata
           path: src/main/resources/META-INF/native-image/
 
       - name: Upload runner JAR
-        if: startsWith(github.ref, 'refs/tags/')
+        if: needs.setup.outputs.build_native == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: streamx-runner-jar
           path: target/*-runner.jar
 
-  build-native-image:
-    if: startsWith(github.ref, 'refs/tags/')
+  build-native:
+    if: needs.setup.outputs.build_native == 'true'
     needs: [setup, build-jar]
     strategy:
       fail-fast: false
@@ -168,7 +195,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: build-native-image
+    needs: build-native
     runs-on: ubuntu-24.04
     outputs:
       brew_tap_slug: ${{ steps.release-type.outputs.brew_tap_slug }}
