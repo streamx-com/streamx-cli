@@ -3,8 +3,7 @@ name: 'Build and release if tag found'
 # Runs on pull requests, pushes to main, tag pushes (which trigger releases) and on pull request reviews.
 on:
   pull_request:
-  pull_request_review:
-    types: [submitted]
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -45,11 +44,6 @@ permissions:
 
 jobs:
   setup:
-    # pull_request_review triggers on any review (approved, changes requested, comment).
-    # Skip non-approval reviews to avoid redundant builds.
-    if: >-
-      github.event_name != 'pull_request_review'
-      || github.event.review.state == 'approved'
     runs-on: ubuntu-24.04
     name: setup
     outputs:
@@ -81,8 +75,7 @@ jobs:
           fi
           
           # For any PR-related event, check if the PR already has an approval
-          PR_NUMBER="${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}"
-          if [[ "$BUILD_NATIVE" == "false" && -n "$PR_NUMBER" ]]; then
+          if [[ "$BUILD_NATIVE" == "false" && -n ${{ github.event.pull_request.number }} ]]; then
             APPROVED=$(gh pr view ${{ github.event.pull_request.number }} \
               --repo ${{ github.repository }} \
               --json reviewDecision --jq '.reviewDecision')
