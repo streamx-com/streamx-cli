@@ -4,7 +4,7 @@ name: 'Build and release if tag found'
 on:
   pull_request:
   pull_request_review:
-    types: [ submitted ]
+    types: [submitted]
   push:
     branches:
       - main
@@ -81,7 +81,8 @@ jobs:
           fi
           
           # For any PR-related event, check if the PR already has an approval
-          if [[ "$BUILD_NATIVE" == "false" && -n "${{ github.event.pull_request.number }}" ]]; then
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}"
+          if [[ "$BUILD_NATIVE" == "false" && -n "$PR_NUMBER" ]]; then
             APPROVED=$(gh pr view ${{ github.event.pull_request.number }} \
               --repo ${{ github.repository }} \
               --json reviewDecision --jq '.reviewDecision')
@@ -351,7 +352,7 @@ jobs:
           echo "Test versioned formula"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${{ github.ref_name }}
           streamx --version | grep -q "${{ github.ref_name }}"
-          brew uninstall streamx
+          brew uninstall streamx@${{ github.ref_name }}
 
       - name: Test native binary from GitHub release
         env:
