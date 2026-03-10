@@ -22,6 +22,9 @@ assemble:
       exported: true
       stereotype: CLI
       archiveName: streamx-jar-{{projectVersion}}
+      executable:
+        name: streamx
+        windowsExtension: bat
       java:
         version: '21'
       mainJar:

@@ -179,23 +179,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine release type
-        id: release-type
-        run: |
-          TAG="${{ github.ref_name }}"
-          if [[ "$TAG" == *-rc.* ]]; then
-            echo "type=preview" >> $GITHUB_OUTPUT
-            echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
-            echo "brew_tap=homebrew-preview-tap" >> $GITHUB_OUTPUT
-            echo "brew_tap_slug=streamx-com/preview-tap" >> $GITHUB_OUTPUT
-          else
-            echo "type=stable" >> $GITHUB_OUTPUT
-            echo "jreleaser_config=.github/jreleaser/jreleaser.yml" >> $GITHUB_OUTPUT
-            echo "brew_tap=homebrew-tap" >> $GITHUB_OUTPUT
-            echo "brew_tap_slug=streamx-com/tap" >> $GITHUB_OUTPUT
-          fi
-          echo "Release type: $(grep type <<< "$(cat $GITHUB_OUTPUT)" | head -1)"
-
       - name: Download native binary artifacts
         uses: actions/download-artifact@v4
         with:
@@ -218,6 +201,23 @@ jobs:
           owner: streamx-com
           repositories: homebrew-tap,homebrew-preview-tap,streamx-cli,streamx-cli-preview
 
+      - name: Determine release type
+        id: release-type
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *-rc.* ]]; then
+            echo "type=preview" >> $GITHUB_OUTPUT
+            echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
+            echo "brew_tap=homebrew-preview-tap" >> $GITHUB_OUTPUT
+            echo "brew_tap_slug=streamx-com/preview-tap" >> $GITHUB_OUTPUT
+          else
+            echo "type=stable" >> $GITHUB_OUTPUT
+            echo "jreleaser_config=.github/jreleaser/jreleaser.yml" >> $GITHUB_OUTPUT
+            echo "brew_tap=homebrew-tap" >> $GITHUB_OUTPUT
+            echo "brew_tap_slug=streamx-com/tap" >> $GITHUB_OUTPUT
+          fi
+          echo "Release type: $(grep type <<< "$(cat $GITHUB_OUTPUT)" | head -1)"
+
       - name: Release with JReleaser
         env:
           JRELEASER_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -238,6 +238,10 @@ jobs:
           
           echo "Prepare Java binary JAR"
           cp target/*-runner.jar artifacts/streamx-jar.jar
+
+          ./mvnw jreleaser:full-release \
+            -Djreleaser.config.file=${{ steps.release-type.outputs.jreleaser_config }} \
+            -Djreleaser.strict=true
 
       - name: Upload JReleaser output
         if: always()
