@@ -240,7 +240,7 @@ jobs:
           echo "Prepare Java binary JAR"
           cp target/*-runner.jar artifacts/streamx-jar.jar
 
-          ./mvnw jreleaser:full-release \
+          ./mvnw jreleaser:assemble jreleaser:full-release \
             -Djreleaser.config.file=${{ steps.release-type.outputs.jreleaser_config }} \
             -Djreleaser.strict=true
 
