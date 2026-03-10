@@ -49,7 +49,6 @@ jobs:
     name: setup
     outputs:
       platforms: ${{ steps.matrix.outputs.platforms }}
-      build_native: ${{ steps.flags.outputs.build_native }}
     steps:
       - name: Define platform matrix
         id: matrix
@@ -62,40 +61,6 @@ jobs:
           ]'
           echo "platforms=$(echo "$PLATFORMS" | jq -c .)" >> "$GITHUB_OUTPUT"
 
-      - name: Determine build flags
-        id: flags
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BUILD_NATIVE=false
-
-          # Always build native binaries on tags and main branch pushes
-          if [[ "${{ github.ref }}" == refs/tags/* ]] \
-            || [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
-            BUILD_NATIVE=true
-          fi
-
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          if [[ -z "$PR_NUMBER" && "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            PR_NUMBER=$(gh pr list \
-              --repo ${{ github.repository }} \
-              --head "${{ github.ref_name }}" \
-              --state open \
-              --json number --jq '.[0].number')
-          fi
-
-          if [[ "$BUILD_NATIVE" == "false" && -n "$PR_NUMBER" ]]; then
-            APPROVAL_COUNT=$(gh pr view "$PR_NUMBER" \
-              --repo ${{ github.repository }} \
-              --json latestReviews \
-              --jq '[.latestReviews[] | select(.state == "APPROVED")] | length')
-            if [[ "$APPROVAL_COUNT" -gt 0 ]]; then
-              BUILD_NATIVE=true
-            fi
-          fi
-
-          echo "build_native=$BUILD_NATIVE" >> "$GITHUB_OUTPUT"
-          echo "Build native: $BUILD_NATIVE"
   build-jar:
     needs: setup
     runs-on: ubuntu-24.04
@@ -146,7 +111,6 @@ jobs:
           path: target/*-runner.jar
 
   build-native:
-    if: needs.setup.outputs.build_native == 'true'
     needs: [setup, build-jar]
     strategy:
       fail-fast: false
