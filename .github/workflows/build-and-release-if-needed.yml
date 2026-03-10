@@ -74,9 +74,17 @@ jobs:
             BUILD_NATIVE=true
           fi
           
-          # For any PR-related event, check if the PR already has an approval
-          if [[ "$BUILD_NATIVE" == "false" && -n "${{ github.event.pull_request.number }}" ]]; then
-            APPROVED=$(gh pr view ${{ github.event.pull_request.number }} \
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if [[ -z "$PR_NUMBER" && "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PR_NUMBER=$(gh pr list \
+              --repo ${{ github.repository }} \
+              --head "${{ github.ref_name }}" \
+              --state open \
+              --json number --jq '.[0].number')
+          fi
+          
+          if [[ "$BUILD_NATIVE" == "false" && -n "$PR_NUMBER" ]]; then
+            APPROVED=$(gh pr view "$PR_NUMBER" \
               --repo ${{ github.repository }} \
               --json reviewDecision --jq '.reviewDecision')
             if [[ "$APPROVED" == "APPROVED" ]]; then
@@ -86,7 +94,6 @@ jobs:
           
           echo "build_native=$BUILD_NATIVE" >> "$GITHUB_OUTPUT"
           echo "Build native: $BUILD_NATIVE"
-
   build-jar:
     needs: setup
     runs-on: ubuntu-24.04
@@ -337,7 +344,7 @@ jobs:
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
-        
+
       - name: Test Homebrew install
         run: |
           echo "Test latest version"
