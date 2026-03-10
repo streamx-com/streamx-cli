@@ -111,6 +111,7 @@ jobs:
           path: target/*-runner.jar
 
   build-native-image:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [setup, test-build-jar]
     strategy:
       fail-fast: false
