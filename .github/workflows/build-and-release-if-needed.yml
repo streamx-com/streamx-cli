@@ -1,8 +1,10 @@
 name: 'Build and release if tag found'
 
-# Runs on pull requests, pushes to main, and tag pushes (which trigger releases).
+# Runs on pull requests, pushes to main, tag pushes (which trigger releases) and on pull request reviews.
 on:
   pull_request:
+  pull_request_review:
+    types: [ submitted ]
   push:
     branches:
       - main
@@ -43,6 +45,11 @@ permissions:
 
 jobs:
   setup:
+    # pull_request_review triggers on any review (approved, changes requested, comment).
+    # Skip non-approval reviews to avoid redundant builds.
+    if: >-
+      github.event_name != 'pull_request_review'
+      || github.event.review.state == 'approved'
     runs-on: ubuntu-24.04
     name: setup
     outputs:
@@ -124,14 +131,12 @@ jobs:
       #
       # More detailed explanation: https://github.com/streamx-com/streamx-cli/pull/13#discussion_r2882693570
       - name: Upload reachability metadata
-        if: needs.setup.outputs.build_native == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: reachability-metadata
           path: src/main/resources/META-INF/native-image/
 
       - name: Upload runner JAR
-        if: needs.setup.outputs.build_native == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: streamx-runner-jar
