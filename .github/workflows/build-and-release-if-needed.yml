@@ -75,7 +75,7 @@ jobs:
           fi
           
           # For any PR-related event, check if the PR already has an approval
-          if [[ "$BUILD_NATIVE" == "false" && -n ${{ github.event.pull_request.number }} ]]; then
+          if [[ "$BUILD_NATIVE" == "false" && -n "${{ github.event.pull_request.number }}" ]]; then
             APPROVED=$(gh pr view ${{ github.event.pull_request.number }} \
               --repo ${{ github.repository }} \
               --json reviewDecision --jq '.reviewDecision')
