@@ -335,6 +335,9 @@ jobs:
           owner: streamx-com
           repositories: homebrew-tap,homebrew-preview-tap,streamx-cli,streamx-cli-preview
 
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+        
       - name: Test Homebrew install
         run: |
           echo "Test latest version"
