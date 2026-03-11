@@ -4,7 +4,7 @@
 
   <groupId>com.streamx.cli</groupId>
   <artifactId>streamx-cli</artifactId>
-  <version>0.5.10-SNAPSHOT</version>
+  <version>0.5.11-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/streamx-com/streamx-cli.git</connection>
