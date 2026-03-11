@@ -1,3 +1,6 @@
+name: Build
+run-name: Build ${{ inputs.ref || github.sha }}
+
 on:
   push:
     branches:

@@ -1,3 +1,6 @@
+name: Release
+run-name: ${{ (github.event_name == 'workflow_dispatch' && inputs.preview) && 'Preview Release' || 'Release' }}
+
 on:
   workflow_dispatch:
     inputs:
@@ -5,8 +8,6 @@ on:
         description: 'Preview release'
         type: boolean
         default: false
-
-run-name: ${{ (github.event_name == 'workflow_dispatch' && inputs.preview) && 'Preview Release' || 'Release' }}
 
 concurrency:
   group: release-${{ github.ref_name }}
@@ -16,7 +17,6 @@ permissions:
   id-token: write
   checks: write
   contents: write
-  pull-requests: read
 
 jobs:
   prepare-release:
@@ -36,8 +36,6 @@ jobs:
 
       - name: Prepare release
         id: prepare
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

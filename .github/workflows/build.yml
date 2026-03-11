@@ -1,3 +1,6 @@
+name: PR Build
+run-name: PR Build - ${{ github.event.pull_request.title }}
+
 on:
   pull_request:
 
