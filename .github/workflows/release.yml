@@ -60,7 +60,6 @@ jobs:
 
           ./mvnw -B release:prepare \
             -Darguments="-DskipTests" \
-            -DscmCommentPrefix="[skip ci] " \
             -P release \
             $EXTRA_ARGS
 

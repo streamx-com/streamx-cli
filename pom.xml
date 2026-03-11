@@ -337,6 +337,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <tagNameFormat>@{project.version}</tagNameFormat>
+          <scmCommentPrefix>[no ci] [maven-release-plugin]</scmCommentPrefix>
         </configuration>
       </plugin>
       <plugin>
