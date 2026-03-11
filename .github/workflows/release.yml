@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
     inputs:
       preview:
-        description: 'Preview release (version will be X.Y.Z-rc.<short_sha>)'
+        description: 'Preview release'
         type: boolean
         default: false
 
@@ -21,8 +21,6 @@ permissions:
 
 jobs:
   prepare-release:
-    # TODO - remove the needs check before merge
-    needs: check
     runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.prepare.outputs.tag }}
