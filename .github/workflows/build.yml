@@ -1,5 +1,5 @@
 name: PR Build
-run-name: PR Build - ${{ github.event.pull_request.title }}
+run-name: PR Build - ${{ github.event.pull_request.title }} - {{ github.sha }}
 
 on:
   pull_request:
