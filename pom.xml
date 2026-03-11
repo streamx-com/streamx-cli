@@ -4,13 +4,13 @@
 
   <groupId>com.streamx.cli</groupId>
   <artifactId>streamx-cli</artifactId>
-  <version>0.5.10-rc.cae0630</version>
+  <version>0.5.10-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/streamx-com/streamx-cli.git</connection>
     <developerConnection>scm:git:https://github.com/streamx-com/streamx-cli.git</developerConnection>
     <url>https://github.com/streamx-com/streamx-cli</url>
-    <tag>0.5.10-rc.cae0630</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
