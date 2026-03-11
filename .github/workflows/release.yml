@@ -1,21 +1,107 @@
 name: 'Release'
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      platforms:
-        required: true
-        type: string
+      preview:
+        description: 'Preview release (version will be X.Y.Z-rc.<short_sha>)'
+        type: boolean
+        default: false
+
+  # TODO - remove before merge
+  pull_request:
+
+run-name: >-
+  ${{
+    (github.event_name == 'workflow_dispatch' && inputs.preview)
+      && 'Preview Release'
+    || 'Release'
+  }}
+
+permissions:
+  id-token: write
+  checks: write
+  contents: write
+  pull-requests: read
 
 jobs:
+  prepare-release:
+
+    # TODO - remove the whole if condition before merge
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || contains(github.event.head_commit.message, 'initiate release')
+      || contains(github.event.head_commit.message, 'initiate preview release')
+
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.prepare.outputs.tag }}
+      release_sha: ${{ steps.prepare.outputs.release_sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-tags: true
+      - uses: ./.github/actions/setup-env
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare release
+        id: prepare
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          PREVIEW=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PREVIEW="${{ inputs.preview }}"
+          
+          # TODO - remove the elif condition before merge
+          elif [[ "${{ github.event.head_commit.message }}" == *"initiate preview release"* ]]; then
+            PREVIEW=true
+          fi
+
+          EXTRA_ARGS=""
+          if [[ "$PREVIEW" == "true" ]]; then
+            CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+            BASE_VERSION="${CURRENT_VERSION%-SNAPSHOT}"
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            EXTRA_ARGS="-DreleaseVersion=${BASE_VERSION}-rc.${SHORT_SHA} -DdevelopmentVersion=${CURRENT_VERSION}"
+          fi
+
+          ./mvnw -B release:prepare \
+            -Darguments="-DskipTests" \
+            -DscmCommentPrefix="[skip ci] " \
+            -P release \
+            $EXTRA_ARGS
+
+          RELEASE_VERSION=$(git describe --tags --abbrev=0)
+          RELEASE_SHA=$(git rev-list -n 1 "$RELEASE_VERSION")
+
+          git push origin HEAD:${{ github.ref_name }}
+
+          echo "tag=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_sha=$RELEASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Prepared release: $RELEASE_VERSION ($RELEASE_SHA)"
+
+  build:
+    needs: prepare-release
+    uses: ./.github/workflows/build-cross-platform.yml
+    with:
+      ref: ${{ needs.prepare-release.outputs.release_sha }}
+    secrets: inherit
+
   release:
+    needs: [prepare-release, build]
     runs-on: ubuntu-24.04
     outputs:
       brew_tap_slug: ${{ steps.release-type.outputs.brew_tap_slug }}
       release_repo: ${{ steps.release-type.outputs.release_repo }}
+    env:
+      RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
           fetch-tags: true
       - uses: ./.github/actions/setup-env
         with:
@@ -46,7 +132,7 @@ jobs:
       - name: Determine release type
         id: release-type
         run: |
-          TAG="${{ github.ref_name }}"
+          TAG="${RELEASE_TAG}"
           if [[ "$TAG" == *-rc.* ]]; then
             echo "type=preview" >> $GITHUB_OUTPUT
             echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
@@ -125,15 +211,19 @@ jobs:
           git push
 
   release-test:
-    needs: release
+    needs: [prepare-release, build, release]
     name: ${{ matrix.name }}-release-test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.platforms) }}
+        include: ${{ fromJSON(needs.build.outputs.platforms) }}
+    env:
+      RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
       - uses: ./.github/actions/setup-env
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -154,47 +244,47 @@ jobs:
         run: |
           echo "Test latest version"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
-          streamx --version | grep -q "${{ github.ref_name }}"
+          streamx --version | grep -q "${RELEASE_TAG}"
           brew uninstall streamx
 
           echo "Test versioned formula"
-          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${{ github.ref_name }}
-          streamx --version | grep -q "${{ github.ref_name }}"
-          brew uninstall streamx@${{ github.ref_name }}
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${RELEASE_TAG}
+          streamx --version | grep -q "${RELEASE_TAG}"
+          brew uninstall streamx@${RELEASE_TAG}
 
       - name: Test native binary from GitHub release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          gh release download "${{ github.ref_name }}" \
+          gh release download "${RELEASE_TAG}" \
             --repo "${{ needs.release.outputs.release_repo }}" \
             --pattern "${{ matrix.artifact }}" \
             --dir .
           chmod +x ${{ matrix.artifact }}
-          ./${{ matrix.artifact }} --version | grep -q "${{ github.ref_name }}"
+          ./${{ matrix.artifact }} --version | grep -q "${RELEASE_TAG}"
 
       - name: Test native archive from GitHub release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           ARCHIVE_PLATFORM=$(echo "${{ matrix.artifact }}" | sed 's/^streamx-//')
-          gh release download "${{ github.ref_name }}" \
+          gh release download "${RELEASE_TAG}" \
             --repo "${{ needs.release.outputs.release_repo }}" \
             --pattern "streamx-*-${ARCHIVE_PLATFORM}.zip" \
             --dir .
           unzip streamx-*-${ARCHIVE_PLATFORM}.zip
-          ./${ARCHIVE_PLATFORM}/bin/streamx --version | grep -q "${{ github.ref_name }}"
+          ./${ARCHIVE_PLATFORM}/bin/streamx --version | grep -q "${RELEASE_TAG}"
 
       - name: Test JAR archive from GitHub release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          gh release download "${{ github.ref_name }}" \
+          gh release download "${RELEASE_TAG}" \
             --repo "${{ needs.release.outputs.release_repo }}" \
             --pattern "streamx-jar-*.zip" \
             --dir .
           unzip streamx-jar-*.zip
-          streamx-jar-*/bin/streamx --version | grep -q "${{ github.ref_name }}"
+          streamx-jar-*/bin/streamx --version | grep -q "${RELEASE_TAG}"
 
       - name: Test install script
-        run: ./install.sh.test "${{ github.ref_name }}"
+        run: ./install.sh.test "${RELEASE_TAG}"

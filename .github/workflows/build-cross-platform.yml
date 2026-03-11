@@ -1,25 +1,23 @@
-name: 'Build and release if tag found'
-
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-    tags:
-      - '*'
 
-run-name: >-
-  ${{
-    startsWith(github.ref, 'refs/tags/')
-      && format('Release {0}', github.ref_name)
-    || format('Build {0} - {1}', github.head_ref || github.ref_name,
-         github.event.pull_request.head.sha || github.sha)
-  }}
+      # TODO - remove before merge
+      - native-build-2
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+    outputs:
+      platforms:
+        value: ${{ jobs.setup.outputs.platforms }}
 
 permissions:
   id-token: write
   checks: write
-  contents: write
+  contents: read
   pull-requests: read
 
 jobs:
@@ -45,6 +43,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: ./.github/actions/setup-env
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
@@ -91,6 +91,8 @@ jobs:
     name: ${{ matrix.name }}-build
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: ./.github/actions/setup-env
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
@@ -135,11 +137,3 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: staging/${{ matrix.artifact }}
-
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [setup, build-native]
-    uses: ./.github/workflows/release.yml
-    with:
-      platforms: ${{ needs.setup.outputs.platforms }}
-    secrets: inherit
