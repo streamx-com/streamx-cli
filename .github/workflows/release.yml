@@ -23,14 +23,28 @@ permissions:
   pull-requests: read
 
 jobs:
+  # TODO - remove the check step before merge
+  check:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check release trigger
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            exit 0
+          fi
+          COMMIT_MSG=$(cat <<'EOF'
+          ${{ github.event.head_commit.message }}
+          EOF
+          )
+          if [[ "$COMMIT_MSG" != *"initiate release"* ]]; then
+            echo "Not a release commit."
+            exit 1
+          fi
+
   prepare-release:
-
-    # TODO - remove the whole if condition before merge
-#    if: >-
-#      github.event_name == 'workflow_dispatch'
-#      || contains(github.event.head_commit.message, 'initiate release')
-#      || contains(github.event.head_commit.message, 'initiate preview release')
-
+    # TODO - remove the needs check before merge
+    needs: check
     runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.prepare.outputs.tag }}
