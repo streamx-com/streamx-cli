@@ -25,17 +25,16 @@ permissions:
 jobs:
   # TODO - remove the check step before merge
   check:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-24.04
     steps:
       - name: Check release trigger
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             exit 0
           fi
-          COMMIT_MSG=$(cat <<'EOF'
-          ${{ github.event.head_commit.message }}
-          EOF
-          )
           if [[ "$COMMIT_MSG" != *"initiate release"* ]]; then
             echo "Not a release commit."
             exit 1
@@ -58,20 +57,22 @@ jobs:
 
       - name: Prepare release
         id: prepare
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          EXTRA_ARGS=""
           PREVIEW=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             PREVIEW="${{ inputs.preview }}"
-          
-          # TODO - remove the elif condition before merge
-          elif [[ "${{ github.event.head_commit.message }}" == *"initiate preview release"* ]]; then
+          # TODO - remove the commit message check before merge
+          # Also remove the $COMMIT_MSG env var above
+          elif [[ "$COMMIT_MSG" == *"initiate preview release"* ]]; then
             PREVIEW=true
           fi
 
-          EXTRA_ARGS=""
           if [[ "$PREVIEW" == "true" ]]; then
             CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
             BASE_VERSION="${CURRENT_VERSION%-SNAPSHOT}"
