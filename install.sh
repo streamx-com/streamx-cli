@@ -116,7 +116,7 @@ download_and_install() {
   info "Downloading ${BINARY_NAME} from ${DOWNLOAD_URL} ..."
 
   if command -v curl > /dev/null 2>&1; then
-    HTTP_CODE=$(curl -#fSL -w "%{http_code}" -o "${TMPDIR}/${ARTIFACT}" "$DOWNLOAD_URL") || true
+    HTTP_CODE=$(curl -#fSL --retry 5 --retry-delay 5 -w "%{http_code}" -o "${TMPDIR}/${ARTIFACT}" "$DOWNLOAD_URL") || true
     if [ "$HTTP_CODE" != "200" ]; then
       error "Download failed (HTTP ${HTTP_CODE}). Check that version '${TAG}' exists at https://github.com/${REPO}/releases"
     fi
