@@ -26,10 +26,10 @@ jobs:
   prepare-release:
 
     # TODO - remove the whole if condition before merge
-    if: >-
-      github.event_name == 'workflow_dispatch'
-      || contains(github.event.head_commit.message, 'initiate release')
-      || contains(github.event.head_commit.message, 'initiate preview release')
+#    if: >-
+#      github.event_name == 'workflow_dispatch'
+#      || contains(github.event.head_commit.message, 'initiate release')
+#      || contains(github.event.head_commit.message, 'initiate preview release')
 
     runs-on: ubuntu-24.04
     outputs:
