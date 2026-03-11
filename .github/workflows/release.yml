@@ -6,9 +6,6 @@ on:
         type: boolean
         default: false
 
-  # TODO - remove before merge
-  pull_request:
-
 run-name: >-
   ${{
     (github.event_name == 'workflow_dispatch' && inputs.preview)
@@ -23,23 +20,6 @@ permissions:
   pull-requests: read
 
 jobs:
-  # TODO - remove the check step before merge
-  check:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check release trigger
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            exit 0
-          fi
-          if [[ "$COMMIT_MSG" != *"initiate release"* ]]; then
-            echo "Not a release commit."
-            exit 1
-          fi
-
   prepare-release:
     # TODO - remove the needs check before merge
     needs: check
@@ -67,10 +47,6 @@ jobs:
           PREVIEW=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             PREVIEW="${{ inputs.preview }}"
-          # TODO - remove the commit message check before merge
-          # Also remove the $COMMIT_MSG env var above
-          elif [[ "$COMMIT_MSG" == *"initiate preview release"* ]]; then
-            PREVIEW=true
           fi
 
           if [[ "$PREVIEW" == "true" ]]; then
