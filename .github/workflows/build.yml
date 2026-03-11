@@ -25,12 +25,12 @@ jobs:
         if: always()
         uses: scacap/action-surefire-report@v1
         with:
-          check_name: Test report - build ${{ matrix.name }}
+          check_name: Test report - build
 
       - name: Upload Docker logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: docker-logs-${{ matrix.name }}
+          name: Docker logs - build
           path: target/docker-logs/
           if-no-files-found: ignore
