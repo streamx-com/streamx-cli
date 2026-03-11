@@ -6,12 +6,7 @@ on:
         type: boolean
         default: false
 
-run-name: >-
-  ${{
-    (github.event_name == 'workflow_dispatch' && inputs.preview)
-      && 'Preview Release'
-    || 'Release'
-  }}
+run-name: ${{ (github.event_name == 'workflow_dispatch' && inputs.preview) && 'Preview Release' || 'Release' }}
 
 concurrency:
   group: release-${{ github.ref_name }}
