@@ -1,0 +1,200 @@
+name: 'Release'
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    outputs:
+      brew_tap_slug: ${{ steps.release-type.outputs.brew_tap_slug }}
+      release_repo: ${{ steps.release-type.outputs.release_repo }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-tags: true
+      - uses: ./.github/actions/setup-env
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download native binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: streamx-*
+          merge-multiple: true
+
+      - name: Download JAR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: streamx-runner-jar
+          path: target/
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
+          private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
+          owner: streamx-com
+          repositories: homebrew-tap,homebrew-preview-tap,streamx-cli,streamx-cli-preview
+
+      - name: Determine release type
+        id: release-type
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *-rc.* ]]; then
+            echo "type=preview" >> $GITHUB_OUTPUT
+            echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
+            echo "brew_tap=homebrew-preview-tap" >> $GITHUB_OUTPUT
+            echo "brew_tap_slug=streamx-com/preview-tap" >> $GITHUB_OUTPUT
+            echo "release_repo=streamx-com/streamx-cli-preview" >> $GITHUB_OUTPUT
+          else
+            echo "type=stable" >> $GITHUB_OUTPUT
+            echo "jreleaser_config=.github/jreleaser/jreleaser.yml" >> $GITHUB_OUTPUT
+            echo "brew_tap=homebrew-tap" >> $GITHUB_OUTPUT
+            echo "brew_tap_slug=streamx-com/tap" >> $GITHUB_OUTPUT
+            echo "release_repo=streamx-com/streamx-cli" >> $GITHUB_OUTPUT
+          fi
+          echo "Release type: $(grep type <<< "$(cat $GITHUB_OUTPUT)" | head -1)"
+
+      - name: Release with JReleaser
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          chmod +x artifacts/streamx-*
+          
+          echo "Pre-create platform ZIPs for native binaries"
+          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
+            mkdir -p staging/$PLATFORM/bin
+            cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
+            cp LICENSE.txt staging/$PLATFORM/
+            cd staging
+            zip -r ../artifacts/streamx-${VERSION}-${PLATFORM}.zip $PLATFORM/
+            cd ..
+          done
+          
+          echo "Prepare Java binary JAR"
+          cp target/*-runner.jar artifacts/streamx-jar.jar
+
+          ./mvnw jreleaser:assemble jreleaser:full-release \
+            -Djreleaser.config.file=${{ steps.release-type.outputs.jreleaser_config }} \
+            -Djreleaser.strict=true
+
+      - name: Upload JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-output
+          path: |
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties
+
+      - name: Create versioned Homebrew formula
+        env:
+          HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          BREW_TAP: ${{ steps.release-type.outputs.brew_tap }}
+        run: |
+          git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/streamx-com/${BREW_TAP}.git
+          cd ${BREW_TAP}/Formula
+          
+          VERSION=$(cd ../../ && ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          FILENAME="streamx@${VERSION}.rb"
+          
+          if [ -f "$FILENAME" ]; then
+            echo "Versioned formula already exists, skipping."
+            exit 0
+          fi
+          
+          echo "Copy the freshly-pushed unversioned formula"
+          cp streamx.rb "$FILENAME"
+          
+          CLASS_SUFFIX=$(echo "$VERSION" | sed -E 's/[^a-zA-Z0-9]+([a-zA-Z])/\U\1/g; s/[^a-zA-Z0-9]//g')
+          sed -i "s/class Streamx/class StreamxAT${CLASS_SUFFIX}/" "$FILENAME"
+          
+          git config user.name "streamx-cli-release-bot[bot]"
+          git config user.email "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
+          git add "$FILENAME"
+          git commit -m "Add versioned formula for ${VERSION}"
+          git push
+
+  release-test:
+    needs: release
+    name: ${{ matrix.name }}-release-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.platforms) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-env
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GH_STREAMX_RELEASE_APP_ID }}
+          private-key: ${{ secrets.GH_STREAMX_RELEASE_APP_PRIVATE_KEY }}
+          owner: streamx-com
+          repositories: homebrew-tap,homebrew-preview-tap,streamx-cli,streamx-cli-preview
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Test Homebrew install
+        run: |
+          echo "Test latest version"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
+          streamx --version | grep -q "${{ github.ref_name }}"
+          brew uninstall streamx
+
+          echo "Test versioned formula"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${{ github.ref_name }}
+          streamx --version | grep -q "${{ github.ref_name }}"
+          brew uninstall streamx@${{ github.ref_name }}
+
+      - name: Test native binary from GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ needs.release.outputs.release_repo }}" \
+            --pattern "${{ matrix.artifact }}" \
+            --dir .
+          chmod +x ${{ matrix.artifact }}
+          ./${{ matrix.artifact }} --version | grep -q "${{ github.ref_name }}"
+
+      - name: Test native archive from GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          ARCHIVE_PLATFORM=$(echo "${{ matrix.artifact }}" | sed 's/^streamx-//')
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ needs.release.outputs.release_repo }}" \
+            --pattern "streamx-*-${ARCHIVE_PLATFORM}.zip" \
+            --dir .
+          unzip streamx-*-${ARCHIVE_PLATFORM}.zip
+          ./${ARCHIVE_PLATFORM}/bin/streamx --version | grep -q "${{ github.ref_name }}"
+
+      - name: Test JAR archive from GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ needs.release.outputs.release_repo }}" \
+            --pattern "streamx-jar-*.zip" \
+            --dir .
+          unzip streamx-jar-*.zip
+          streamx-jar-*/bin/streamx --version | grep -q "${{ github.ref_name }}"
+
+      - name: Test install script
+        run: ./install.sh.test "${{ github.ref_name }}"

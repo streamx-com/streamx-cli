@@ -1,0 +1,20 @@
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  test-and-build-jar:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-env
+        with:
+          gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test and build JAR
+        run: |
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
