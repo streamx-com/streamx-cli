@@ -116,8 +116,7 @@ jobs:
       - name: Determine release type
         id: release-type
         run: |
-          TAG="${RELEASE_TAG}"
-          if [[ "$TAG" == *-rc.* ]]; then
+          if [[ "${{ inputs.preview }}" == "true" ]]; then
             echo "type=preview" >> $GITHUB_OUTPUT
             echo "jreleaser_config=.github/jreleaser/jreleaser-preview.yml" >> $GITHUB_OUTPUT
             echo "brew_tap=homebrew-preview-tap" >> $GITHUB_OUTPUT
