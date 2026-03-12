@@ -136,17 +136,17 @@ jobs:
         env:
           JRELEASER_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           chmod +x artifacts/streamx-*
           
           echo "Pre-create platform ZIPs for native binaries"
-          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
           for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
             mkdir -p staging/$PLATFORM/bin
             cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
             cp LICENSE.txt staging/$PLATFORM/
             cd staging
-            zip -r ../artifacts/streamx-${VERSION}-${PLATFORM}.zip $PLATFORM/
+            zip -r ../artifacts/streamx-${RELEASE_TAG}-${PLATFORM}.zip $PLATFORM/
             cd ..
           done
           
@@ -170,12 +170,12 @@ jobs:
         env:
           HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           BREW_TAP: ${{ steps.release-type.outputs.brew_tap }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/streamx-com/${BREW_TAP}.git
           cd ${BREW_TAP}/Formula
           
-          VERSION=$(cd ../../ && ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
-          FILENAME="streamx@${VERSION}.rb"
+          FILENAME="streamx@${RELEASE_TAG}.rb"
           
           if [ -f "$FILENAME" ]; then
             echo "Versioned formula already exists, skipping."
@@ -185,13 +185,13 @@ jobs:
           echo "Copy the freshly-pushed unversioned formula"
           cp streamx.rb "$FILENAME"
           
-          CLASS_SUFFIX=$(echo "$VERSION" | sed -E 's/[^a-zA-Z0-9]+([a-zA-Z])/\U\1/g; s/[^a-zA-Z0-9]//g')
+          CLASS_SUFFIX=$(echo "$RELEASE_TAG" | sed -E 's/[^a-zA-Z0-9]+([a-zA-Z])/\U\1/g; s/[^a-zA-Z0-9]//g')
           sed -i "s/class Streamx/class StreamxAT${CLASS_SUFFIX}/" "$FILENAME"
           
           git config user.name "streamx-cli-release-bot[bot]"
           git config user.email "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
           git add "$FILENAME"
-          git commit -m "Add versioned formula for ${VERSION}"
+          git commit -m "Add versioned formula for ${RELEASE_TAG}"
           git push
 
   release-test:
