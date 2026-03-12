@@ -15,7 +15,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "get",
     mixinStandardHelpOptions = true,
-    description = "Get configuration property"
+    header = "Get settings property"
 )
 public class GetCommand extends AbstractCommand<String> {
   @CommandLine.Parameters(index = "0", description = "Property key")

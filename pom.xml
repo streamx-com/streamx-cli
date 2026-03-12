@@ -18,7 +18,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <streamx.version>2.0.11</streamx.version>
+    <streamx.version>2.0.24</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
   </properties>
 
@@ -74,14 +74,12 @@
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-annotations</artifactId>
-      <version>3.0.4.Final</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-processor</artifactId>
-      <version>3.0.4.Final</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -332,6 +330,12 @@
         <version>${compiler-plugin.version}</version>
         <configuration>
           <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.jboss.logging</groupId>
+              <artifactId>jboss-logging-processor</artifactId>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>

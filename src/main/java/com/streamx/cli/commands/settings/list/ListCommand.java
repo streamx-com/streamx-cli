@@ -17,7 +17,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "list",
     mixinStandardHelpOptions = true,
-    description = "Display configuration properties"
+    header = "Display all settings properties"
 )
 public class ListCommand extends AbstractCommand<Map<String, String>> {
   @Override

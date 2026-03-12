@@ -1,13 +1,13 @@
 package com.streamx.cli.test;
 
 import com.github.dockerjava.api.DockerClient;
+import com.streamx.runner.docker.DockerClientFactory;
 import com.streamx.runner.validation.DockerContainerValidator;
-import com.streamx.runner.validation.DockerEnvironmentValidator;
 import java.util.Set;
 
 public class MeshTestsUtils {
   public static void cleanUpMesh(String... containersToRemove) {
-    DockerClient client = new DockerEnvironmentValidator().validateDockerClient();
+    DockerClient client = DockerClientFactory.create();
 
     for (String container : containersToRemove) {
       try {

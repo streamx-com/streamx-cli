@@ -100,6 +100,18 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     }
   }
 
+  public int handleExecutionError(Exception e) {
+    if (verbose) {
+      // Print exception stacktrace
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      System.err.println(sw);
+    }
+
+    return ShortErrorMessageHandler.shortErrorMessage(e, spec.commandLine());
+  }
+
   public int execute() {
     int exitCode = 0;
 
@@ -109,15 +121,16 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
       if (!textOutput.isEmpty()) {
         System.out.println(textOutput);
       }
-    } catch (Exception e) {
-      exitCode = ShortErrorMessageHandler.shortErrorMessage(e, spec.commandLine());
-      if (verbose) {
-        // Print exception stacktrace
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        System.err.println(sw);
+
+      if (result.getError().isPresent()) {
+        exitCode = handleExecutionError(result.getError().get());
       }
+
+      if (result.getExitCodeOverride().isPresent()) {
+        exitCode = result.getExitCodeOverride().get();
+      }
+    } catch (Exception e) {
+      exitCode = handleExecutionError(e);
     }
 
     return exitCode;

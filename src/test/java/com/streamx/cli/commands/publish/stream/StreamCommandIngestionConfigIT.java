@@ -39,10 +39,13 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.failedToSendEvent(
-        "Authentication failed. Make sure that the given token is valid."
-    ));
     assertEventsPublished(0);
+
+    assertThat(result.stderr()).contains("Event publish failed (1):");
+    assertThat(result.stderr()).contains("Authentication failed");
+
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(1, 0, 1, 0));
   }
 
   @Test
@@ -61,6 +64,9 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
 
     result.assertSuccess();
     assertEventsPublished(5);
+
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(5, 5, 0, 0));
   }
 
   @Test
@@ -80,11 +86,16 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.failedToSendEvent(
+    assertEventsPublished(0);
+
+    assertThat(result.stderr()).contains("Event publish failed (1):");
+    assertThat(result.stderr()).contains(
         "POST request with URI: "
             + "http://localhost:4242/ingestion/v2/cloudevents failed due to HTTP client error"
-    ));
-    assertEventsPublished(0);
+    );
+
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(1, 0, 1, 0));
   }
 
   @Test
@@ -105,5 +116,8 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
 
     result.assertSuccess();
     assertEventsPublished(5);
+
+    assertThat(result.stdout())
+        .contains(msg.streamPublishingCompleted(5, 5, 0, 0));
   }
 }

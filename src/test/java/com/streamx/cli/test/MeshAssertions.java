@@ -15,9 +15,7 @@ public class MeshAssertions {
   private static final AtomicLong prevEventCount = new AtomicLong(0);
 
   public static synchronized void assertEventsPublished(long count) {
-    try (PulsarAdmin admin = PulsarAdmin.builder()
-        .serviceHttpUrl(PULSAR_WEB_URL)
-        .build()) {
+    try (PulsarAdmin admin = PulsarAdmin.builder().serviceHttpUrl(PULSAR_WEB_URL).build()) {
       TopicStats stats = admin.topics().getStats(PULSAR_TOPIC);
       long topicMessageCount = stats.getMsgInCounter();
 
@@ -31,6 +29,15 @@ public class MeshAssertions {
     } catch (Exception e) {
       throw new RuntimeException(
           "Failed to create Pulsar admin client: " + e.getMessage(), e);
+    }
+  }
+
+  public static synchronized void resetPublishedEventsBaseline() {
+    try (PulsarAdmin admin = PulsarAdmin.builder().serviceHttpUrl(PULSAR_WEB_URL).build()) {
+      TopicStats stats = admin.topics().getStats(PULSAR_TOPIC);
+      prevEventCount.set(stats.getMsgInCounter());
+    } catch (Exception e) {
+      // ignore
     }
   }
 }

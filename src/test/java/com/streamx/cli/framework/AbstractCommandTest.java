@@ -73,4 +73,53 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
 
     assertEquals("second", result2);
   }
+
+  @Test
+  void shouldPrintErrorWhenResultHasError() {
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
+    command.setRunCommandHandler(() -> {
+      CommandResult<TestObject> result = new CommandResult<>(TestObject.random());
+      result.setError(new CliException("Partial failure"));
+      return result;
+    });
+    new CommandLine(command);
+    int exitCode = command.execute();
+
+    assertEquals(1, exitCode);
+    assertFalse(outStream.toString().isEmpty());
+    assertTrue(errStream.toString().contains("Partial failure"));
+  }
+
+  @Test
+  void shouldOverrideExitCode() {
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
+    command.setRunCommandHandler(() -> {
+      CommandResult<TestObject> result = new CommandResult<>(TestObject.random());
+      result.setExitCodeOverride(42);
+      return result;
+    });
+    new CommandLine(command);
+    int exitCode = command.execute();
+
+    assertEquals(42, exitCode);
+    assertFalse(outStream.toString().isEmpty());
+    assertTrue(errStream.toString().isEmpty());
+  }
+
+  @Test
+  void shouldOverrideExitCodeEvenWhenErrorPresent() {
+    AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
+    command.setRunCommandHandler(() -> {
+      CommandResult<TestObject> result = new CommandResult<>(TestObject.random());
+      result.setError(new CliException("Partial failure"));
+      result.setExitCodeOverride(3);
+      return result;
+    });
+    new CommandLine(command);
+    int exitCode = command.execute();
+
+    assertEquals(3, exitCode);
+    assertFalse(outStream.toString().isEmpty());
+    assertTrue(errStream.toString().contains("Partial failure"));
+  }
 }

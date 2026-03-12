@@ -6,13 +6,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
  */
 public class CommandResult<ResultT> {
-  private ResultT data;
+  private final ResultT data;
+
+  /** Optional error attached to the result.
+   * It may be useful for commands which can partially fail.
+  */
+  private CliException error;
+
+  private Integer exitCodeOverride;
 
   public CommandResult(ResultT data) {
     this.data = data;
@@ -61,5 +69,21 @@ public class CommandResult<ResultT> {
     } catch (Exception e) {
       throw new CliException(msg.unableToSerializeJson(), e);
     }
+  }
+
+  public Optional<CliException> getError() {
+    return Optional.ofNullable(error);
+  }
+
+  public void setError(CliException error) {
+    this.error = error;
+  }
+
+  public Optional<Integer> getExitCodeOverride() {
+    return Optional.ofNullable(exitCodeOverride);
+  }
+
+  public void setExitCodeOverride(int exitCodeOverride) {
+    this.exitCodeOverride = exitCodeOverride;
   }
 }

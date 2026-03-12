@@ -8,21 +8,21 @@ import picocli.CommandLine;
 public class IngestionClientPicocliOptions {
 
   @CommandLine.Option(
-      names = {"--ingestion-url"},
-      description = "StreamX ingestion URL (default: ${DEFAULT-VALUE})",
+      names = {"--ingestion-url", "-u"},
+      description = "StreamX ingestion URL",
       defaultValue = "${streamx.ingestion.url}",
       fallbackValue = CommandLine.Parameters.NULL_VALUE
   )
   public String url;
 
   @CommandLine.Option(
-      names = {"--auth-token"},
+      names = {"--auth-token", "-a"},
       description = "Authentication token"
   )
   public String authToken;
 
   @CommandLine.Option(
-      names = {"--insecure"},
+      names = {"--insecure", "-k"},
       description = "Skip TLS verification"
   )
   public Boolean insecure;

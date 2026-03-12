@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class CliBaseIT {
 
@@ -19,6 +20,11 @@ public abstract class CliBaseIT {
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
   private Process process;
+
+  @BeforeEach
+  void resetPublishedEventsBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
+  }
 
   @BeforeAll
   static void ensureBuilt() {
@@ -55,17 +61,24 @@ public abstract class CliBaseIT {
     pb.redirectErrorStream(false);
     process = pb.start();
 
-    try (OutputStream os = process.getOutputStream()) {
-      stdin.transferTo(os);
-      os.flush();
-    }
-
+    // Start capturing stdout/stderr BEFORE writing stdin
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
     StreamCapture stderrCapture = captureAndForward(process.getErrorStream(), System.err);
+
+    // Write stdin on a separate thread to avoid deadlock
+    Thread stdinWriter = Thread.ofVirtual().start(() -> {
+      try (OutputStream os = process.getOutputStream()) {
+        stdin.transferTo(os);
+        os.flush();
+      } catch (Exception ignored) {
+        // Process may have exited early
+      }
+    });
 
     boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
     Assertions.assertTrue(finished, "Process timed out after %d seconds".formatted(timeoutSeconds));
 
+    stdinWriter.join();
     String stdout = stdoutCapture.join();
     String stderr = stderrCapture.join();
 
@@ -105,13 +118,13 @@ public abstract class CliBaseIT {
     if (NATIVE) {
       Path executable = findNativeExecutable();
       Assertions.assertTrue(Files.isExecutable(executable),
-          "Native executable not found at %s. Run 'mvn package -Pnative -DskipTests' first."
+          "Native executable not found at %s. Run 'mvn package -Pnative -DskipTests' first"
               .formatted(executable));
       return List.of(executable.toAbsolutePath().toString());
     } else {
       Path jar = TARGET.resolve("quarkus-app/quarkus-run.jar");
       Assertions.assertTrue(jar.toFile().exists(),
-          "JAR not found at %s. Run 'mvn package -DskipTests' first.".formatted(jar));
+          "JAR not found at %s. Run 'mvn package -DskipTests' first".formatted(jar));
       return List.of("java", "-jar", jar.toAbsolutePath().toString());
     }
   }
