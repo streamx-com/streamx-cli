@@ -1,5 +1,5 @@
 name: Build
-run-name: Build ${{ github.ref_name }} - ${{ inputs.ref || github.sha }}
+run-name: Build ${{ github.ref_name }} - ${{ inputs.ref }}
 
 on:
   push:
