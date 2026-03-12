@@ -9,9 +9,7 @@ public class IngestionClientPicocliOptions {
 
   @CommandLine.Option(
       names = {"--ingestion-url", "-u"},
-      description = "StreamX ingestion URL",
-      defaultValue = "${streamx.ingestion.url}",
-      fallbackValue = CommandLine.Parameters.NULL_VALUE
+      description = "StreamX ingestion URL"
   )
   public String url;
 
@@ -38,7 +36,7 @@ public class IngestionClientPicocliOptions {
     return new IngestionClientConfig() {
       @Override
       public String url() {
-        return url == null ? originalConfig.url() : url;
+        return (url == null || url.isEmpty()) ? originalConfig.url() : url;
       }
 
       @Override

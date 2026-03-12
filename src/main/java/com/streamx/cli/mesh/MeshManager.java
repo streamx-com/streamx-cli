@@ -134,7 +134,7 @@ public class MeshManager {
 
   public void reload() {
     ServiceMesh newServiceMesh = errorHandlingExecutor.execute(() -> {
-      var serviceMesh = resolveMeshDefinition(meshPath);
+      ServiceMesh serviceMesh = resolveMeshDefinition(meshPath);
       serviceMesh.validate().assertValid();
 
       return serviceMesh;

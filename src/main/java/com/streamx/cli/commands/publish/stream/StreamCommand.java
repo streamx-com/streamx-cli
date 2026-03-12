@@ -15,6 +15,7 @@ import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,7 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
   @CommandLine.Parameters(
       index = "0",
       description = "Events source. It can be a file path or resource URI",
-      arity = "0..1",
-      defaultValue = CommandLine.Parameters.NULL_VALUE
+      arity = "0..1"
   )
   public String source;
 
@@ -92,9 +92,10 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
       System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
-    InputStream sourceStream = SourceStream.get(source);
-
-    try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
+    try (
+        InputStream sourceStream = SourceStream.get(source);
+        StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)
+    ) {
       try {
         try (Stream<JsonNode> jsonStream = ConcatenatedJsonSerde.parse(sourceStream)) {
           Publisher publisher = streamxClient.newPublisher();
@@ -161,6 +162,8 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
+    } catch (IOException e) {
+      throw new CliException(msg.unableToPublishStream(source), e);
     }
 
     return prepareResult();

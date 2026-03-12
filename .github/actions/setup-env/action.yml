@@ -1,0 +1,28 @@
+name: Setup environment
+description: Checkout, optionally authenticate to GCP, and set up GraalVM
+
+inputs:
+  gcp_workload_identity_provider:
+    required: false
+  gcp_service_account:
+    required: false
+  github_token:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Authenticate to Google Cloud
+      if: inputs.gcp_workload_identity_provider != ''
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ inputs.gcp_workload_identity_provider }}
+        service_account: ${{ inputs.gcp_service_account }}
+
+    - name: Set up JDK
+      uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '25.0.1'
+        distribution: 'graalvm-community'
+        cache: 'maven'
+        github-token: ${{ inputs.github_token }}

@@ -1,0 +1,142 @@
+name: Build
+run-name: Build ${{ github.ref_name }} - ${{ inputs.ref || github.sha }}
+
+on:
+  push:
+    branches:
+      - main
+
+      # TODO - remove before merge
+      - native-build-2
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+    outputs:
+      platforms:
+        value: ${{ jobs.setup.outputs.platforms }}
+
+permissions:
+  id-token: write
+  checks: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    name: setup
+    outputs:
+      platforms: ${{ steps.matrix.outputs.platforms }}
+    steps:
+      - name: Define platform matrix
+        id: matrix
+        run: |
+          PLATFORMS='[
+            { "os": "ubuntu-24.04",     "name": "linux-amd64",  "artifact": "streamx-linux-x86_64" },
+            { "os": "ubuntu-24.04-arm", "name": "linux-arm64",  "artifact": "streamx-linux-aarch64" },
+            { "os": "macos-26-xlarge",  "name": "macos-arm64",  "artifact": "streamx-macos-aarch64" },
+            { "os": "macos-26-large",   "name": "macos-amd64",  "artifact": "streamx-macos-x86_64" }
+          ]'
+          echo "platforms=$(echo "$PLATFORMS" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+  build-jar:
+    needs: setup
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - uses: ./.github/actions/setup-env
+        with:
+          gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests with native-image-agent
+        run: |
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
+
+      - name: Upload Docker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs-${{ github.job }}
+          path: target/docker-logs/
+          if-no-files-found: ignore
+
+      - name: Upload test reports
+        if: always()
+        uses: scacap/action-surefire-report@v1
+        with:
+          check_name: Test report - build-jar
+
+      - name: Upload reachability metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: reachability-metadata
+          path: src/main/resources/META-INF/native-image/
+
+      - name: Upload runner JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: streamx-runner-jar
+          path: target/*-runner.jar
+
+  build-native:
+    needs: [setup, build-jar]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.setup.outputs.platforms) }}
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}-build
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - uses: ./.github/actions/setup-env
+        with:
+          gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download reachability metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: reachability-metadata
+          path: src/main/resources/META-INF/native-image/
+
+      - name: Build native-image executable
+        run: |
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native
+
+      - name: Upload test reports
+        if: always()
+        uses: scacap/action-surefire-report@v1
+        with:
+          check_name: Test report - build-native ${{ matrix.name }}
+
+      - name: Upload Docker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs-${{ matrix.name }}
+          path: target/docker-logs/
+          if-no-files-found: ignore
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p staging
+          cp target/*-runner staging/${{ matrix.artifact }}
+          chmod +x staging/${{ matrix.artifact }}
+
+      - name: Smoke test
+        run: ./staging/${{ matrix.artifact }} --help
+
+      - name: Upload native executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: staging/${{ matrix.artifact }}

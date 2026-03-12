@@ -4,20 +4,24 @@ import static com.streamx.cli.test.MeshTestsUtils.cleanUpMesh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import io.quarkus.test.junit.main.LaunchResult;
 import io.quarkus.test.junit.main.QuarkusMainLauncher;
 import io.quarkus.test.junit.main.QuarkusMainTest;
 import java.nio.file.Paths;
+import java.time.Duration;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusMainTest
-public class RunCommandTest extends CliBaseIT {
+@DisabledIfDockerUnavailable
+public class RunCommandIT extends CliBaseIT {
 
   @AfterEach
   void awaitDockerResourcesAreRemoved() {
     Awaitility.await()
+        .atMost(Duration.ofMinutes(2))
         .until(() -> {
           try {
             cleanUpMesh(

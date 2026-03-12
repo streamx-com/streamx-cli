@@ -9,6 +9,8 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import java.io.PrintStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +41,7 @@ public class MeshTestEnv {
   void onStart(@Observes StartupEvent ev) {
     captureAuthToken();
 
-    var path = Paths.get(meshPath);
+    Path path = Paths.get(meshPath);
     meshManager.initializeMesh(path);
     meshManager.initializeRunMode(path);
     meshManager.start();
@@ -61,8 +63,8 @@ public class MeshTestEnv {
   }
 
   private void captureAuthToken() {
-    var originalOut = System.out;
-    var interceptor = new java.io.PrintStream(originalOut) {
+    PrintStream originalOut = System.out;
+    PrintStream interceptor = new java.io.PrintStream(originalOut) {
       @Override
       public void println(String x) {
         if (x != null && capturedToken == null) {

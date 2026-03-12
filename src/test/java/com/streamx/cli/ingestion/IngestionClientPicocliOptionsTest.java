@@ -24,7 +24,7 @@ class IngestionClientPicocliOptionsTest {
       System.setProperty(IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN, "config-token");
       System.setProperty(IngestionClientConfig.STREAMX_INGESTION_INSECURE, "false");
 
-      var options = new IngestionClientPicocliOptions();
+      IngestionClientPicocliOptions options = new IngestionClientPicocliOptions();
       options.url = "http://cli-url:9090";
       options.authToken = "cli-token";
       options.insecure = true;
@@ -42,7 +42,7 @@ class IngestionClientPicocliOptionsTest {
       System.setProperty(IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN, "config-token");
       System.setProperty(IngestionClientConfig.STREAMX_INGESTION_INSECURE, "true");
 
-      var options = new IngestionClientPicocliOptions();
+      IngestionClientPicocliOptions options = new IngestionClientPicocliOptions();
       options.url = null;
       options.authToken = null;
       options.insecure = null;
@@ -60,7 +60,7 @@ class IngestionClientPicocliOptionsTest {
 
     @Test
     void shouldMaskAuthTokenInOutput() {
-      var options = new IngestionClientPicocliOptions();
+      IngestionClientPicocliOptions options = new IngestionClientPicocliOptions();
       options.url = "http://test:8080";
       options.authToken = "my-secret-token";
       options.insecure = true;
@@ -76,7 +76,7 @@ class IngestionClientPicocliOptionsTest {
 
     @Test
     void shouldContainAllConfigKeys() {
-      var options = new IngestionClientPicocliOptions();
+      IngestionClientPicocliOptions options = new IngestionClientPicocliOptions();
       options.url = "http://localhost:8080";
       options.insecure = false;
 

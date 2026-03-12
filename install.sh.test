@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# install-test.sh - Tests for install.sh
+#
+# Usage: ./install-test.sh <version>
+#
+# Requires the release to already be published on GitHub.
+
+set -euo pipefail
+
+VERSION="${1:?Usage: install-test.sh <version>}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+INSTALL_SCRIPT="${SCRIPT_DIR}/install.sh"
+PASS=0
+FAIL=0
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+info()  { echo ""; echo "=== $* ==="; }
+pass()  { echo "PASS: $*"; PASS=$((PASS + 1)); }
+fail()  { echo "FAIL: $*"; FAIL=$((FAIL + 1)); }
+
+assert_version() {
+  local binary="$1"
+  local expected="$2"
+  if "$binary" --version | grep -q "$expected"; then
+    pass "$binary --version contains '$expected'"
+  else
+    fail "$binary --version does not contain '$expected' (got: $("$binary" --version 2>&1))"
+  fi
+}
+
+assert_executable() {
+  local binary="$1"
+  if [ -x "$binary" ]; then
+    pass "$binary is executable"
+  else
+    fail "$binary is not executable"
+  fi
+}
+
+cleanup() {
+  rm -rf "$WORKDIR"
+}
+
+WORKDIR=$(mktemp -d)
+trap cleanup EXIT
+
+# ---------------------------------------------------------------------------
+# Test 1: Install to current directory (default)
+# ---------------------------------------------------------------------------
+info "Test 1: Default install (current directory)"
+
+TEST_DIR="${WORKDIR}/test-default"
+mkdir -p "$TEST_DIR"
+(cd "$TEST_DIR" && sh "$INSTALL_SCRIPT" --version "$VERSION")
+
+assert_executable "${TEST_DIR}/streamx"
+assert_version "${TEST_DIR}/streamx" "$VERSION"
+
+# ---------------------------------------------------------------------------
+# Test 2: Install with --dest flag
+# ---------------------------------------------------------------------------
+info "Test 2: Install with --dest flag"
+
+DEST_DIR="${WORKDIR}/test-dest/custom/path"
+sh "$INSTALL_SCRIPT" --version "$VERSION" --dest "$DEST_DIR"
+
+assert_executable "${DEST_DIR}/streamx"
+assert_version "${DEST_DIR}/streamx" "$VERSION"
+
+# ---------------------------------------------------------------------------
+# Test 3: Install with -v and -d short flags
+# ---------------------------------------------------------------------------
+info "Test 3: Install with short flags (-v, -d)"
+
+SHORT_DIR="${WORKDIR}/test-short"
+sh "$INSTALL_SCRIPT" -v "$VERSION" -d "$SHORT_DIR"
+
+assert_executable "${SHORT_DIR}/streamx"
+assert_version "${SHORT_DIR}/streamx" "$VERSION"
+
+# ---------------------------------------------------------------------------
+# Test 4: Overwrite existing installation
+# ---------------------------------------------------------------------------
+info "Test 4: Overwrite existing installation"
+
+OVERWRITE_DIR="${WORKDIR}/test-overwrite"
+mkdir -p "$OVERWRITE_DIR"
+echo "placeholder" > "${OVERWRITE_DIR}/streamx"
+
+sh "$INSTALL_SCRIPT" --version "$VERSION" --dest "$OVERWRITE_DIR"
+
+assert_executable "${OVERWRITE_DIR}/streamx"
+assert_version "${OVERWRITE_DIR}/streamx" "$VERSION"
+
+# ---------------------------------------------------------------------------
+# Test 5: --help flag exits successfully
+# ---------------------------------------------------------------------------
+info "Test 5: --help flag"
+
+HELP_OUTPUT=$(sh "$INSTALL_SCRIPT" --help 2>&1 || true)
+if echo "$HELP_OUTPUT" | grep -q "Usage"; then
+  pass "--help prints usage"
+else
+  fail "--help did not print usage"
+fi
+
+# ---------------------------------------------------------------------------
+# Summary
+# ---------------------------------------------------------------------------
+echo ""
+echo "==========================================="
+echo "Results: ${PASS} passed, ${FAIL} failed"
+echo "==========================================="
+
+[ "$FAIL" -eq 0 ] || exit 1

@@ -11,6 +11,7 @@ import com.streamx.cli.framework.testing.AbstractTestCommand;
 import com.streamx.cli.framework.testing.TestObject;
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 

@@ -10,11 +10,13 @@ import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
+import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,9 +26,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
+@DisabledIfDockerUnavailable
 @TestProfile(DefaultMeshTestProfile.class)
 public class StreamCommandIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
+
+  @Test
+  void shouldPrintHelpInformation() throws Exception {
+    ProcessResult result = exec("publish", "stream", "--help");
+
+    assertThat(result.stdout()).contains("Publishes stream of events");
+    assertThat(result.stderr()).isEmpty();
+  }
 
   @Test
   void shouldStreamEventsFromFilePath(@TempDir Path tempDir) throws Exception {
@@ -85,7 +96,7 @@ public class StreamCommandIT extends CliBaseIT {
     server.createContext("/events", exchange -> {
       byte[] responseBytes = eventsJsonString.getBytes();
       exchange.sendResponseHeaders(200, responseBytes.length);
-      try (var outputStream = exchange.getResponseBody()) {
+      try (OutputStream outputStream = exchange.getResponseBody()) {
         outputStream.write(responseBytes);
       }
     });
@@ -161,8 +172,6 @@ public class StreamCommandIT extends CliBaseIT {
         msg.streamPublishingCompleted(1, 0, 1, 0)
     );
   }
-
-
 
   @Test
   void shouldFormatOutputAsValidJsonIfErrorOccurredOrVerboseFlagIsSet() throws Exception {
@@ -303,6 +312,7 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
+  @DisabledIfDockerUnavailable
   @TestProfile(DefaultMeshTestProfile.class)
   class BatchStreaming {
 
@@ -455,6 +465,7 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
+  @DisabledIfDockerUnavailable
   @TestProfile(DefaultMeshTestProfile.class)
   class ContinueOnError {
     @Test
@@ -628,6 +639,7 @@ public class StreamCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
+  @DisabledIfDockerUnavailable
   @TestProfile(DefaultMeshTestProfile.class)
   class InvalidSource {
     @Test

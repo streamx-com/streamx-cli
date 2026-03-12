@@ -16,7 +16,7 @@ public class StreamxMavenPropertiesUtils {
     Properties properties = null;
     if (url != null) {
       try {
-        var loadedProperties = new Properties();
+        Properties loadedProperties = new Properties();
         loadedProperties.load(url.openStream());
 
         properties = loadedProperties;
