@@ -1,0 +1,13 @@
+{
+  "specversion": "1.0",
+  "id": "Accent Furniture",
+  "source": "streamx-commerce-accelerator",
+  "type": "com.streamx.blueprints.page.published.v1",
+  "datacontenttype": "application/json",
+  "subject": "${relativePath}",
+  "time": "2026-01-01T00:00:00.000000Z",
+  "data": {
+    "content": "{\"id\":\"Accent Furniture\",\"slug\":\"accent-furniture\",\"name\":\"Accent Furniture\"}",
+    "type": "data/category"
+  }
+}

@@ -168,8 +168,8 @@ public interface MessageProvider {
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
 
-  @Message(id = 141, value = "Running stream command")
-  String runningStreamCommand();
+  @Message(id = 141, value = "Running publish stream command")
+  String runningPublishStreamCommand();
 
   @Message(id = 142, value = "Resolving StreamX client config")
   String resolvingStreamxClientConfig();
@@ -251,4 +251,7 @@ public interface MessageProvider {
 
   @Message(id = 168, value = "*****")
   String ingestionTokenMasked();
+
+  @Message(id = 141, value = "Running publish event command")
+  String runningPublishEventCommand();
 }

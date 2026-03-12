@@ -51,7 +51,7 @@ public class StreamCommand extends AbstractSilentCommand {
     }
 
     if (this.verbose) {
-      System.out.println(msg.runningStreamCommand());
+      System.out.println(msg.runningPublishStreamCommand());
       System.out.println(msg.resolvingStreamxClientConfig());
     }
 
