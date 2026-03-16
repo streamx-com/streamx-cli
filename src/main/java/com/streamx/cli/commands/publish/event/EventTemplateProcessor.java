@@ -1,5 +1,7 @@
 package com.streamx.cli.commands.publish.event;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -41,7 +43,7 @@ class EventTemplateProcessor {
     } catch (CliException e) {
       throw e;
     } catch (Exception e) {
-      throw new CliException("Failed to process placeholders", e);
+      throw new CliException(msg.failedToProcessEventTemplatePlaceholders(e.getMessage()), e);
     }
   }
 

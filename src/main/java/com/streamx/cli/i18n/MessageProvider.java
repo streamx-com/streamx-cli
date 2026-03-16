@@ -309,7 +309,7 @@ public interface MessageProvider {
   String eventTemplateNotFound(String eventType);
 
   @Message(id = 185, value = "Unable to publish event: %s")
-  String unableToPublishEvent(String reason);
+  String publishEventFailed(String reason);
 
   @Message(id = 186, value = "Invalid payload path: '%s'")
   String invalidPayloadPath(String payloadPath);
@@ -323,4 +323,9 @@ public interface MessageProvider {
   @Message(id = 189, value = "Payload should be a file, but directory found. Path: '%s'")
   String payloadFileIsDirectory(String path);
 
+  @Message(id = 190, value = "Event has been published")
+  String publishEventSucceed();
+
+  @Message(id = 191, value = "Failed to process event template placeholders: %s")
+  String failedToProcessEventTemplatePlaceholders(String reason);
 }

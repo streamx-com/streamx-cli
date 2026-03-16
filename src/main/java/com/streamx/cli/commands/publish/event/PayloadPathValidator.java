@@ -7,7 +7,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class PayloadValidator {
+public class PayloadPathValidator {
 
   public static void validate(String payloadPath) {
     URI uri;

@@ -3,9 +3,7 @@ package com.streamx.cli.commands.publish.event;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.commands.publish.stream.SourceValidator;
 import com.streamx.cli.framework.AbstractCommand;
-import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.ingestion.CloudEventsSerde;
@@ -51,12 +49,12 @@ public class EventCommand extends AbstractCommand<JsonNode> {
 
   @Override
   public String getTextOutput(CommandResult<JsonNode> result) {
-    return "Event published";
+    return msg.publishEventSucceed();
   }
 
   @Override
   public CommandResult<JsonNode> runCommand() {
-    PayloadValidator.validate(eventPayloadPath);
+    PayloadPathValidator.validate(eventPayloadPath);
 
     if (this.verbose) {
       System.out.println(msg.runningPublishEventCommand());
@@ -85,7 +83,7 @@ public class EventCommand extends AbstractCommand<JsonNode> {
 
         return new CommandResult<>(CloudEventsSerde.toJson(cloudEvent));
       } catch (Exception e) {
-        throw new CliException(msg.unableToPublishEvent(e.getMessage()), e);
+        throw new CliException(msg.publishEventFailed(e.getMessage()), e);
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
