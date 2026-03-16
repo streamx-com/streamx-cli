@@ -20,7 +20,7 @@ public class InterpolatingMapperTest {
 
   @AfterEach
   void cleanup() {
-    var propertiesToClear = Set.of("test.interpolatedValue", "test.nestedValue",
+    Set<String> propertiesToClear = Set.of("test.interpolatedValue", "test.nestedValue",
         "test.arrayValue1", "test.arrayValue2", "test.string", "test.int", "test.boolean");
 
     propertiesToClear.forEach(System::clearProperty);

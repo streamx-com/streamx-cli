@@ -79,7 +79,7 @@ public class MeshWatcher {
     ActionToPerform lastAction = null;
     WatchKey polledKey = watchService.poll();
     if (polledKey != null) {
-      for (var event : polledKey.pollEvents()) {
+      for (WatchEvent<?> event : polledKey.pollEvents()) {
         if (pathsMatches(meshPath, event)) {
           if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
             lastAction = ActionToPerform.RELOAD;

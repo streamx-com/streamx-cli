@@ -1,0 +1,96 @@
+project:
+  name: streamx
+  description: StreamX CLI
+  versionPattern: SEMVER
+  license: LicenseRef-StreamX
+  licenseUrl: https://github.com/streamx-com/streamx-cli/blob/main/LICENSE.txt
+  links:
+    homepage: https://github.com/streamx-com/streamx-cli
+  authors:
+    - streamx
+  inceptionYear: '2026'
+
+platform:
+  replacements:
+    osx-x86_64: macos-x86_64
+    osx-aarch_64: macos-aarch64
+
+assemble:
+  javaArchive:
+    streamx-jar:
+      active: ALWAYS
+      exported: true
+      stereotype: CLI
+      archiveName: streamx-jar-{{projectVersion}}
+      executable:
+        name: streamx
+        windowsExtension: bat
+      mainJar:
+        path: artifacts/streamx-jar.jar
+      fileSets:
+        - input: .
+          includes:
+            - LICENSE.txt
+
+distributions:
+  streamx:
+    type: BINARY
+    executable:
+      name: streamx
+    artifacts:
+      - path: artifacts/streamx-{{projectVersion}}-linux-x86_64.zip
+        platform: linux-x86_64
+      - path: artifacts/streamx-{{projectVersion}}-linux-aarch64.zip
+        platform: linux-aarch_64
+      - path: artifacts/streamx-{{projectVersion}}-macos-aarch64.zip
+        platform: osx-aarch_64
+      - path: artifacts/streamx-{{projectVersion}}-macos-x86_64.zip
+        platform: osx-x86_64
+
+  streamx-jar:
+    type: JAVA_BINARY
+    executable:
+      name: streamx
+    brew:
+      active: NEVER
+
+release:
+  github:
+    owner: streamx-com
+    name: streamx-cli-preview
+    overwrite: true
+    tagName: '{{projectVersion}}'
+    commitAuthor:
+      name: "streamx-cli-release-bot[bot]"
+      email: "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
+    prerelease:
+      enabled: true
+    milestone:
+      close: false
+    changelog:
+      formatted: ALWAYS
+      format: '- {{commitShortHash}} {{commitTitle}}'
+      contributors:
+        format: '- {{contributorName}} ({{contributorUsernameAsLink}})'
+        enabled: true
+
+packagers:
+  brew:
+    active: ALWAYS
+    commitAuthor:
+      name: "streamx-cli-release-bot[bot]"
+      email: "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
+    repository:
+      owner: streamx-com
+      name: homebrew-preview-tap
+      branch: main
+      branchPush: main
+    formulaName: streamx
+    multiPlatform: true
+
+files:
+  artifacts:
+    - path: artifacts/streamx-linux-x86_64
+    - path: artifacts/streamx-linux-aarch64
+    - path: artifacts/streamx-macos-aarch64
+    - path: artifacts/streamx-macos-x86_64

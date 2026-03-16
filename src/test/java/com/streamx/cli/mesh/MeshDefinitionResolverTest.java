@@ -2,6 +2,7 @@ package com.streamx.cli.mesh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.mesh.model.ServiceMesh;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -20,7 +21,7 @@ class MeshDefinitionResolverTest {
   @Test
   void shouldResolveGivenMeshDefinition() throws IOException {
     // when
-    var result = uut.resolve(TEST_MESH_PATH);
+    ServiceMesh result = uut.resolve(TEST_MESH_PATH);
 
     // then
     assertThat(result).isNotNull();

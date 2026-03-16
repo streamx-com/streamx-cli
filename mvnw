@@ -281,6 +281,7 @@ if [ -n "$wrapperSha256Sum" ]; then
 fi
 
 MAVEN_OPTS="$(concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config") $MAVEN_OPTS"
+MAVEN_OPTS="--enable-native-access=ALL-UNNAMED $MAVEN_OPTS"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

@@ -133,6 +133,9 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
       exitCode = handleExecutionError(e);
     }
 
+    System.out.flush();
+    System.err.flush();
+
     return exitCode;
   }
 

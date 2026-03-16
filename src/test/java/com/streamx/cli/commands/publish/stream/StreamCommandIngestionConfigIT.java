@@ -10,6 +10,7 @@ import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
 import com.streamx.cli.test.MeshTestEnv;
+import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.cli.test.profiles.MeshWithAuthTestProfile;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
@@ -19,6 +20,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@DisabledIfDockerUnavailable
 @TestProfile(MeshWithAuthTestProfile.class)
 public class StreamCommandIngestionConfigIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();

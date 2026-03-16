@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.streamx.cli</groupId>
   <artifactId>streamx-cli</artifactId>
   <version>2.0.0-SNAPSHOT</version>
 
+  <scm>
+    <connection>scm:git:https://github.com/streamx-com/streamx-cli.git</connection>
+    <developerConnection>scm:git:https://github.com/streamx-com/streamx-cli.git</developerConnection>
+    <url>https://github.com/streamx-com/streamx-cli</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.version>3.30.6</quarkus.platform.version>
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
+    <graalvm.version>25.0.2</graalvm.version>
     <streamx.version>2.0.26</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
+
+    <test.output.toFile>false</test.output.toFile>
+
+    <native.agent.argLine>
+      -agentlib:native-image-agent=config-output-dir=${project.basedir}/src/main/resources/META-INF/native-image
+    </native.agent.argLine>
   </properties>
 
   <dependencyManagement>
@@ -148,26 +158,44 @@
       <artifactId>cloudevents-core</artifactId>
       <version>${cloudevents.version}</version>
     </dependency>
+
     <dependency>
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-json-jackson</artifactId>
       <version>${cloudevents.version}</version>
     </dependency>
 
+    <!-- Native image dependencies -->
     <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-client-api</artifactId>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+      <version>${graalvm.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-model-apiextensions</artifactId>
+      <groupId>org.graalvm.nativeimage</groupId>
+      <artifactId>svm</artifactId>
+      <version>${graalvm.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <version>2.0.3</version>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.albfernandez</groupId>
+      <artifactId>juniversalchardet</artifactId>
+      <version>2.5.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.brotli</groupId>
+      <artifactId>dec</artifactId>
+      <version>0.1.2</version>
     </dependency>
 
     <!-- Testing Dependencies -->
@@ -281,11 +309,13 @@
         <version>${quarkus.platform.version}</version>
         <extensions>true</extensions>
         <configuration>
-          <!-- Otherwise we get runtime errors like:
-            java.lang.IllegalAccessError: module java.base does not open java.lang to unnamed module @xxx;
-            to use the thread-local-reset capability on Java 24 or later.
-          -->
-          <jvmArgs>--add-opens java.base/java.lang=ALL-UNNAMED</jvmArgs>
+          <jvmArgs>
+            <!-- Fixes:
+              java.lang.IllegalAccessError: module java.base does not open java.lang to unnamed module @xxx;
+              to use the thread-local-reset capability on Java 24 or later.
+            -->
+            --add-opens java.base/java.lang=ALL-UNNAMED
+          </jvmArgs>
         </configuration>
         <executions>
           <execution>
@@ -297,34 +327,60 @@
           </execution>
         </executions>
       </plugin>
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--        <version>${checkstyle-plugin.version}</version>-->
-<!--        <configuration>-->
-<!--          <configLocation>google_checks.xml</configLocation>-->
-<!--          <failsOnError>true</failsOnError>-->
-<!--          <consoleOutput>true</consoleOutput>-->
-<!--          <includeTestSourceDirectory>true</includeTestSourceDirectory>-->
-<!--          <failOnViolation>true</failOnViolation>-->
-<!--          <violationSeverity>warning</violationSeverity>-->
-<!--          <logViolationsToConsole>true</logViolationsToConsole>-->
-<!--          <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>-->
-<!--          <sourceDirectories>-->
-<!--            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>-->
-<!--            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>-->
-<!--          </sourceDirectories>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>checkstyle</id>-->
-<!--            <goals>-->
-<!--              <goal>check</goal>-->
-<!--            </goals>-->
-<!--            <phase>validate</phase>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>org.jreleaser</groupId>
+        <artifactId>jreleaser-maven-plugin</artifactId>
+        <version>1.22.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <tagNameFormat>@{project.version}</tagNameFormat>
+          <scmCommentPrefix>[no ci] [maven-release-plugin]</scmCommentPrefix>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle-plugin.version}</version>
+        <configuration>
+          <configLocation>google_checks.xml</configLocation>
+          <failsOnError>true</failsOnError>
+          <consoleOutput>true</consoleOutput>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnViolation>true</failOnViolation>
+          <violationSeverity>warning</violationSeverity>
+          <logViolationsToConsole>true</logViolationsToConsole>
+          <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+          <sourceDirectories>
+            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+          </sourceDirectories>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/resources/META-INF/native-image</directory>
+              <includes>
+                <include>reachability-metadata.json</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
@@ -342,14 +398,15 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
-          <!-- Otherwise we get runtime errors like:
-            java.lang.IllegalAccessError: module java.base does not open java.lang to unnamed module @xxx;
-            to use the thread-local-reset capability on Java 24 or later.
-          -->
-          <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+          <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
+          <argLine>
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --enable-native-access=ALL-UNNAMED
+            ${native.agent.argLine}
+          </argLine>
         </configuration>
       </plugin>
       <plugin>
@@ -364,9 +421,35 @@
           </execution>
         </executions>
         <configuration>
+          <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
+          <argLine>
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            ${native.agent.argLine}
+          </argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>0.11.4</version>
+        <extensions>true</extensions>
+        <configuration>
+          <metadataRepository>
+            <enabled>true</enabled>
+          </metadataRepository>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Add-Opens>java.base/java.lang</Add-Opens>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
@@ -381,6 +464,17 @@
 
   <profiles>
     <profile>
+      <id>ci</id>
+      <activation>
+        <property>
+          <name>ci</name>
+        </property>
+      </activation>
+      <properties>
+        <test.output.toFile>true</test.output.toFile>
+      </properties>
+    </profile>
+    <profile>
       <id>native</id>
       <activation>
         <property>
@@ -388,11 +482,23 @@
         </property>
       </activation>
       <properties>
-        <skipITs>false</skipITs>
         <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.enable-metadata-repository>true</quarkus.native.enable-metadata-repository>
+        <quarkus.native.enable-all-security-services>true</quarkus.native.enable-all-security-services>
+
+        <!-- Override native agent argLine as we need to run GraalVM tracing agent only JVM, before running the native profile -->
+        <native.agent.argLine> </native.agent.argLine>
       </properties>
       <build>
         <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <native.image>true</native.image>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
