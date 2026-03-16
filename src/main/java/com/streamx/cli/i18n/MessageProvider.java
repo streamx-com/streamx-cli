@@ -301,4 +301,13 @@ public interface MessageProvider {
 
   @Message(id = 182, value = "Event publish result is unknown. Failed batch number: %s")
   String eventPublishResultIsUnknown(int batchNumber);
+
+  @Message(id = 183, value = "Running publish event command")
+  String runningPublishEventCommand();
+
+  @Message(id = 184, value = "Event template %s not found")
+  String eventTemplateNotFound(String eventType);
+
+  @Message(id = 185, value = "Unable to publish event: %s")
+  String unableToPublishEvent(String reason);
 }

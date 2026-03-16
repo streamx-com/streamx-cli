@@ -1,17 +1,22 @@
 package com.streamx.cli.commands.publish.event;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
+import com.streamx.cli.commands.publish.stream.SourceValidator;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.ingestion.*;
-import com.streamx.cli.ingestion.SourceValidator;
+import com.streamx.cli.ingestion.IngestionClientConfig;
+import com.streamx.cli.ingestion.IngestionClientPicocliOptions;
+import com.streamx.cli.ingestion.StreamxClientFactory;
 import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
+import io.cloudevents.CloudEvent;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-import static com.streamx.cli.i18n.MessageProvider.msg;
+import java.nio.file.Path;
 
 @Command(name = "event",
     mixinStandardHelpOptions = true,
@@ -22,14 +27,14 @@ public class EventCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Template type",
+      description = "Event template type",
       arity = "0..1"
   )
   public String eventType;
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Template type",
+      description = "Payload path",
       arity = "0..1"
   )
   public String eventPayloadPath;
@@ -57,22 +62,22 @@ public class EventCommand extends AbstractSilentCommand {
       System.out.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
-    String eventTemplateString = TemplateResolver.getEventTemplate(eventType);
+    EventTemplateLoader templateLoader = new EventTemplateLoader();
+    String templateJson = templateLoader.load(eventType);
+    Path payloadPath = Path.of(eventPayloadPath);
+
+    EventTemplateProcessor templateProcessor =
+        new EventTemplateProcessor(templateJson, payloadPath, eventSubject);
+    CloudEvent cloudEvent = templateProcessor.toCloudEvent();
 
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
       try {
-//        InputStream sourceStream = getSourceStream();
-
-//        byte[] bytes = sourceStream.readAllBytes();
-//        sourceStream = new ByteArrayInputStream(bytes);
-
         Publisher publisher = streamxClient.newPublisher();
+        publisher.send(cloudEvent);
 
         return new CommandResult<>(null);
-      } catch (CliException e) {
-        throw e;
       } catch (Exception e) {
-        throw new CliException(msg.unableToStream(e.getMessage()), e);
+        throw new CliException(msg.unableToPublishEvent(e.getMessage()), e);
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
