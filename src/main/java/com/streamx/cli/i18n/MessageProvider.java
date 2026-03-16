@@ -310,4 +310,17 @@ public interface MessageProvider {
 
   @Message(id = 185, value = "Unable to publish event: %s")
   String unableToPublishEvent(String reason);
+
+  @Message(id = 186, value = "Invalid payload path: '%s'")
+  String invalidPayloadPath(String payloadPath);
+
+  @Message(id = 187, value = "Payload path not found: '%s'")
+  String payloadFileNotFound(String path);
+
+  @Message(id = 188, value = "Payload file is not readable: '%s'")
+  String payloadFileNotReadable(String path);
+
+  @Message(id = 189, value = "Payload should be a file, but directory found. Path: '%s'")
+  String payloadFileIsDirectory(String path);
+
 }

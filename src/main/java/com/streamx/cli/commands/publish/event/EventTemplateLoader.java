@@ -58,7 +58,7 @@ class EventTemplateLoader {
     // Fallback to well-known templates
     String templateName = knownTemplates.get(eventType);
     if (templateName != null) {
-      String resourcePath = DEFAULT_TEMPLATES_DIR + templateName + TEMPLATE_EXTENSION;
+      String resourcePath = "/" + DEFAULT_TEMPLATES_DIR + "/" + templateName + TEMPLATE_EXTENSION;
       try (InputStream inputStream = EventTemplateLoader.class.getResourceAsStream(resourcePath)) {
         if (inputStream == null) {
           throw new CliException(msg.eventTemplateNotFound(eventType));

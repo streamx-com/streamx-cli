@@ -2,10 +2,13 @@ package com.streamx.cli.commands.publish.event;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.commands.publish.stream.SourceValidator;
+import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.ingestion.IngestionClientPicocliOptions;
 import com.streamx.cli.ingestion.StreamxClientFactory;
@@ -21,7 +24,7 @@ import java.nio.file.Path;
 @Command(name = "event",
     mixinStandardHelpOptions = true,
     description = "Publish a single event")
-public class EventCommand extends AbstractSilentCommand {
+public class EventCommand extends AbstractCommand<JsonNode> {
   @CommandLine.Mixin
   IngestionClientPicocliOptions ingestionOptions;
 
@@ -33,22 +36,27 @@ public class EventCommand extends AbstractSilentCommand {
   public String eventType;
 
   @CommandLine.Parameters(
-      index = "0",
+      index = "1",
       description = "Payload path",
       arity = "0..1"
   )
   public String eventPayloadPath;
 
   @CommandLine.Parameters(
-      index = "0",
+      index = "2",
       description = "Event subject",
       arity = "0..1"
   )
   public String eventSubject;
 
   @Override
-  public CommandResult<Void> runCommand() {
-    SourceValidator.validate(eventPayloadPath);
+  public String getTextOutput(CommandResult<JsonNode> result) {
+    return "Event published";
+  }
+
+  @Override
+  public CommandResult<JsonNode> runCommand() {
+    PayloadValidator.validate(eventPayloadPath);
 
     if (this.verbose) {
       System.out.println(msg.runningPublishEventCommand());
@@ -75,7 +83,7 @@ public class EventCommand extends AbstractSilentCommand {
         Publisher publisher = streamxClient.newPublisher();
         publisher.send(cloudEvent);
 
-        return new CommandResult<>(null);
+        return new CommandResult<>(CloudEventsSerde.toJson(cloudEvent));
       } catch (Exception e) {
         throw new CliException(msg.unableToPublishEvent(e.getMessage()), e);
       }
