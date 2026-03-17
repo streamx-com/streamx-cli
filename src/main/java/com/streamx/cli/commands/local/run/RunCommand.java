@@ -9,9 +9,9 @@ import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.util.BannerPrinter;
 import com.streamx.runner.StreamxRunner;
 import com.streamx.runner.exception.ContainerStartupTimeoutException;
-import io.quarkus.runtime.Quarkus;
 import jakarta.inject.Inject;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -40,14 +40,26 @@ public class RunCommand extends AbstractSilentCommand {
 
     try {
       meshManager.initializeMesh(meshPath);
-
       BannerPrinter.printBanner();
       meshManager.initializeRunMode(meshPath);
 
+      CountDownLatch shutdownLatch = new CountDownLatch(1);
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        try {
+          meshManager.stop();
+        } catch (Exception e) {
+          throw new CliException(msg.errorDuringStoppingMesh(e.getMessage()), e);
+        } finally {
+          shutdownLatch.countDown();
+        }
+      }));
+
       meshManager.start();
+      shutdownLatch.await();
 
-      Quarkus.waitForExit();
-
+      return new CommandResult<>(null);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       return new CommandResult<>(null);
     } catch (ContainerStartupTimeoutException e) {
       String errMessage = msg.dockerContainerStartupFailed(

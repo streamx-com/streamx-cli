@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -217,5 +218,54 @@ public abstract class CliBaseIT {
           "Expected exit code %d but got %d.\nSTDOUT: %s\nSTDERR: %s"
               .formatted(expected, exitCode, stdout, stderr));
     }
+  }
+
+  public record AsyncProcessHandle(
+      Thread thread,
+      ByteArrayOutputStream stdout,
+      ByteArrayOutputStream stderr,
+      AtomicInteger exitCode
+  ) {
+    public String getStdout() {
+      return stdout.toString(StandardCharsets.UTF_8);
+    }
+
+    public String getStderr() {
+      return stderr.toString(StandardCharsets.UTF_8);
+    }
+
+    public void interruptAndJoin(long timeoutMillis) throws InterruptedException {
+      thread.interrupt();
+      thread.join(timeoutMillis);
+    }
+
+    public ProcessResult toResult() {
+      return new ProcessResult(exitCode.get(), getStdout(), getStderr());
+    }
+  }
+
+  protected AsyncProcessHandle execAsync(String... args) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
+    AtomicInteger exitCode = new AtomicInteger(-1);
+
+    PrintStream originalOut = System.out;
+    PrintStream originalErr = System.err;
+
+    PrintStream teeOut = new PrintStream(out, true);
+    PrintStream teeErr = new PrintStream(err, true);
+
+    Thread thread = Thread.ofVirtual().start(() -> {
+      System.setOut(teeOut);
+      System.setErr(teeErr);
+      try {
+        exitCode.set(createCommandLine().execute(args));
+      } finally {
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+      }
+    });
+
+    return new AsyncProcessHandle(thread, out, err, exitCode);
   }
 }

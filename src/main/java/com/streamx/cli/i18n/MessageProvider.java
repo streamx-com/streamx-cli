@@ -89,6 +89,9 @@ public interface MessageProvider {
   @Message(id = 122, value = "Stopping mesh...")
   String stoppingMesh();
 
+  @Message(id = 1220, value = "Error during stopping mesh: %s")
+  String errorDuringStoppingMesh(String reason);
+
   @Message(id = 123, value = """
       Unable to read mesh definition from %s
       

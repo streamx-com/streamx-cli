@@ -126,7 +126,7 @@ public class MeshManager {
       print(msg.meshStopped());
       print("");
     } catch (Exception e) {
-      if (!errorHandlingExecutor.failsafe) {
+      if (errorHandlingExecutor != null && !errorHandlingExecutor.failsafe) {
         throw ExceptionUtils.sneakyThrow(e);
       }
     }
