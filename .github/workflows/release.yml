@@ -67,12 +67,13 @@ jobs:
           ./mvnw -B release:prepare \
             -Darguments="-DskipTests" \
             -P release \
+            -DpushChanges=false \
             $EXTRA_ARGS
 
           RELEASE_VERSION=$(git describe --tags --abbrev=0)
           RELEASE_SHA=$(git rev-list -n 1 "$RELEASE_VERSION")
 
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }} "${RELEASE_VERSION}"
 
           echo "tag=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
           echo "release_sha=$RELEASE_SHA" >> "$GITHUB_OUTPUT"
