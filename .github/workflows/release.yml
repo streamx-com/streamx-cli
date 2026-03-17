@@ -45,33 +45,6 @@ jobs:
           owner: streamx-com
           repositories: streamx-cli
 
-      - name: Verify release bot can bypass branch rulesets
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          echo "Authenticated as app:"
-          gh api /installation
-          
-          echo "Checking repository rulesets for ${{ github.repository }}..."
-          RULESETS=$(gh api repos/${{ github.repository }}/rulesets --jq '.[] | {id, name, current_user_can_bypass}')
-          
-          BLOCKED=false
-          while IFS= read -r rule; do
-            NAME=$(echo "$rule" | jq -r '.name')
-            CAN_BYPASS=$(echo "$rule" | jq -r '.current_user_can_bypass')
-            echo "Ruleset: $NAME → can_bypass: $CAN_BYPASS"
-            if [[ "$CAN_BYPASS" != "always" ]]; then
-              echo "Test 1 !!!: $NAME"
-              BLOCKED=true
-            fi
-          done < <(echo "$RULESETS" | jq -c '.')
-          
-          if [[ "$BLOCKED" == "true" ]]; then
-            echo "TEST 2 !!!"
-            exit 1
-          fi
-          echo "DONE !!!"
-
       - name: Prepare release
         id: prepare
         run: |
