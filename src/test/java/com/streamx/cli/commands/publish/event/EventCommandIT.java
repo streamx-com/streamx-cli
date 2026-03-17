@@ -13,7 +13,6 @@ import io.quarkus.test.junit.TestProfile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -171,17 +170,17 @@ public class EventCommandIT extends CliBaseIT {
 
     private void registerTemplate(Path dir, String dataContent) throws Exception {
       String template = """
-        {
-          "specversion": "1.0",
-          "id": "test-id",
-          "source": "test-source",
-          "type": "com.streamx.blueprints.page.published.v1",
-          "datacontenttype": "application/json",
-          "subject": "${subject}",
-          "time": "2026-01-01T00:00:00.000000Z",
-          "data": %s
-        }
-        """.formatted(dataContent);
+          {
+            "specversion": "1.0",
+            "id": "test-id",
+            "source": "test-source",
+            "type": "com.streamx.blueprints.page.published.v1",
+            "datacontenttype": "application/json",
+            "subject": "${subject}",
+            "time": "2026-01-01T00:00:00.000000Z",
+            "data": %s
+          }
+          """.formatted(dataContent);
 
       Path templateFile = dir.resolve("custom-template.json");
       Files.writeString(templateFile, template);
@@ -231,8 +230,6 @@ public class EventCommandIT extends CliBaseIT {
       String content = "<html>hello</html>";
       Files.writeString(payloadFile, content);
 
-      String expectedBase64 = Base64.getEncoder().encodeToString(content.getBytes());
-
       registerTemplate(tempDir,
           """
           {"content": "file://${payloadPath}", "type": "data/page"}""");
@@ -243,6 +240,8 @@ public class EventCommandIT extends CliBaseIT {
           payloadFile.toString(),
           "--output", "json"
       );
+
+      String expectedBase64 = Base64.getEncoder().encodeToString(content.getBytes());
 
       result.assertSuccess();
       assertEventsPublished(1);
@@ -359,11 +358,10 @@ public class EventCommandIT extends CliBaseIT {
       String content = "<html>hello</html>";
       Files.writeString(payloadFile, content);
 
-      String expectedBase64 = Base64.getEncoder().encodeToString(content.getBytes());
-
       registerTemplate(tempDir,
           """
-          {"content": "file://${payloadPath}", "path": "${relativePath:0}", "type": "data/page"}""");
+            {"content": "file://${payloadPath}", "path": "${relativePath:0}", "type": "data/page"}
+          """);
 
       ProcessResult result = exec(
           "publish", "event",
@@ -378,6 +376,8 @@ public class EventCommandIT extends CliBaseIT {
 
       JsonNode event = getEvent(result);
       assertThat(event.get("subject").asText()).isEqualTo("custom/subject");
+
+      String expectedBase64 = Base64.getEncoder().encodeToString(content.getBytes());
 
       JsonNode data = getEventData(result);
       assertThat(data.get("content").asText()).isEqualTo(expectedBase64);

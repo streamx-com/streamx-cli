@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.ingestion.CloudEventsSerde;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -17,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import org.jetbrains.annotations.NotNull;
 
 class EventTemplateLoader {
 

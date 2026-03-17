@@ -3,11 +3,11 @@ package com.streamx.cli.commands.publish.event;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.util.FileUtils;
