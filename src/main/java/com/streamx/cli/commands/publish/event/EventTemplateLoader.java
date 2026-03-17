@@ -2,8 +2,11 @@ package com.streamx.cli.commands.publish.event;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.config.DotStreamxConfigSource;
 import com.streamx.cli.framework.CliException;
+import com.streamx.cli.ingestion.CloudEventsSerde;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -25,7 +28,7 @@ class EventTemplateLoader {
   private static final String BLUEPRINTS_PREFIX = "com.streamx.blueprints.";
   private static final String TEMPLATE_SETTINGS_MAPPING_PREFIX = "eventtemplate.";
 
-  private static final List<String> KNOWN_TEMPLATES = List.of(
+  private static final List<String> WELL_KNOWN_TEMPLATES = List.of(
       "com.streamx.blueprints.page.published.v1",
       "com.streamx.blueprints.page.unpublished.v1"
   );
@@ -38,7 +41,7 @@ class EventTemplateLoader {
 
   private static Map<String, String> buildKnownTemplates() {
     Map<String, String> map = new HashMap<>();
-    for (String fullType : KNOWN_TEMPLATES) {
+    for (String fullType : WELL_KNOWN_TEMPLATES) {
       map.put(fullType, fullType);
       if (fullType.startsWith(BLUEPRINTS_PREFIX)) {
         String shortType = fullType.substring(BLUEPRINTS_PREFIX.length());
@@ -48,11 +51,29 @@ class EventTemplateLoader {
     return Map.copyOf(map);
   }
 
-  String load(@NotNull String eventType) {
-    String templateFromSettingsMapping = getTemplateFromSettingsMapping(eventType);
+  record TemplateDescriptor(String template, String templatePath) {}
 
-    if (templateFromSettingsMapping != null) {
-      return templateFromSettingsMapping;
+  public TemplateDescriptor load(@NotNull String eventType) {
+    TemplateDescriptor templateDescriptor = findTemplate(eventType);
+    validateTemplate(templateDescriptor.template, eventType);
+    return templateDescriptor;
+  }
+
+  private void validateTemplate(String template, String eventType) {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode jsonNode = mapper.readTree(template);
+      CloudEventsSerde.fromJson(jsonNode);
+    } catch (Exception e) {
+      throw new CliException(msg.invalidEventTemplate(eventType));
+    }
+  }
+
+  private TemplateDescriptor findTemplate(@NotNull String eventType) {
+    TemplateDescriptor templateFromSettings = findTemplateInSettings(eventType);
+
+    if (templateFromSettings != null) {
+      return templateFromSettings;
     }
 
     // Fallback to well-known templates
@@ -64,7 +85,10 @@ class EventTemplateLoader {
           throw new CliException(msg.eventTemplateNotFound(eventType));
         }
 
-        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        return new TemplateDescriptor(
+            new String(inputStream.readAllBytes(), StandardCharsets.UTF_8),
+            resourcePath
+        );
       } catch (IOException e) {
         throw new CliException(msg.eventTemplateNotFound(eventType), e);
       }
@@ -73,7 +97,7 @@ class EventTemplateLoader {
     throw new CliException(msg.eventTemplateNotFound(eventType));
   }
 
-  private String getTemplateFromSettingsMapping(String eventType) {
+  private TemplateDescriptor findTemplateInSettings(String eventType) {
     URL url = DotStreamxConfigSource.getUrl();
 
     try (InputStream inputStream = url.openStream()) {
@@ -89,7 +113,10 @@ class EventTemplateLoader {
 
       Path path = Paths.get(pathAsString);
       if (Files.exists(path) && Files.isRegularFile(path)) {
-        return Files.readString(path);
+        return new TemplateDescriptor(
+            Files.readString(path),
+            path.toAbsolutePath().toString()
+        );
       }
 
       return null;

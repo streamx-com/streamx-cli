@@ -194,7 +194,7 @@ public class EventCommandIT extends CliBaseIT {
 
     private JsonNode getEventData(ProcessResult result) throws Exception {
       JsonNode event = MAPPER.readTree(result.stdout().strip());
-      return event.get("data");
+      return event.get("event").get("data");
     }
 
     private JsonNode getEvent(ProcessResult result) throws Exception {

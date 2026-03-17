@@ -2,7 +2,6 @@ package com.streamx.cli.commands.publish.event;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -22,7 +21,7 @@ import java.nio.file.Path;
 @Command(name = "event",
     mixinStandardHelpOptions = true,
     description = "Publish a single event")
-public class EventCommand extends AbstractCommand<JsonNode> {
+public class EventCommand extends AbstractCommand<EventCommandResult> {
   @CommandLine.Mixin
   IngestionClientPicocliOptions ingestionOptions;
 
@@ -47,13 +46,16 @@ public class EventCommand extends AbstractCommand<JsonNode> {
   )
   public String eventSubject;
 
+  private String resolvedEventSubject;
+  private String resolvedTemplatePath;
+
   @Override
-  public String getTextOutput(CommandResult<JsonNode> result) {
-    return msg.publishEventSucceed();
+  public String getTextOutput(CommandResult<EventCommandResult> result) {
+    return msg.publishEventSucceed(resolvedEventSubject, resolvedTemplatePath);
   }
 
   @Override
-  public CommandResult<JsonNode> runCommand() {
+  public CommandResult<EventCommandResult> runCommand() {
     PayloadPathValidator.validate(eventPayloadPath);
 
     if (this.verbose) {
@@ -69,11 +71,11 @@ public class EventCommand extends AbstractCommand<JsonNode> {
     }
 
     EventTemplateLoader templateLoader = new EventTemplateLoader();
-    String templateJson = templateLoader.load(eventType);
+    EventTemplateLoader.TemplateDescriptor templateDescriptor = templateLoader.load(eventType);
     Path payloadPath = Path.of(eventPayloadPath);
 
     EventTemplateProcessor templateProcessor =
-        new EventTemplateProcessor(templateJson, payloadPath, eventSubject);
+        new EventTemplateProcessor(templateDescriptor.template(), payloadPath, eventSubject);
     CloudEvent cloudEvent = templateProcessor.toCloudEvent();
 
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
@@ -81,7 +83,14 @@ public class EventCommand extends AbstractCommand<JsonNode> {
         Publisher publisher = streamxClient.newPublisher();
         publisher.send(cloudEvent);
 
-        return new CommandResult<>(CloudEventsSerde.toJson(cloudEvent));
+        resolvedEventSubject = cloudEvent.getSubject();
+        resolvedTemplatePath = templateDescriptor.templatePath();
+
+        return new CommandResult<>(new EventCommandResult(
+            resolvedEventSubject,
+            resolvedTemplatePath,
+            CloudEventsSerde.toJson(cloudEvent)
+        ));
       } catch (Exception e) {
         throw new CliException(msg.publishEventFailed(e.getMessage()), e);
       }
