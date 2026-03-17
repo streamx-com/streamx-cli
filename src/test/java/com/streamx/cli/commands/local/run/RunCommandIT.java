@@ -5,16 +5,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import io.quarkus.test.junit.main.LaunchResult;
-import io.quarkus.test.junit.main.QuarkusMainLauncher;
-import io.quarkus.test.junit.main.QuarkusMainTest;
+import io.quarkus.test.junit.QuarkusTest;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusMainTest
+@QuarkusTest
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
@@ -36,13 +39,49 @@ public class RunCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldRunStreamxExampleMesh(QuarkusMainLauncher launcher) {
+  void shouldRunStreamxExampleMesh() throws Exception {
     String meshPath = Paths.get("target/test-classes/mesh.yaml")
         .toAbsolutePath()
         .normalize()
         .toString();
-    LaunchResult result = launcher.launch("local", "run", "-f=" + meshPath);
 
-    assertThat(result.getOutput()).contains("STREAMX IS READY!");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
+
+    InputStream originalIn = System.in;
+    PrintStream originalOut = System.out;
+    PrintStream originalErr = System.err;
+
+    AtomicInteger exitCode = new AtomicInteger(-1);
+
+    System.setIn(InputStream.nullInputStream());
+    System.setOut(new PrintStream(out, true));
+    System.setErr(new PrintStream(err, true));
+
+    Thread commandThread = Thread.ofVirtual().start(() -> {
+      exitCode.set(createCommandLine().execute("local", "run", "-f=" + meshPath));
+    });
+
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(10))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> out.toString(StandardCharsets.UTF_8).contains("STREAMX IS READY!"));
+
+      Thread.sleep(Duration.ofSeconds(5));
+
+      assertThat(commandThread.isAlive())
+          .as("Mesh process should still be running after STREAMX IS READY!")
+          .isTrue();
+
+      assertThat(out.toString(StandardCharsets.UTF_8)).contains("STREAMX IS READY!");
+    } finally {
+      System.setIn(originalIn);
+      System.setOut(originalOut);
+      System.setErr(originalErr);
+
+      commandThread.interrupt();
+      commandThread.join(Duration.ofSeconds(30).toMillis());
+    }
   }
 }

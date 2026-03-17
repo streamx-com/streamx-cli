@@ -9,6 +9,7 @@ import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.util.BannerPrinter;
 import com.streamx.runner.StreamxRunner;
 import com.streamx.runner.exception.ContainerStartupTimeoutException;
+import io.quarkus.runtime.Quarkus;
 import jakarta.inject.Inject;
 import java.nio.file.Path;
 import picocli.CommandLine;
@@ -44,6 +45,8 @@ public class RunCommand extends AbstractSilentCommand {
       meshManager.initializeRunMode(meshPath);
 
       meshManager.start();
+
+      Quarkus.waitForExit();
 
       return new CommandResult<>(null);
     } catch (ContainerStartupTimeoutException e) {
