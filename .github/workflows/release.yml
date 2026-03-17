@@ -49,9 +49,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           echo "Authenticated as app:"
-          gh api /app --jq '"  slug: \(.slug)\n  id: \(.id)\n  name: \(.name)"'
-          echo "Installation info:"
-          gh api /installation/repositories --jq '"  account: \(.repositories[0].owner.login)\n  permissions: \(.repositories[0].permissions | to_entries | map(select(.value)) | map(.key) | join(", "))"'
+          gh api /installation/repositories
           
           echo "Checking repository rulesets for ${{ github.repository }}..."
           RULESETS=$(gh api repos/${{ github.repository }}/rulesets --jq '.[] | {id, name, current_user_can_bypass}')
