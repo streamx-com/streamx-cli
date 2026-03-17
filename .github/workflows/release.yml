@@ -48,6 +48,10 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
+          echo "Authenticated as:"
+          gh api user
+          echo ""
+          
           echo "Checking repository rulesets for ${{ github.repository }}..."
           RULESETS=$(gh api repos/${{ github.repository }}/rulesets --jq '.[] | {id, name, current_user_can_bypass}')
           
