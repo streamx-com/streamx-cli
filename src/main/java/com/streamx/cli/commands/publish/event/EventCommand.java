@@ -66,15 +66,15 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
     PayloadPathValidator.validate(eventPayloadPath);
 
     if (this.verbose) {
-      System.out.println(msg.runningPublishEventCommand());
-      System.out.println(msg.resolvingStreamxClientConfig());
+      System.err.println(msg.runningPublishEventCommand());
+      System.err.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
     if (this.verbose) {
-      System.out.println(msg.initializingStreamxClient());
-      System.out.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
+      System.err.println(msg.initializingStreamxClient());
+      System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
     EventTemplateLoader templateLoader = new EventTemplateLoader();

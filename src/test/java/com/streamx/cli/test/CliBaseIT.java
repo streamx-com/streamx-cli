@@ -27,7 +27,7 @@ public abstract class CliBaseIT {
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
   @TempDir
-  static Path streamxHome;
+  public static Path streamxHome;
 
   private Process process;
 

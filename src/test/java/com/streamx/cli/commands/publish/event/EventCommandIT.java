@@ -82,7 +82,7 @@ public class EventCommandIT extends CliBaseIT {
   @Nested
   @QuarkusTest
   @TestProfile(DefaultMeshTestProfile.class)
-  class InvalidSource {
+  class InvalidPayload {
 
     @Test
     void shouldFailWhenPayloadFileNotFound() throws Exception {
@@ -155,9 +155,9 @@ public class EventCommandIT extends CliBaseIT {
 
       result.assertSuccess();
       assertEventsPublished(1);
-      assertThat(result.stdout()).contains(msg.runningPublishEventCommand());
-      assertThat(result.stdout()).contains(msg.resolvingStreamxClientConfig());
-      assertThat(result.stdout()).contains(msg.initializingStreamxClient());
+      assertThat(result.stderr()).contains(msg.runningPublishEventCommand());
+      assertThat(result.stderr()).contains(msg.resolvingStreamxClientConfig());
+      assertThat(result.stderr()).contains(msg.initializingStreamxClient());
     }
   }
 
