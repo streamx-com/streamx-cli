@@ -16,40 +16,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 class EventTemplateLoader {
 
   private static final String DEFAULT_TEMPLATES_DIR = "default-event-templates";
+  private static final String DEFAULT_TEMPLATE_PREFIX = "com.streamx.blueprints.";
+
   private static final String TEMPLATE_EXTENSION = ".json";
-  private static final String BLUEPRINTS_PREFIX = "com.streamx.blueprints.";
   private static final String TEMPLATE_SETTINGS_MAPPING_PREFIX = "eventtemplate.";
-
-  private static final List<String> WELL_KNOWN_TEMPLATES = List.of(
-      "com.streamx.blueprints.page.published.v1",
-      "com.streamx.blueprints.page.unpublished.v1"
-  );
-
-  private final Map<String, String> knownTemplates;
-
-  EventTemplateLoader() {
-    this.knownTemplates = buildKnownTemplates();
-  }
-
-  private static Map<String, String> buildKnownTemplates() {
-    Map<String, String> map = new HashMap<>();
-    for (String fullType : WELL_KNOWN_TEMPLATES) {
-      map.put(fullType, fullType);
-      if (fullType.startsWith(BLUEPRINTS_PREFIX)) {
-        String shortType = fullType.substring(BLUEPRINTS_PREFIX.length());
-        map.put(shortType, fullType);
-      }
-    }
-    return Map.copyOf(map);
-  }
 
   record TemplateDescriptor(String template, String templatePath) {}
 
@@ -70,31 +45,39 @@ class EventTemplateLoader {
   }
 
   private TemplateDescriptor findTemplate(@NotNull String eventType) {
-    TemplateDescriptor templateFromSettings = findTemplateInSettings(eventType);
+    TemplateDescriptor defaultTemplate = findDefaultTemplate(eventType);
+    if (defaultTemplate != null) {
+      return defaultTemplate;
+    }
 
+    if (!eventType.startsWith(DEFAULT_TEMPLATE_PREFIX)) {
+      defaultTemplate = findDefaultTemplate(DEFAULT_TEMPLATE_PREFIX + eventType);
+      if (defaultTemplate != null) {
+        return defaultTemplate;
+      }
+    }
+
+    TemplateDescriptor templateFromSettings = findTemplateInSettings(eventType);
     if (templateFromSettings != null) {
       return templateFromSettings;
     }
 
-    // Fallback to well-known templates
-    String templateName = knownTemplates.get(eventType);
-    if (templateName != null) {
-      String resourcePath = "/" + DEFAULT_TEMPLATES_DIR + "/" + templateName + TEMPLATE_EXTENSION;
-      try (InputStream inputStream = EventTemplateLoader.class.getResourceAsStream(resourcePath)) {
-        if (inputStream == null) {
-          throw new CliException(msg.eventTemplateNotFound(eventType));
-        }
-
-        return new TemplateDescriptor(
-            new String(inputStream.readAllBytes(), StandardCharsets.UTF_8),
-            resourcePath
-        );
-      } catch (IOException e) {
-        throw new CliException(msg.eventTemplateNotFound(eventType), e);
-      }
-    }
-
     throw new CliException(msg.eventTemplateNotFound(eventType));
+  }
+
+  private TemplateDescriptor findDefaultTemplate(String templateName) {
+    String resourcePath = "/" + DEFAULT_TEMPLATES_DIR + "/" + templateName + TEMPLATE_EXTENSION;
+    try (InputStream inputStream = EventTemplateLoader.class.getResourceAsStream(resourcePath)) {
+      if (inputStream == null) {
+        return null;
+      }
+      return new TemplateDescriptor(
+          new String(inputStream.readAllBytes(), StandardCharsets.UTF_8),
+          resourcePath
+      );
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   private TemplateDescriptor findTemplateInSettings(String eventType) {

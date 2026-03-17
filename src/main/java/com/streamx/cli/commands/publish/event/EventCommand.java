@@ -2,6 +2,8 @@ package com.streamx.cli.commands.publish.event;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -16,12 +18,20 @@ import io.cloudevents.CloudEvent;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Command(name = "event",
     mixinStandardHelpOptions = true,
     description = "Publish a single event")
 public class EventCommand extends AbstractCommand<EventCommandResult> {
+
+  private static final String RESULT_FILE_NAME = "publish-event-result.json";
+  private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
   @CommandLine.Mixin
   IngestionClientPicocliOptions ingestionOptions;
 
@@ -46,12 +56,9 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
   )
   public String eventSubject;
 
-  private String resolvedEventSubject;
-  private String resolvedTemplatePath;
-
   @Override
   public String getTextOutput(CommandResult<EventCommandResult> result) {
-    return msg.publishEventSucceed(resolvedEventSubject, resolvedTemplatePath);
+    return msg.publishEventSucceed(result.getData().subject(), result.getData().templatePath());
   }
 
   @Override
@@ -80,22 +87,48 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
 
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
       try {
+        EventCommandResult result = new EventCommandResult(
+            null,
+            cloudEvent.getSubject(),
+            templateDescriptor.templatePath(),
+            templateDescriptor.template(),
+            CloudEventsSerde.toJson(cloudEvent)
+        );
+
         Publisher publisher = streamxClient.newPublisher();
         publisher.send(cloudEvent);
 
-        resolvedEventSubject = cloudEvent.getSubject();
-        resolvedTemplatePath = templateDescriptor.templatePath();
-
-        return new CommandResult<>(new EventCommandResult(
-            resolvedEventSubject,
-            resolvedTemplatePath,
-            CloudEventsSerde.toJson(cloudEvent)
-        ));
+        return new CommandResult<>(result);
       } catch (Exception e) {
-        throw new CliException(msg.publishEventFailed(e.getMessage()), e);
+        EventCommandResult errorDetails = new EventCommandResult(
+            e.getMessage(),
+            cloudEvent.getSubject(),
+            templateDescriptor.templatePath(),
+            templateDescriptor.template(),
+            CloudEventsSerde.toJson(cloudEvent)
+        );
+
+        String errorDetailsPath = writeErrorDetailsToTempFile(errorDetails);
+
+        throw new CliException(msg.publishEventFailed(e.getMessage(), errorDetailsPath), e);
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
+    }
+  }
+
+  private String writeErrorDetailsToTempFile(EventCommandResult result) {
+    try {
+      String prefix = "streamx-cli-" + LocalDate.now().format(DATE_FORMAT) + "-";
+      Path tempDir = Files.createTempDirectory(prefix);
+      Path resultFile = tempDir.resolve(RESULT_FILE_NAME);
+
+      ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+      mapper.writeValue(resultFile.toFile(), result);
+
+      return resultFile.toAbsolutePath().toString();
+    } catch (IOException e) {
+      throw new CliException(msg.failedToSavePublishEventErrorDetails(e.getMessage()), e);
     }
   }
 }

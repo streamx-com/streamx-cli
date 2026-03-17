@@ -311,24 +311,27 @@ public interface MessageProvider {
   @Message(id = 185, value = "Event template for %s is corrupted")
   String invalidEventTemplate(String eventType);
 
-  @Message(id = 186, value = "Unable to publish event: %s")
-  String publishEventFailed(String reason);
+  @Message(id = 186, value = "Unable to publish event: %s. You can find error details at: %s")
+  String publishEventFailed(String reason, String errorDetailsPath);
 
-  @Message(id = 187, value = "Invalid payload path: %s")
+  @Message(id = 187, value = "Failed to save publish event error details: %s")
+  String failedToSavePublishEventErrorDetails(String reason);
+
+  @Message(id = 188, value = "Invalid payload path: %s")
   String invalidPayloadPath(String payloadPath);
 
-  @Message(id = 188, value = "Payload path not found: %s")
+  @Message(id = 189, value = "Payload path not found: %s")
   String payloadFileNotFound(String path);
 
-  @Message(id = 189, value = "Payload file is not readable: %s")
+  @Message(id = 190, value = "Payload file is not readable: %s")
   String payloadFileNotReadable(String path);
 
-  @Message(id = 190, value = "Payload should be a file, but directory found. Path: %s")
+  @Message(id = 191, value = "Payload should be a file, but directory found. Path: %s")
   String payloadFileIsDirectory(String path);
 
-  @Message(id = 191, value = "Published %s using %s")
+  @Message(id = 192, value = "Published %s using %s")
   String publishEventSucceed(String eventSubject, String templatePath);
 
-  @Message(id = 192, value = "Failed to process event template placeholders: %s")
+  @Message(id = 193, value = "Failed to process event template placeholders: %s")
   String failedToProcessEventTemplatePlaceholders(String reason);
 }

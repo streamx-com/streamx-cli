@@ -2,7 +2,7 @@
   "specversion": "1.0",
   "id": "Default ID",
   "source": "default-event-templates",
-  "type": "com.streamx.blueprints.page.unpublished.v1",
+  "type": "com.streamx.blueprints.asset.published.v1",
   "datacontenttype": "application/json",
   "subject": "${payloadPath}",
   "time": "2026-01-01T00:00:00.000000Z",
