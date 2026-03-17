@@ -4,7 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streamx.cli.config.DotStreamxConfigSource;
+import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.ingestion.CloudEventsSerde;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +81,7 @@ class EventTemplateLoader {
   }
 
   private TemplateDescriptor findTemplateInSettings(String eventType) {
-    URL url = DotStreamxConfigSource.getUrl();
+    URL url = StreamxHome.getConfigUrl();
 
     try (InputStream inputStream = url.openStream()) {
       Properties properties = new Properties();
@@ -95,6 +95,11 @@ class EventTemplateLoader {
       }
 
       Path path = Paths.get(pathAsString);
+      if (!path.isAbsolute()) {
+        Path configDir = Paths.get(url.toURI()).getParent();
+        path = configDir.resolve(path);
+      }
+
       if (Files.exists(path) && Files.isRegularFile(path)) {
         return new TemplateDescriptor(
             Files.readString(path),
@@ -103,6 +108,8 @@ class EventTemplateLoader {
       }
 
       return null;
+    } catch (CliException e) {
+      throw e;
     } catch (Exception e) {
       throw new CliException(msg.unableToGetSettingsProperty(), e);
     }

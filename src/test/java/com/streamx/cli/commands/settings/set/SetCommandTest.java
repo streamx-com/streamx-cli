@@ -2,7 +2,7 @@ package com.streamx.cli.commands.settings.set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.streamx.cli.config.DotStreamxConfigSource;
+import com.streamx.cli.config.StreamxHome;
 import io.quarkus.test.junit.main.LaunchResult;
 import io.quarkus.test.junit.main.QuarkusMainLauncher;
 import io.quarkus.test.junit.main.QuarkusMainTest;
@@ -24,7 +24,7 @@ class SetCommandTest {
   void setUp() throws IOException, URISyntaxException {
     Path tempDir = Files.createTempDirectory("SetCommandTest");
     System.setProperty("user.home", tempDir.toString());
-    configFile = new File(DotStreamxConfigSource.getUrl().toURI()).toPath();
+    configFile = new File(StreamxHome.getConfigUrl().toURI()).toPath();
   }
 
   @Test
