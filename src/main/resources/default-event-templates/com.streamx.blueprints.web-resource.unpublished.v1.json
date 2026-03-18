@@ -1,11 +1,11 @@
 {
   "specversion": "1.0",
-  "id": "Default ID",
-  "source": "default-event-templates",
+  "id": "${uuid}",
+  "source": "streamx-cli",
   "type": "com.streamx.blueprints.web-resource.unpublished.v1",
   "datacontenttype": "application/json",
   "subject": "${payloadPath}",
-  "time": "2026-01-01T00:00:00.000000Z",
+  "time": "${currentTime}",
   "data": {
     "content": "file://${payloadPath}",
     "type": "data/category"

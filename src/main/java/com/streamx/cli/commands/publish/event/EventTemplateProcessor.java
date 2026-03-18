@@ -15,8 +15,12 @@ import io.cloudevents.CloudEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,18 +79,15 @@ class EventTemplateProcessor {
     if (value.contains("file://${payloadPath}")) {
       byte[] fileBytes = Files.readAllBytes(eventPayloadPath);
       String payloadBase64 = Base64.getEncoder().encodeToString(fileBytes);
-      String resolved = value.replace("file://${payloadPath}", payloadBase64);
-      return new TextNode(resolved);
+      value = value.replace("file://${payloadPath}", payloadBase64);
     }
 
     if (value.contains("${payloadPath}")) {
-      String resolved = value.replace("${payloadPath}", eventPayloadPath.toString());
-      return new TextNode(resolved);
+      value = value.replace("${payloadPath}", eventPayloadPath.toString());
     }
 
     Matcher matcher = RELATIVE_PATH_PLACEHOLDER_PATTERN.matcher(value);
     StringBuilder result = new StringBuilder();
-
     boolean found = false;
     while (matcher.find()) {
       found = true;
@@ -97,13 +98,22 @@ class EventTemplateProcessor {
     }
     if (found) {
       matcher.appendTail(result);
-      return new TextNode(result.toString());
+      value = result.toString();
     }
 
     if (value.contains("${subject}")) {
       String resolvedSubject = subject != null ? subject : eventPayloadPath.toString();
-      String resolved = value.replace("${subject}", resolvedSubject);
-      return new TextNode(resolved);
+      value = value.replace("${subject}", resolvedSubject);
+    }
+
+    if (value.contains("${uuid}")) {
+      value = value.replace("${uuid}", UUID.randomUUID().toString());
+    }
+
+    if (value.contains("${currentTime}")) {
+      String timestamp =
+          OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+      value = value.replace("${currentTime}", timestamp);
     }
 
     return new TextNode(value);

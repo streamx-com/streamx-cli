@@ -2,11 +2,9 @@ package com.streamx.cli.commands.publish.event;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.CliException;
-import com.streamx.cli.ingestion.CloudEventsSerde;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -36,8 +34,7 @@ class EventTemplateLoader {
   private void validateTemplate(String template, String eventType) {
     try {
       ObjectMapper mapper = new ObjectMapper();
-      JsonNode jsonNode = mapper.readTree(template);
-      CloudEventsSerde.fromJson(jsonNode);
+      mapper.readTree(template);
     } catch (Exception e) {
       throw new CliException(msg.invalidEventTemplate(eventType));
     }
