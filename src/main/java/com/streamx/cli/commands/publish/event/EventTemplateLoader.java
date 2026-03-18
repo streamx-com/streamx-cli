@@ -18,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 class EventTemplateLoader {
 
   private static final String DEFAULT_TEMPLATES_DIR = "default-event-templates";
-  private static final String DEFAULT_TEMPLATE_PREFIX = "com.streamx.blueprints.";
-
   private static final String TEMPLATE_EXTENSION = ".json";
   private static final String TEMPLATE_SETTINGS_MAPPING_PREFIX = "eventtemplate.";
 
@@ -41,21 +39,14 @@ class EventTemplateLoader {
   }
 
   private TemplateDescriptor findTemplate(@NotNull String eventType) {
-    TemplateDescriptor defaultTemplate = findDefaultTemplate(eventType);
-    if (defaultTemplate != null) {
-      return defaultTemplate;
-    }
-
-    if (!eventType.startsWith(DEFAULT_TEMPLATE_PREFIX)) {
-      defaultTemplate = findDefaultTemplate(DEFAULT_TEMPLATE_PREFIX + eventType);
-      if (defaultTemplate != null) {
-        return defaultTemplate;
-      }
-    }
-
     TemplateDescriptor templateFromSettings = findTemplateInSettings(eventType);
     if (templateFromSettings != null) {
       return templateFromSettings;
+    }
+
+    TemplateDescriptor defaultTemplate = findDefaultTemplate(eventType);
+    if (defaultTemplate != null) {
+      return defaultTemplate;
     }
 
     throw new CliException(msg.eventTemplateNotFound(eventType));
@@ -104,10 +95,8 @@ class EventTemplateLoader {
       }
 
       return null;
-    } catch (CliException e) {
-      throw e;
     } catch (Exception e) {
-      throw new CliException(msg.unableToGetSettingsProperty(), e);
+      throw new CliException(msg.unableToGetSettingsProperty(e.getMessage()), e);
     }
   }
 }

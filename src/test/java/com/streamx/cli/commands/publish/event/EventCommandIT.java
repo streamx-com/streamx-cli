@@ -10,12 +10,15 @@ import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,35 +28,32 @@ import org.junit.jupiter.api.io.TempDir;
 public class EventCommandIT extends CliBaseIT {
 
   @Test
-  void shouldPublishEventWithKnownEventType(@TempDir Path tempDir) throws Exception {
+  void shouldPublishEventWithKnownEventTypes(@TempDir Path tempDir) throws Exception {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html><body>Hello</body></html>");
 
-    ProcessResult result = exec(
-        "publish",
-        "event",
-        "com.streamx.blueprints.page.published.v1",
-        payloadFile.toString()
-    );
+    URI uri = EventCommandIT.class.getResource("/default-event-templates").toURI();
+    Path templatesDir = Path.of(uri);
 
-    result.assertSuccess();
-    assertEventsPublished(1);
-  }
+    try (Stream<Path> files = Files.list(templatesDir)) {
+      List<String> eventTypes = files
+          .filter(p -> p.toString().endsWith(".json"))
+          .map(p -> p.getFileName().toString().replace(".json", ""))
+          .toList();
 
-  @Test
-  void shouldPublishEventWithShortKnownEventType(@TempDir Path tempDir) throws Exception {
-    Path payloadFile = tempDir.resolve("payload.html");
-    Files.writeString(payloadFile, "<html><body>Hello</body></html>");
+      for (String eventType : eventTypes) {
+        System.out.println("Testing well known event type: " + eventType);
+        ProcessResult result = exec(
+            "publish",
+            "event",
+            eventType,
+            payloadFile.toString()
+        );
 
-    ProcessResult result = exec(
-        "publish",
-        "event",
-        "page.published.v1",
-        payloadFile.toString()
-    );
-
-    result.assertSuccess();
-    assertEventsPublished(1);
+        result.assertSuccess();
+        assertEventsPublished(1);
+      }
+    }
   }
 
   @Nested
@@ -93,7 +93,7 @@ public class EventCommandIT extends CliBaseIT {
       ProcessResult result = exec(
           "publish",
           "event",
-          "com.streamx.blueprints.page.published.v1",
+          "page.published",
           nonExistentFile
       );
 
@@ -107,7 +107,7 @@ public class EventCommandIT extends CliBaseIT {
       ProcessResult result = exec(
           "publish",
           "event",
-          "com.streamx.blueprints.page.published.v1",
+          "page.published",
           tempDir.toString()
       );
 
@@ -125,7 +125,7 @@ public class EventCommandIT extends CliBaseIT {
       ProcessResult result = exec(
           "publish",
           "event",
-          "com.streamx.blueprints.page.published.v1",
+          "page.published",
           unreadableFile.toString()
       );
 
@@ -150,7 +150,7 @@ public class EventCommandIT extends CliBaseIT {
       ProcessResult result = exec(
           "publish",
           "event",
-          "com.streamx.blueprints.page.published.v1",
+          "page.published",
           payloadFile.toString(),
           "--verbose"
       );

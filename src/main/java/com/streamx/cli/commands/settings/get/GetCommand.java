@@ -41,7 +41,7 @@ public class GetCommand extends AbstractCommand<String> {
 
       return new CommandResult<>(value);
     } catch (IOException e) {
-      throw new CliException(msg.unableToGetSettingsProperty(), e);
+      throw new CliException(msg.unableToGetSettingsProperty(e.getMessage()), e);
     }
   }
 }

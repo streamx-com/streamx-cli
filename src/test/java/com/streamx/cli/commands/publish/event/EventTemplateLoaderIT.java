@@ -19,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 public class EventTemplateLoaderIT extends CliBaseIT {
 
   private static final String TEMPLATE_TYPE = "path.resolution.template";
+  private static final String DEFAULT_TEMPLATE_TYPE = "page.published";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static String createTemplateContent() {
@@ -31,22 +32,36 @@ public class EventTemplateLoaderIT extends CliBaseIT {
           "datacontenttype": "application/json",
           "subject": "${subject}",
           "time": "2026-01-01T00:00:00.000000Z",
-          "data": {"content": "${payloadPath}", "type": "data/page"}
+          "data": {"content": "${payloadPath}", "type": "data/page", "origin": "settings"}
         }
         """;
   }
 
   private void registerTemplate(String relativePath) throws Exception {
+    registerTemplate(TEMPLATE_TYPE, relativePath);
+  }
+
+  private void registerTemplate(String eventType, String relativePath) throws Exception {
     exec("settings", "set",
-        "eventtemplate." + TEMPLATE_TYPE,
+        "eventtemplate." + eventType,
         relativePath
     ).assertSuccess();
   }
 
   private void registerTemplateAbsolute(Path absolutePath) throws Exception {
+    registerTemplateAbsolute(TEMPLATE_TYPE, absolutePath);
+  }
+
+  private void registerTemplateAbsolute(String eventType, Path absolutePath) throws Exception {
     exec("settings", "set",
-        "eventtemplate." + TEMPLATE_TYPE,
+        "eventtemplate." + eventType,
         absolutePath.toString()
+    ).assertSuccess();
+  }
+
+  private void unregisterTemplate(String eventType) throws Exception {
+    exec("settings", "remove",
+        "eventtemplate." + eventType
     ).assertSuccess();
   }
 
@@ -134,6 +149,86 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     JsonNode data = event.get("event").get("data");
     assertThat(data.get("content").asText()).isEqualTo(payloadFile.toString());
     assertThat(data.get("type").asText()).isEqualTo("data/page");
+  }
+
+  @Test
+  void shouldResolveDefaultTemplate(@TempDir Path tempDir) throws Exception {
+    Path payloadFile = tempDir.resolve("payload.html");
+    Files.writeString(payloadFile, "<html>hello</html>");
+
+    ProcessResult result = exec(
+        "publish", "event",
+        DEFAULT_TEMPLATE_TYPE,
+        payloadFile.toString(),
+        "--output", "json"
+    );
+
+    result.assertSuccess();
+
+    JsonNode event = MAPPER.readTree(result.stdout().strip());
+    JsonNode data = event.get("event").get("data");
+    assertThat(data).isNotNull();
+  }
+
+  @Test
+  void shouldPreferSettingsTemplateWithRelativePathOverDefault(@TempDir Path tempDir)
+      throws Exception {
+    Path payloadFile = tempDir.resolve("payload.html");
+    Files.writeString(payloadFile, "<html>hello</html>");
+
+    Path templateFile = streamxHome.resolve("override-page-published.json");
+    Files.writeString(templateFile, createTemplateContent());
+
+    try {
+      registerTemplate(DEFAULT_TEMPLATE_TYPE, "override-page-published.json");
+
+      ProcessResult result = exec(
+          "publish", "event",
+          DEFAULT_TEMPLATE_TYPE,
+          payloadFile.toString(),
+          "--output", "json"
+      );
+
+      result.assertSuccess();
+
+      JsonNode event = MAPPER.readTree(result.stdout().strip());
+      JsonNode data = event.get("event").get("data");
+      assertThat(data.get("content").asText()).isEqualTo(payloadFile.toString());
+      assertThat(data.get("origin").asText()).isEqualTo("settings");
+    } finally {
+      unregisterTemplate(DEFAULT_TEMPLATE_TYPE);
+      Files.deleteIfExists(templateFile);
+    }
+  }
+
+  @Test
+  void shouldPreferSettingsTemplateWithAbsolutePathOverDefault(@TempDir Path tempDir)
+      throws Exception {
+    Path payloadFile = tempDir.resolve("payload.html");
+    Files.writeString(payloadFile, "<html>hello</html>");
+
+    Path templateFile = tempDir.resolve("override-page-published.json");
+    Files.writeString(templateFile, createTemplateContent());
+
+    try {
+      registerTemplateAbsolute(DEFAULT_TEMPLATE_TYPE, templateFile);
+
+      ProcessResult result = exec(
+          "publish", "event",
+          DEFAULT_TEMPLATE_TYPE,
+          payloadFile.toString(),
+          "--output", "json"
+      );
+
+      result.assertSuccess();
+
+      JsonNode event = MAPPER.readTree(result.stdout().strip());
+      JsonNode data = event.get("event").get("data");
+      assertThat(data.get("content").asText()).isEqualTo(payloadFile.toString());
+      assertThat(data.get("origin").asText()).isEqualTo("settings");
+    } finally {
+      unregisterTemplate(DEFAULT_TEMPLATE_TYPE);
+    }
   }
 
   @Test

@@ -6,8 +6,5 @@
   "datacontenttype": "application/json",
   "subject": "${payloadPath}",
   "time": "${currentTime}",
-  "data": {
-    "content": "file://${payloadPath}",
-    "type": "data/category"
-  }
+  "data": null
 }

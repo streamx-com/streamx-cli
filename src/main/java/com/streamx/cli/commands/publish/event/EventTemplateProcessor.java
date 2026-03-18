@@ -44,8 +44,6 @@ class EventTemplateProcessor {
       JsonNode templateJson = MAPPER.readTree(eventTemplate);
       JsonNode processed = processNode(templateJson);
       return CloudEventsSerde.fromJson(processed);
-    } catch (CliException e) {
-      throw e;
     } catch (Exception e) {
       throw new CliException(msg.failedToProcessEventTemplatePlaceholders(e.getMessage()), e);
     }
@@ -76,14 +74,14 @@ class EventTemplateProcessor {
   }
 
   private JsonNode processTextNode(String value) throws IOException {
-    if (value.contains("file://${payloadPath}")) {
+    if (value.contains(EventTemplatePlaceholders.PAYLOAD_CONTENT_BASE64)) {
       byte[] fileBytes = Files.readAllBytes(eventPayloadPath);
       String payloadBase64 = Base64.getEncoder().encodeToString(fileBytes);
-      value = value.replace("file://${payloadPath}", payloadBase64);
+      value = value.replace(EventTemplatePlaceholders.PAYLOAD_CONTENT_BASE64, payloadBase64);
     }
 
-    if (value.contains("${payloadPath}")) {
-      value = value.replace("${payloadPath}", eventPayloadPath.toString());
+    if (value.contains(EventTemplatePlaceholders.PAYLOAD_PATH)) {
+      value = value.replace(EventTemplatePlaceholders.PAYLOAD_PATH, eventPayloadPath.toString());
     }
 
     Matcher matcher = RELATIVE_PATH_PLACEHOLDER_PATTERN.matcher(value);
@@ -101,19 +99,19 @@ class EventTemplateProcessor {
       value = result.toString();
     }
 
-    if (value.contains("${subject}")) {
+    if (value.contains(EventTemplatePlaceholders.SUBJECT)) {
       String resolvedSubject = subject != null ? subject : eventPayloadPath.toString();
-      value = value.replace("${subject}", resolvedSubject);
+      value = value.replace(EventTemplatePlaceholders.SUBJECT, resolvedSubject);
     }
 
-    if (value.contains("${uuid}")) {
-      value = value.replace("${uuid}", UUID.randomUUID().toString());
+    if (value.contains(EventTemplatePlaceholders.UUID)) {
+      value = value.replace(EventTemplatePlaceholders.UUID, UUID.randomUUID().toString());
     }
 
-    if (value.contains("${currentTime}")) {
+    if (value.contains(EventTemplatePlaceholders.CURRENT_TIME)) {
       String timestamp =
           OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-      value = value.replace("${currentTime}", timestamp);
+      value = value.replace(EventTemplatePlaceholders.CURRENT_TIME, timestamp);
     }
 
     return new TextNode(value);

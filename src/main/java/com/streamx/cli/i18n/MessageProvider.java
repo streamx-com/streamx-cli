@@ -156,8 +156,8 @@ public interface MessageProvider {
   @Message(id = 105, value = "No such settings property found: %s")
   String noSettingsPropertyFound(String key);
 
-  @Message(id = 106, value = "Unable to get settings property")
-  String unableToGetSettingsProperty();
+  @Message(id = 106, value = "Unable to get settings property: %s")
+  String unableToGetSettingsProperty(String reason);
 
   @Message(id = 107, value = "Failed to load properties from: %s")
   String failedToLoadPropertiesFrom(String path);
@@ -167,6 +167,9 @@ public interface MessageProvider {
 
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
+
+  @Message(id = 1090, value = "Unable to remove settings property %s: %s")
+  String unableToRemoveSettingsProperty(String key, String reason);
 
   @Message(id = 141, value = "Running publish stream command")
   String runningPublishStreamCommand();
