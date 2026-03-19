@@ -60,7 +60,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
   }
 
   private void unregisterTemplate(String eventType) throws Exception {
-    exec("settings", "remove",
+    exec("settings", "unset",
         "eventtemplate." + eventType
     ).assertSuccess();
   }
