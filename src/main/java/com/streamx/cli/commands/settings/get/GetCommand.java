@@ -2,7 +2,7 @@ package com.streamx.cli.commands.settings.get;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.config.DotStreamxConfigSource;
+import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -28,7 +28,7 @@ public class GetCommand extends AbstractCommand<String> {
 
   @Override
   public CommandResult<String> runCommand() {
-    URL url = DotStreamxConfigSource.getUrl();
+    URL url = StreamxHome.getConfigUrl();
 
     try (InputStream inputStream = url.openStream()) {
       Properties properties = new Properties();
@@ -41,7 +41,7 @@ public class GetCommand extends AbstractCommand<String> {
 
       return new CommandResult<>(value);
     } catch (IOException e) {
-      throw new CliException(msg.unableToGetSettingsProperty(), e);
+      throw new CliException(msg.unableToGetSettingsProperty(e.getMessage()), e);
     }
   }
 }

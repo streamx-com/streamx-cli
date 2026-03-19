@@ -23,8 +23,8 @@ public interface MessageProvider {
   @Message(id = 102, value = "Failed to handle interactive input")
   String failedToHandleInteractiveInput();
 
-  @Message(id = 103, value = "Unable to serialize JSON")
-  String unableToSerializeJson();
+  @Message(id = 103, value = "Unable to serialize JSON: %s")
+  String unableToSerializeJson(String reason);
 
   @Message(
       id = 104,
@@ -159,8 +159,8 @@ public interface MessageProvider {
   @Message(id = 105, value = "No such settings property found: %s")
   String noSettingsPropertyFound(String key);
 
-  @Message(id = 106, value = "Unable to get settings property")
-  String unableToGetSettingsProperty();
+  @Message(id = 106, value = "Unable to get settings property: %s")
+  String unableToGetSettingsProperty(String reason);
 
   @Message(id = 107, value = "Failed to load properties from: %s")
   String failedToLoadPropertiesFrom(String path);
@@ -170,6 +170,9 @@ public interface MessageProvider {
 
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
+
+  @Message(id = 1090, value = "Unable to remove settings property %s: %s")
+  String unableToRemoveSettingsProperty(String key, String reason);
 
   @Message(id = 141, value = "Running publish stream command")
   String runningPublishStreamCommand();
@@ -304,4 +307,37 @@ public interface MessageProvider {
 
   @Message(id = 182, value = "Event publish result is unknown. Failed batch number: %s")
   String eventPublishResultIsUnknown(int batchNumber);
+
+  @Message(id = 183, value = "Running publish event command")
+  String runningPublishEventCommand();
+
+  @Message(id = 184, value = "No event template set for: %s")
+  String eventTemplateNotFound(String eventType);
+
+  @Message(id = 185, value = "Event template for %s is corrupted")
+  String invalidEventTemplate(String eventType);
+
+  @Message(id = 186, value = "Unable to publish event: %s. You can find error details at: %s")
+  String publishEventFailed(String reason, String errorDetailsPath);
+
+  @Message(id = 187, value = "Failed to save publish event error details: %s")
+  String failedToSavePublishEventErrorDetails(String reason);
+
+  @Message(id = 188, value = "Invalid payload path: %s")
+  String invalidPayloadPath(String payloadPath);
+
+  @Message(id = 189, value = "Payload path not found: %s")
+  String payloadFileNotFound(String path);
+
+  @Message(id = 190, value = "Payload file is not readable: %s")
+  String payloadFileNotReadable(String path);
+
+  @Message(id = 191, value = "Payload should be a file, but directory found. Path: %s")
+  String payloadFileIsDirectory(String path);
+
+  @Message(id = 192, value = "Published %s using %s")
+  String publishEventSucceed(String eventSubject, String templatePath);
+
+  @Message(id = 193, value = "Failed to process event template placeholders: %s")
+  String failedToProcessEventTemplatePlaceholders(String reason);
 }

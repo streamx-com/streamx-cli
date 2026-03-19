@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,11 +20,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 public abstract class CliBaseIT {
 
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
+
+  @TempDir
+  public static Path streamxHome;
 
   private Process process;
 
@@ -38,6 +43,7 @@ public abstract class CliBaseIT {
 
   @BeforeAll
   static void ensureBuilt() {
+    System.out.println("STREAMX_HOME path is " + streamxHome.toAbsolutePath());
     if (isNative()) {
       BuildExecutableOnce.ensureBuilt();
     }
@@ -92,6 +98,7 @@ public abstract class CliBaseIT {
       System.setIn(stdin);
       System.setOut(new PrintStream(out));
       System.setErr(new PrintStream(err));
+      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
 
       int exitCode = createCommandLine().execute(args);
 
@@ -101,6 +108,7 @@ public abstract class CliBaseIT {
           err.toString(StandardCharsets.UTF_8)
       );
     } finally {
+      System.clearProperty("STREAMX_HOME");
       System.setIn(originalIn);
       System.setOut(originalOut);
       System.setErr(originalErr);
@@ -155,6 +163,7 @@ public abstract class CliBaseIT {
 
     ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(false);
+    pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
     process = pb.start();
 
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);

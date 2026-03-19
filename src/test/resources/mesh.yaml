@@ -23,8 +23,14 @@ sources:
     outgoing:
       - ref: "inbox.pages"
         produces:
+          - "com.streamx.blueprints.asset.published.v1"
+          - "com.streamx.blueprints.asset.unpublished.v1"
           - "com.streamx.blueprints.data.published.v1"
           - "com.streamx.blueprints.data.unpublished.v1"
+          - "com.streamx.blueprints.page.published.v1"
+          - "com.streamx.blueprints.page.unpublished.v1"
+          - "com.streamx.blueprints.web-resource.published.v1"
+          - "com.streamx.blueprints.web-resource.unpublished.v1"
 
 ingestion:
   rest-ingestion:

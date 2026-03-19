@@ -2,7 +2,7 @@ package com.streamx.cli.commands.settings.list;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.config.DotStreamxConfigSource;
+import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -51,7 +51,7 @@ public class ListCommand extends AbstractCommand<Map<String, String>> {
 
   @Override
   public CommandResult<Map<String, String>> runCommand() {
-    URL url = DotStreamxConfigSource.getUrl();
+    URL url = StreamxHome.getConfigUrl();
     Map<String, String> properties = getProperties(url);
 
     return new CommandResult<>(properties);
