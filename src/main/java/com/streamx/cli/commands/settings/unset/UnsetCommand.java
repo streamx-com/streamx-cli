@@ -1,5 +1,5 @@
 
-package com.streamx.cli.commands.settings.remove;
+package com.streamx.cli.commands.settings.unset;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
@@ -18,11 +18,11 @@ import java.util.Properties;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-    name = "remove",
+    name = "unset",
     mixinStandardHelpOptions = true,
-    header = "Remove settings property"
+    header = "Unset settings property"
 )
-public class RemoveCommand extends AbstractSilentCommand {
+public class UnsetCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(index = "0", description = "Property key")
   public String key;
 
@@ -36,7 +36,7 @@ public class RemoveCommand extends AbstractSilentCommand {
     try (InputStream inputStream = url.openStream()) {
       properties.load(inputStream);
     } catch (IOException e) {
-      throw new CliException(msg.unableToRemoveSettingsProperty(key, e.getMessage()), e);
+      throw new CliException(msg.unableToUnsetSettingsProperty(key, e.getMessage()), e);
     }
 
     properties.remove(key);
@@ -44,7 +44,7 @@ public class RemoveCommand extends AbstractSilentCommand {
     try (OutputStream outputStream = Files.newOutputStream(path)) {
       properties.store(outputStream, null);
     } catch (IOException e) {
-      throw new CliException(msg.unableToRemoveSettingsProperty(key, e.getMessage()), e);
+      throw new CliException(msg.unableToUnsetSettingsProperty(key, e.getMessage()), e);
     }
 
     return new CommandResult<>(null);

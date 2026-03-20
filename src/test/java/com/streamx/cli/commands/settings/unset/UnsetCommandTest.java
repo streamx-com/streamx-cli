@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.settings.remove;
+package com.streamx.cli.commands.settings.unset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,22 +18,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusMainTest
-class RemoveCommandTest {
+class UnsetCommandTest {
   private Path configFile;
 
   @BeforeEach
   void setUp() throws IOException, URISyntaxException {
-    Path tempDir = Files.createTempDirectory("RemoveCommandTest");
+    Path tempDir = Files.createTempDirectory("UnsetCommandTest");
     System.setProperty("user.home", tempDir.toString());
     configFile = new File(StreamxHome.getConfigUrl().toURI()).toPath();
   }
 
   @Test
-  void shouldRemoveExistingProperty(QuarkusMainLauncher launcher) throws Exception {
+  void shouldUnsetExistingProperty(QuarkusMainLauncher launcher) throws Exception {
     launcher.launch("settings", "set", "a.a.a", "b");
     assertEquals("b", loadProperties().getProperty("a.a.a"));
 
-    LaunchResult launchResult = launcher.launch("settings", "remove", "a.a.a");
+    LaunchResult launchResult = launcher.launch("settings", "unset", "a.a.a");
 
     assertNull(loadProperties().getProperty("a.a.a"));
     assertEquals("", launchResult.getOutput());
@@ -42,9 +42,9 @@ class RemoveCommandTest {
   }
 
   @Test
-  void shouldSucceedWhenRemovingNonExistentProperty(QuarkusMainLauncher launcher)
+  void shouldSucceedWhenUnsettingNonExistentProperty(QuarkusMainLauncher launcher)
       throws Exception {
-    LaunchResult launchResult = launcher.launch("settings", "remove", "non.existent.key");
+    LaunchResult launchResult = launcher.launch("settings", "unset", "non.existent.key");
 
     assertNull(loadProperties().getProperty("non.existent.key"));
     assertEquals("", launchResult.getOutput());
@@ -57,7 +57,7 @@ class RemoveCommandTest {
     launcher.launch("settings", "set", "a.a.a", "b");
     launcher.launch("settings", "set", "c.c.c", "d");
 
-    LaunchResult launchResult = launcher.launch("settings", "remove", "a.a.a");
+    LaunchResult launchResult = launcher.launch("settings", "unset", "a.a.a");
 
     assertNull(loadProperties().getProperty("a.a.a"));
     assertEquals("d", loadProperties().getProperty("c.c.c"));
