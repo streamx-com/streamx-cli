@@ -171,8 +171,8 @@ public interface MessageProvider {
   @Message(id = 109, value = "Unable to get settings file path")
   String unableToGetSettingsFilePath();
 
-  @Message(id = 1090, value = "Unable to remove settings property %s: %s")
-  String unableToRemoveSettingsProperty(String key, String reason);
+  @Message(id = 1090, value = "Unable to unset settings property %s: %s")
+  String unableToUnsetSettingsProperty(String key, String reason);
 
   @Message(id = 141, value = "Running publish stream command")
   String runningPublishStreamCommand();
