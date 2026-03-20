@@ -1,10 +1,5 @@
 package com.streamx.cli.commands.publish.events;
 
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.DEFAULT_TEMPLATE;
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.INVALID_PATCH;
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.INVALID_TEMPLATE;
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.PAYLOAD_PATH_TEMPLATE;
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.TYPE_PATCH;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +9,10 @@ import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,6 +21,42 @@ import org.junit.jupiter.api.io.TempDir;
 @DisabledIfDockerUnavailable
 @TestProfile(DefaultMeshTestProfile.class)
 public class EventsCommandIT extends CliBaseIT {
+
+  private static final String PAGE_TEMPLATE = """
+      {
+        "specversion": "1.0",
+        "id": "test-id",
+        "source": "streamx-test",
+        "type": "com.streamx.blueprints.page.published.v1",
+        "datacontenttype": "application/json",
+        "subject": "${relativePath}",
+        "time": "2026-01-01T00:00:00.000000Z",
+        "data": { "content": "test" }
+      }
+      """;
+
+  private static final String PAYLOAD_PATH_TEMPLATE = """
+      {
+        "specversion": "1.0",
+        "id": "test-id",
+        "source": "streamx-test",
+        "type": "com.streamx.blueprints.page.published.v1",
+        "datacontenttype": "application/json",
+        "subject": "entry",
+        "time": "2026-01-01T00:00:00.000000Z",
+        "data": { "content": "file://${payloadPath}" }
+      }
+      """;
+
+  private static final String INVALID_TEMPLATE = "{ this is not valid template !!";
+
+  static Path rootDir;
+
+  @BeforeAll
+  static void resolveStructure() throws URISyntaxException {
+    rootDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/test").toURI());
+  }
 
   @Test
   void shouldPrintHelpInformation() throws Exception {
@@ -67,76 +101,8 @@ public class EventsCommandIT extends CliBaseIT {
   class BasicPublishing {
 
     @Test
-    void shouldPublishSingleFile(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles("page.json")
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(1);
-      assertThat(result.stdout()).contains(msg.eventsPublished(1));
-    }
-
-    @Test
-    void shouldPublishExactlyNFiles(@TempDir Path tempDir) throws Exception {
-      int n = 7;
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(n)
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(n);
-      assertThat(result.stdout()).contains(msg.eventsPublished(n));
-    }
-
-    @Test
-    void shouldNotPublishEventTemplateFileAsPayload(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles("a.json", "b.json")
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(2);
-      assertThat(result.stdout()).contains(msg.eventsPublished(2));
-    }
-
-    @Test
-    void shouldNotPublishPatchFileAsPayload(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withPatchFile("sale", TYPE_PATCH)
-          .withFiles(2)
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(2);
-    }
-  }
-
-  @Nested
-  class RecursiveProcessing {
-
-    @Test
-    void shouldPublishFilesFromSubDirectories(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(2)
-          .withSubDirectory("sub", sub -> sub
-              .withFiles(3))
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
+    void shouldPublishAllPayloadFiles() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString());
 
       result.assertSuccess();
       assertEventsPublished(5);
@@ -144,30 +110,53 @@ public class EventsCommandIT extends CliBaseIT {
     }
 
     @Test
-    void shouldOverrideTemplateForSubDirectory(@TempDir Path tempDir) throws Exception {
-      String subTemplate = DEFAULT_TEMPLATE.replace(
-          "com.streamx.blueprints.page.published.v1",
-          "com.streamx.blueprints.data.published.v1"
-      );
+    void shouldNotPublishTemplateOrPatchFilesAsPayloads() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString());
 
+      result.assertSuccess();
+      assertEventsPublished(5);
+    }
+
+    @Test
+    void shouldResolveRelativePathPlaceholder() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString());
+
+      result.assertSuccess();
+      assertThat(result.stderr()).contains("subject='" + rootDir + "'");
+      assertThat(result.stderr()).contains("subject='" + rootDir.resolve("sub") + "'");
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template") + "'");
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template/nested") + "'");
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template/nested/deeper") + "'");
+    }
+
+    @Test
+    void shouldResolvePayloadPathPlaceholder(@TempDir Path tempDir) throws Exception {
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(1)
-          .withSubDirectory("cats", sub -> sub
-              .withEventTemplate(subTemplate)
-              .withFiles(2))
+          .withEventTemplate(PAYLOAD_PATH_TEMPLATE)
+          .withFiles("entry.json")
           .build(tempDir);
 
       ProcessResult result = exec("publish", "events", tempDir.toString());
 
       result.assertSuccess();
-      assertEventsPublished(3);
+      assertEventsPublished(1);
+    }
+
+    @Test
+    void shouldOverrideTemplateInSubDirectory() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString());
+
+      result.assertSuccess();
+      assertThat(result.stderr()).contains("data.published.v1");
     }
 
     @Test
     void shouldProcessDeeplyNestedDirectories(@TempDir Path tempDir) throws Exception {
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
+          .withEventTemplate(PAGE_TEMPLATE)
           .withSubDirectory("level1", l1 -> l1
               .withFiles(1)
               .withSubDirectory("level2", l2 -> l2
@@ -184,97 +173,58 @@ public class EventsCommandIT extends CliBaseIT {
   }
 
   @Nested
-  class PlaceholderResolution {
-
-    @Test
-    void shouldResolveRelativePath(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withSubDirectory("products", sub -> sub
-              .withFiles("chair.json"))
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(1);
-    }
-
-    @Test
-    void shouldResolvePayloadPath(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(PAYLOAD_PATH_TEMPLATE)
-          .withFiles("item.json")
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertSuccess();
-      assertEventsPublished(1);
-    }
-  }
-
-  @Nested
   class PatchSupport {
 
     @Test
-    void shouldApplyPatchWhenFileIsPresent(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withPatchFile("sale", TYPE_PATCH)
-          .withFiles(2)
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString(), "--patch", "sale");
+    void shouldApplyPatchWhenFileIsPresent() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString(), "--patch", "good");
 
       result.assertSuccess();
-      assertEventsPublished(2);
+      assertEventsPublished(5);
+      assertThat(result.stderr()).contains("Patched subject");
     }
 
     @Test
-    void shouldContinueWithoutPatchWhenUserConfirms(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(1)
-          .build(tempDir);
-
-      ProcessResult result = execWithStdin(
-          "y\n",
-          "publish", "events", tempDir.toString(), "--patch", "missing-patch");
+    void shouldNotApplyPatchToSubDirectoryWithOwnTemplateOrItsDescendants() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString(), "--patch", "good");
 
       result.assertSuccess();
-      assertEventsPublished(1);
-      assertThat(result.stderr()).contains(
-          msg.patchNotFound("missing-patch", tempDir.toString()));
+
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template") + "'");
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template/nested") + "'");
+      assertThat(result.stderr())
+          .contains("subject='" + rootDir.resolve("sub-with-template/nested/deeper") + "'");
     }
 
     @Test
-    void shouldAbortWhenPatchMissingAndUserDeclines(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(3)
-          .build(tempDir);
+    void shouldFailWhenPatchIsInvalid() throws Exception {
+      ProcessResult result = exec("publish", "events", rootDir.toString(), "--patch", "bad");
 
-      ProcessResult result = execWithStdin(
-          "n\n",
-          "publish", "events", tempDir.toString(), "--patch", "missing-patch");
-
-      result.assertExitCode(0);
+      result.assertExitCode(1);
+      assertThat(result.stderr()).contains(msg.patchIsInvalid("bad"));
       assertEventsPublished(0);
     }
 
     @Test
-    void shouldFailWhenPatchJsonIsInvalid(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withPatchFile("bad", INVALID_PATCH)
-          .withFiles(1)
-          .build(tempDir);
+    void shouldContinueWithoutPatchWhenUserConfirms() throws Exception {
+      ProcessResult result = execWithStdin(
+          "y\n",
+          "publish", "events", rootDir.toString(), "--patch", "missing-patch");
 
-      ProcessResult result = exec("publish", "events", tempDir.toString(), "--patch", "bad");
+      result.assertSuccess();
+      assertEventsPublished(5);
+      assertThat(result.stderr()).contains(msg.patchNotFound("missing-patch", rootDir.toString()));
+    }
 
-      result.assertExitCode(1);
-      assertThat(result.stderr()).contains(msg.patchIsInvalid("bad"));
+    @Test
+    void shouldAbortWhenMissingPatchAndUserDeclines() throws Exception {
+      ProcessResult result = execWithStdin(
+          "n\n",
+          "publish", "events", rootDir.toString(), "--patch", "missing-patch");
+
+      result.assertExitCode(0);
       assertEventsPublished(0);
     }
   }
@@ -283,61 +233,27 @@ public class EventsCommandIT extends CliBaseIT {
   class BatchPublishing {
 
     @Test
-    void shouldPublishEventsInBatches(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(11)
-          .build(tempDir);
-
+    void shouldPublishInBatches() throws Exception {
+      // 5 events, batch-size 2 → batches of 2, 2, 1
       ProcessResult result = exec(
-          "publish", "events", tempDir.toString(), "--batch-size", "3");
-
-      result.assertSuccess();
-      assertEventsPublished(11);
-      assertThat(result.stdout()).contains(
-          msg.streamBatchPublishingCompleted(11, 11, 0, 0, 4, 4, 0));
-    }
-
-    @Test
-    void shouldFlushRemainderBatchAtEnd(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(5)
-          .build(tempDir);
-
-      ProcessResult result = exec(
-          "publish", "events", tempDir.toString(), "--batch-size", "3");
+          "publish", "events", rootDir.toString(), "--batch-size", "2");
 
       result.assertSuccess();
       assertEventsPublished(5);
-    }
-
-    @Test
-    void shouldPublish100FilesInBatchesOf10(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(100)
-          .build(tempDir);
-
-      ProcessResult result = exec(
-          "publish", "events", tempDir.toString(), "--batch-size", "10");
-
-      result.assertSuccess();
-      assertEventsPublished(100);
       assertThat(result.stdout()).contains(
-          msg.streamBatchPublishingCompleted(100, 100, 0, 0, 10, 10, 0));
+          msg.streamBatchPublishingCompleted(5, 5, 0, 0, 3, 3, 0));
     }
 
     @Test
     void shouldFailOnFirstFailedBatchWithoutContinueOnError(@TempDir Path tempDir)
         throws Exception {
-      String badTypeTemplate = DEFAULT_TEMPLATE.replace(
+      String badTypeTemplate = PAGE_TEMPLATE.replace(
           "com.streamx.blueprints.page.published.v1", "bad.type");
 
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
+          .withEventTemplate(PAGE_TEMPLATE)
           .withFiles(3)
-          .withSubDirectory("bad", sub -> sub
+          .withSubDirectory("invalid", sub -> sub
               .withEventTemplate(badTypeTemplate)
               .withFiles(3))
           .build(tempDir);
@@ -352,16 +268,16 @@ public class EventsCommandIT extends CliBaseIT {
     @Test
     void shouldContinueAfterFailedBatchWhenContinueOnErrorSet(@TempDir Path tempDir)
         throws Exception {
-      String badTypeTemplate = DEFAULT_TEMPLATE.replace(
+      String badTypeTemplate = PAGE_TEMPLATE.replace(
           "com.streamx.blueprints.page.published.v1", "bad.type");
 
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
+          .withEventTemplate(PAGE_TEMPLATE)
           .withFiles(3)
-          .withSubDirectory("bad", sub -> sub
+          .withSubDirectory("invalid", sub -> sub
               .withEventTemplate(badTypeTemplate)
               .withFiles(3))
-          .withSubDirectory("good", sub -> sub
+          .withSubDirectory("valid", sub -> sub
               .withFiles(3))
           .build(tempDir);
 
@@ -382,17 +298,15 @@ public class EventsCommandIT extends CliBaseIT {
 
     @Test
     void shouldFailOnFirstFailedEvent(@TempDir Path tempDir) throws Exception {
-      String badTypeTemplate = DEFAULT_TEMPLATE.replace(
+      String badTypeTemplate = PAGE_TEMPLATE.replace(
           "com.streamx.blueprints.page.published.v1", "bad.type");
 
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles("valid-1.json")
-          .withSubDirectory("bad", sub -> sub
+          .withEventTemplate(PAGE_TEMPLATE)
+          .withFiles("valid.json")
+          .withSubDirectory("invalid", sub -> sub
               .withEventTemplate(badTypeTemplate)
-              .withFiles("bad-1.json", "bad-2.json"))
-          .withSubDirectory("good", sub -> sub
-              .withFiles("valid-2.json", "valid-3.json"))
+              .withFiles("entry.json"))
           .build(tempDir);
 
       ProcessResult result = exec("publish", "events", tempDir.toString());
@@ -402,19 +316,19 @@ public class EventsCommandIT extends CliBaseIT {
     }
 
     @Test
-    void shouldContinueOnInvalidEventsIfContinueOnErrorFlagProvided(@TempDir Path tempDir)
+    void shouldContinueOnFailedEventsWhenContinueOnErrorSet(@TempDir Path tempDir)
         throws Exception {
-      String badTypeTemplate = DEFAULT_TEMPLATE.replace(
+      String badTypeTemplate = PAGE_TEMPLATE.replace(
           "com.streamx.blueprints.page.published.v1", "bad.type");
 
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles("valid-1.json")
-          .withSubDirectory("bad", sub -> sub
+          .withEventTemplate(PAGE_TEMPLATE)
+          .withFiles("valid.json")
+          .withSubDirectory("invalid", sub -> sub
               .withEventTemplate(badTypeTemplate)
-              .withFiles("bad-1.json", "bad-2.json"))
-          .withSubDirectory("good", sub -> sub
-              .withFiles("valid-2.json", "valid-3.json"))
+              .withFiles("entry-1.json", "entry-2.json"))
+          .withSubDirectory("valid", sub -> sub
+              .withFiles("entry-1.json", "entry-2.json"))
           .build(tempDir);
 
       ProcessResult result = exec(
@@ -425,56 +339,29 @@ public class EventsCommandIT extends CliBaseIT {
       assertThat(result.stderr()).contains("bad.type");
       assertThat(result.stdout()).contains(msg.eventsPublished(3));
     }
-
-    @Test
-    void shouldReturnExitCode0WhenAllEventsSucceed(@TempDir Path tempDir) throws Exception {
-      TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(5)
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertExitCode(0);
-    }
-
-    @Test
-    void shouldReturnExitCode1WhenSomeEventsFailed(@TempDir Path tempDir) throws Exception {
-      String badTypeTemplate = DEFAULT_TEMPLATE.replace(
-          "com.streamx.blueprints.page.published.v1", "bad.type");
-
-      TestDirectoryGenerator.root()
-          .withEventTemplate(badTypeTemplate)
-          .withFiles(1)
-          .build(tempDir);
-
-      ProcessResult result = exec("publish", "events", tempDir.toString());
-
-      result.assertExitCode(1);
-    }
   }
 
   @Nested
   class LargeScale {
 
     @Test
-    void shouldPublish500FilesAcrossNestedDirectories(@TempDir Path tempDir) throws Exception {
+    void shouldPublish5000FilesAcrossNestedDirectories(@TempDir Path tempDir) throws Exception {
       TestDirectoryGenerator.root()
-          .withEventTemplate(DEFAULT_TEMPLATE)
-          .withFiles(100)
-          .withSubDirectory("a", sub -> sub.withFiles(100))
-          .withSubDirectory("b", sub -> sub.withFiles(100))
-          .withSubDirectory("c", sub -> sub.withFiles(100))
-          .withSubDirectory("d", sub -> sub.withFiles(100))
+          .withEventTemplate(PAGE_TEMPLATE)
+          .withFiles(1000)
+          .withSubDirectory("a", sub -> sub.withFiles(1000))
+          .withSubDirectory("b", sub -> sub.withFiles(1000))
+          .withSubDirectory("c", sub -> sub.withFiles(1000))
+          .withSubDirectory("d", sub -> sub.withFiles(1000))
           .build(tempDir);
 
       ProcessResult result = exec(
           "publish", "events", tempDir.toString(), "--batch-size", "50");
 
       result.assertSuccess();
-      assertEventsPublished(500);
+      assertEventsPublished(5000);
       assertThat(result.stdout()).contains(
-          msg.streamBatchPublishingCompleted(500, 500, 0, 0, 10, 10, 0));
+          msg.streamBatchPublishingCompleted(5000, 5000, 0, 0, 100, 100, 0));
     }
   }
 }

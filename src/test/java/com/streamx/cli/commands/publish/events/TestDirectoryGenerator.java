@@ -121,14 +121,9 @@ public class TestDirectoryGenerator {
       return this;
     }
 
-    public Path build(Path parentDir) throws IOException {
+    public void build(Path parentDir) throws IOException {
       materialize(parentDir, node);
-      return parentDir;
-    }
-
-    public Path buildTemp() throws IOException {
-      Path tmp = Files.createTempDirectory("streamx-events-test-");
-      return build(tmp);
+      System.out.println("Events test directory: " + parentDir.toAbsolutePath());
     }
   }
 
