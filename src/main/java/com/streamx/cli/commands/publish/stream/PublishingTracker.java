@@ -8,7 +8,7 @@ import io.cloudevents.CloudEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-class StreamPublishingTracker {
+class PublishingTracker {
 
   private int successCount;
   private int failureCount;

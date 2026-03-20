@@ -340,4 +340,19 @@ public interface MessageProvider {
 
   @Message(id = 193, value = "Failed to process event template placeholders: %s")
   String failedToProcessEventTemplatePlaceholders(String reason);
+
+  @Message(id = 194, value = "No .eventtemplate file inside %s")
+  String noEventTemplateInsideDirectory(String path);
+
+  @Message(id = 195, value = ".eventtemplate inside %s is corrupted")
+  String eventTemplateCorrupted(String path);
+
+  @Message(id = 196, value = "%s not found inside %s. No patch will be applied. Do you want to continue y/n")
+  String patchNotFound(String patchName, String path);
+
+  @Message(id = 197, value = "Patch %s is invalid")
+  String patchIsInvalid(String patchName);
+
+  @Message(id = 198, value = "%s events published")
+  String eventsPublished(int count);
 }

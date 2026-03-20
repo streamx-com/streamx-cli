@@ -144,8 +144,14 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     Quarkus.asyncExit(exitCode);
   }
 
-  // For testing purposes mostly.
-  protected Terminal createTerminal() throws IOException {
-    return TerminalBuilder.builder().system(true).build();
+  private Terminal createTerminal() throws IOException {
+    if (System.console() != null) {
+      return TerminalBuilder.builder().system(true).build();
+    }
+
+    return TerminalBuilder.builder()
+        .system(false)
+        .streams(System.in, System.err)
+        .build();
   }
 }
