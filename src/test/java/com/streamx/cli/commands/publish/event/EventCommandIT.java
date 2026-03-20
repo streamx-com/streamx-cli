@@ -300,7 +300,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"content": "static", "type": "data/page"}""");
+              {"content": "static", "type": "data/page"}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -323,7 +323,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"outer": {"inner": "${payloadPath}"}}""");
+              {"outer": {"inner": "${payloadPath}"}}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -346,7 +346,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"items": ["${payloadPath}", "static", "${subject}"]}""");
+              {"items": ["${payloadPath}", "static", "${subject}"]}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -373,7 +373,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"content": "static-value", "count": 42, "active": true}""");
+              {"content": "static-value", "count": 42, "active": true}""");
 
       ProcessResult result = exec(
           "publish", "event",

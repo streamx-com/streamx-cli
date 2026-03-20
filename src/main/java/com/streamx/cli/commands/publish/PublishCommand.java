@@ -1,6 +1,7 @@
 package com.streamx.cli.commands.publish;
 
 import com.streamx.cli.commands.publish.event.EventCommand;
+import com.streamx.cli.commands.publish.events.EventsCommand;
 import com.streamx.cli.commands.publish.stream.StreamCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
 import picocli.CommandLine;
@@ -11,7 +12,8 @@ import picocli.CommandLine;
     header = "Publish events",
     subcommands = {
         StreamCommand.class,
-        EventCommand.class
+        EventCommand.class,
+        EventsCommand.class
     }
 )
 public class PublishCommand extends AbstractCommandGroup {

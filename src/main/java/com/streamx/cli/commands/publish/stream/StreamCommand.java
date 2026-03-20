@@ -3,6 +3,7 @@ package com.streamx.cli.commands.publish.stream;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.streamx.cli.commands.publish.AbortStreamException;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -52,7 +53,7 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
   )
   public Integer batchSize;
 
-  StreamPublishingTracker tracker = new StreamPublishingTracker();
+  PublishingTracker tracker = new PublishingTracker();
 
   CommandResult<StreamCommandResult> prepareResult() {
     StreamCommandResult streamResult = tracker.toResult();

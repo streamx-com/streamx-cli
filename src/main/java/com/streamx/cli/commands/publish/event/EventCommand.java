@@ -4,6 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.streamx.cli.commands.publish.EventTemplateProcessor;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -25,7 +26,7 @@ import picocli.CommandLine.Command;
 
 @Command(name = "event",
     mixinStandardHelpOptions = true,
-    description = "Publish a single event")
+    header = "Publish a single event")
 public class EventCommand extends AbstractCommand<EventCommandResult> {
 
   private static final String RESULT_FILE_NAME = "publish-event-result.json";

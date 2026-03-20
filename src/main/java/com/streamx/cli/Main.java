@@ -18,6 +18,7 @@ public class Main implements QuarkusApplication {
     CommandLine commandLine = new CommandLine(new StreamxCommand(), factory)
         .setParameterExceptionHandler(new ShortErrorMessageHandler())
         .setExpandAtFiles(false)
+        .setUsageHelpAutoWidth(true)
         .setExecutionStrategy(new CommandLine.RunLast());
 
     return commandLine.execute(args);

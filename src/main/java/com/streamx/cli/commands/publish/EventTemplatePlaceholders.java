@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.publish.event;
+package com.streamx.cli.commands.publish;
 
 /**
  * This class defines supported placeholders in event templates.

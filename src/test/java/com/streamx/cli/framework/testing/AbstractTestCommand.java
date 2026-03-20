@@ -53,13 +53,4 @@ public class AbstractTestCommand<ResultT> extends AbstractCommand<ResultT> {
     }
     return super.getTextOutput(result);
   }
-
-  @Override
-  protected Terminal createTerminal() throws IOException {
-    return TerminalBuilder.builder()
-      .system(false)
-      .streams(System.in, System.out)
-      .dumb(true)
-      .build();
-  }
 }

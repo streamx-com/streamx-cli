@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.publish.event;
+package com.streamx.cli.commands.publish;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class EventTemplateProcessor {
+public class EventTemplateProcessor {
   private static final Pattern RELATIVE_PATH_PLACEHOLDER_PATTERN =
       Pattern.compile("\\$\\{relativePath(?::(-?\\d+))?}");
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -33,13 +33,13 @@ class EventTemplateProcessor {
   private final Path eventPayloadPath;
   private final String subject;
 
-  EventTemplateProcessor(String eventTemplate, Path eventPayloadPath, String subject) {
+  public EventTemplateProcessor(String eventTemplate, Path eventPayloadPath, String subject) {
     this.eventTemplate = eventTemplate;
     this.eventPayloadPath = eventPayloadPath;
     this.subject = subject;
   }
 
-  CloudEvent toCloudEvent() throws CliException {
+  public CloudEvent toCloudEvent() throws CliException {
     try {
       JsonNode templateJson = MAPPER.readTree(eventTemplate);
       JsonNode processed = processNode(templateJson);
