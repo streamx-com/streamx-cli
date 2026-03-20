@@ -4,9 +4,11 @@ import static com.streamx.cli.commands.publish.events.TemplateLoader.EVENTTEMPLA
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.AbortStreamException;
 import com.streamx.cli.commands.publish.EventTemplateProcessor;
 import com.streamx.cli.framework.CliException;
+import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
 import io.cloudevents.CloudEvent;
@@ -18,21 +20,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 class DirectoryWalker {
-
   private final PublishingTracker tracker;
   private final Publisher publisher;
   private final int batchSize;
   private final boolean continueOnError;
 
+  private final DebugDirectoryWriter debugDirectoryWriter;
+  private final boolean dryRun;
+
   private final List<CloudEvent> batch = new ArrayList<>();
   private final List<TemplateContext> batchContexts = new ArrayList<>();
 
-  DirectoryWalker(PublishingTracker tracker, Publisher publisher,
-                  int batchSize, boolean continueOnError) {
+  DirectoryWalker(
+      PublishingTracker tracker,
+      Publisher publisher,
+      int batchSize,
+      boolean continueOnError,
+      DebugDirectoryWriter debugDirectoryWriter,
+      boolean dryRun
+  ) {
     this.tracker = tracker;
     this.publisher = publisher;
     this.batchSize = batchSize;
     this.continueOnError = continueOnError;
+    this.debugDirectoryWriter = debugDirectoryWriter;
+    this.dryRun = dryRun;
   }
 
   void walk(Path rootPath, TemplateContext rootContext) {
@@ -55,7 +67,7 @@ class DirectoryWalker {
       Path localTemplateFile = dir.resolve(EVENTTEMPLATE_FILE);
       if (Files.exists(localTemplateFile)) {
         JsonNode localTemplate = TemplateLoader.load(localTemplateFile, dir);
-        ctx = new TemplateContext(localTemplate, localTemplateFile.toString(), null);
+        ctx = new TemplateContext(localTemplate, localTemplateFile.toString(), null, null);
       }
     }
 
@@ -105,6 +117,31 @@ class DirectoryWalker {
       if (!continueOnError) {
         throw new AbortStreamException(new CliException(errorMessage));
       }
+      return;
+    }
+
+    if (debugDirectoryWriter != null) {
+      try {
+        debugDirectoryWriter.writeEvent(
+            payloadPath,
+            ctx,
+            CloudEventsSerde.toJson(cloudEvent)
+        );
+      } catch (IOException e) {
+        System.err.println(
+            msg.failedToWriteDebugArtefacts(
+                payloadPath.toString(),
+                e.getMessage()
+            )
+        );
+      }
+    }
+
+    if (dryRun) {
+      tracker.recordSuccess();
+      System.err.println(msg.eventPublished(
+          String.valueOf(tracker.currentEventNumber()),
+          cloudEvent.getType(), cloudEvent.getSubject()));
       return;
     }
 

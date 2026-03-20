@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class PublishingTracker {
-
-  /**
-   * Set limit for stored error details to avoid OOM when publishing very large trees.
-   */
   public static final int MAX_STORED_ERRORS = 1000;
 
   private int successCount;

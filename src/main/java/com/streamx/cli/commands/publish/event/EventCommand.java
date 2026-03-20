@@ -26,7 +26,7 @@ import picocli.CommandLine.Command;
 
 @Command(name = "event",
     mixinStandardHelpOptions = true,
-    description = "Publish a single event")
+    header = "Publish a single event")
 public class EventCommand extends AbstractCommand<EventCommandResult> {
 
   private static final String RESULT_FILE_NAME = "publish-event-result.json";

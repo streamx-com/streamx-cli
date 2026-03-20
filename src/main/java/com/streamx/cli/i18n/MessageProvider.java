@@ -41,9 +41,9 @@ public interface MessageProvider {
   @Message(
       id = 110,
       value = """
-        Timeout exceeded waiting for the container "%s" after %d seconds.
-                
-        Try increasing the timeout by setting the """
+          Timeout exceeded waiting for the container "%s" after %d seconds.
+          
+          Try increasing the timeout by setting the """
           + StreamxBaseConfig.PN_CONTAINER_STARTUP_TIMEOUT_SECONDS + " property"
   )
   String dockerContainerStartupFailed(String containerName, Long timeoutSecs);
@@ -52,11 +52,11 @@ public interface MessageProvider {
   String failedToStartMeshContainers(String reason);
 
   @Message(id = 112, value = """
-        Could not find a valid Docker environment.
-
-        Make sure that:
-         * Docker is installed,
-         * Docker is running""")
+      Could not find a valid Docker environment.
+      
+      Make sure that:
+       * Docker is installed,
+       * Docker is running""")
   String invalidDockerEnvironment();
 
   @Message(id = 113, value = "🟢 %s ready")
@@ -119,7 +119,7 @@ public interface MessageProvider {
 
   @Message(id = 130, value = """
       %s
-        
+      
       Full logs can be found in %s""")
   String fullLogsCanBeFoundIn(String originalMessage, String logPath);
 
@@ -250,11 +250,11 @@ public interface MessageProvider {
   String ingestionTokenMasked();
 
   @Message(id = 169, value = """
-        Stream publishing completed
-          Total events:  %d
-          Successful:    %d
-          Failed:        %d
-          Unknown:    %d""")
+      Stream publishing completed
+        Total events:  %d
+        Successful:    %d
+        Failed:        %d
+        Unknown:    %d""")
   String streamPublishingCompleted(int total, int successful, int failed, int unknown);
 
   @Message(id = 173, value = "First %d error(s) are shown:")
@@ -358,4 +358,34 @@ public interface MessageProvider {
 
   @Message(id = 198, value = "%s events published")
   String eventsPublished(int count);
+
+  @Message(id = 199, value = "Failed to write debug artefacts for %s: %s")
+  String failedToWriteDebugArtefacts(String payloadPath, String reason);
+
+  @Message(id = 200, value = "Inspect rendered events in: %s")
+  String inspectRenderedEventsIn(String path);
+
+  @Message(
+      id = 201,
+      value = "Both --dry-run and --debug specified; --dry-run takes precedence. "
+          + "Events will NOT be published. Rendered output will be written to: %s"
+  )
+  String dryRunAndDebugSpecified(String tempDir);
+
+  @Message(
+      id = 202,
+      value = "Dry-run mode: events will NOT be published. "
+          + "Rendered output will be written to: %s"
+  )
+  String dryRunMode(String tempDir);
+
+  @Message(
+      id = 203,
+      value = "Debug mode: events WILL be published. "
+          + "Rendered output will be written to: %s"
+  )
+  String debugMode(String tempDir);
+
+  @Message(id = 204, value = "Failed to create output directory: %s")
+  String failedToCreateOutputDirectory(String reason);
 }

@@ -14,6 +14,7 @@ import com.streamx.cli.ingestion.StreamxClientFactory;
 import com.streamx.clients.ingestion.StreamxClient;
 import com.streamx.clients.ingestion.exceptions.StreamxClientException;
 import com.streamx.clients.ingestion.publisher.Publisher;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ import picocli.CommandLine.Command;
 
 @Command(name = "events",
     mixinStandardHelpOptions = true,
-    description =
+    header =
         "Publishes multiple events based on a directory structure and .eventtemplate files")
 public class EventsCommand extends AbstractCommand<EventsCommandResult> {
 
@@ -55,6 +56,22 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
   )
   public Integer batchSize;
 
+  @CommandLine.Option(
+      names = {"--dry-run"},
+      description =
+          "Render all events (applying templates and patches) and write the results to a "
+              + "temporary directory for inspection, without publishing anything to StreamX"
+  )
+  public boolean dryRun;
+
+  @CommandLine.Option(
+      names = {"--debug"},
+      description =
+          "Publish events normally AND write the rendered artefacts (templates, patched "
+              + "templates, resolved events) to a temporary directory for inspection"
+  )
+  public boolean debug;
+
   PublishingTracker tracker = new PublishingTracker();
 
   @Override
@@ -80,6 +97,7 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
     JsonNode rootTemplate = TemplateLoader.load(rootTemplateFile, rootPath);
     String rootTemplatePath = rootTemplateFile.toString();
     String appliedPatch = null;
+    String patchPath = null;
 
     if (patchName != null) {
       rootTemplate = TemplateLoader.applyPatch(
@@ -89,14 +107,42 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
         return prepareResult();
       }
       appliedPatch = patchName;
+
+      Path patchFile = rootPath.resolve("." + patchName + EVENTTEMPLATE_FILE);
+      patchPath = Files.exists(patchFile) ? patchFile.toString() : null;
     }
 
-    TemplateContext rootContext = new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch);
+    TemplateContext rootContext =
+        new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch, patchPath);
+
+    DebugDirectoryWriter debugDirectoryWriter = null;
+    if (dryRun || debug) {
+      try {
+        debugDirectoryWriter = new DebugDirectoryWriter(rootPath);
+        if (dryRun && debug) {
+          System.err.println(
+              msg.dryRunAndDebugSpecified(debugDirectoryWriter.getTempDir().toString())
+          );
+        } else if (dryRun) {
+          System.err.println(msg.dryRunMode(debugDirectoryWriter.getTempDir().toString()));
+        } else {
+          System.err.println(msg.debugMode(debugDirectoryWriter.getTempDir().toString()));
+        }
+      } catch (IOException e) {
+        throw new CliException(msg.failedToCreateOutputDirectory(e.getMessage()), e);
+      }
+    }
 
     try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
       Publisher publisher = streamxClient.newPublisher();
-      DirectoryWalker walker =
-          new DirectoryWalker(tracker, publisher, batchSize, continueOnError);
+      DirectoryWalker walker = new DirectoryWalker(
+          tracker,
+          publisher,
+          batchSize,
+          continueOnError,
+          debugDirectoryWriter,
+          dryRun
+      );
 
       try {
         walker.walk(rootPath, rootContext);
@@ -112,6 +158,12 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
       }
     } catch (StreamxClientException e) {
       throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
+    }
+
+    if (debugDirectoryWriter != null) {
+      System.err.println(
+          msg.inspectRenderedEventsIn(debugDirectoryWriter.getTempDir().toString())
+      );
     }
 
     return prepareResult();
