@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
+@DisabledIfDockerUnavailable
 @TestProfile(DefaultMeshTestProfile.class)
 public class EventCommandIT extends CliBaseIT {
 
