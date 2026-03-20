@@ -347,7 +347,10 @@ public interface MessageProvider {
   @Message(id = 195, value = ".eventtemplate inside %s is corrupted")
   String eventTemplateCorrupted(String path);
 
-  @Message(id = 196, value = "%s not found inside %s. No patch will be applied. Do you want to continue y/n")
+  @Message(
+      id = 196,
+      value = "%s not found inside %s. No patch will be applied. Do you want to continue y/n"
+  )
   String patchNotFound(String patchName, String path);
 
   @Message(id = 197, value = "Patch %s is invalid")

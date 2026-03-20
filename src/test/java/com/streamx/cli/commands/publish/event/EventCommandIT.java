@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
+@DisabledIfDockerUnavailable
 @TestProfile(DefaultMeshTestProfile.class)
 public class EventCommandIT extends CliBaseIT {
 
@@ -298,7 +300,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"content": "static", "type": "data/page"}""");
+              {"content": "static", "type": "data/page"}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -321,7 +323,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"outer": {"inner": "${payloadPath}"}}""");
+              {"outer": {"inner": "${payloadPath}"}}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -344,7 +346,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"items": ["${payloadPath}", "static", "${subject}"]}""");
+              {"items": ["${payloadPath}", "static", "${subject}"]}""");
 
       ProcessResult result = exec(
           "publish", "event",
@@ -371,7 +373,7 @@ public class EventCommandIT extends CliBaseIT {
 
       registerTemplate(tempDir,
           """
-          {"content": "static-value", "count": 42, "active": true}""");
+              {"content": "static-value", "count": 42, "active": true}""");
 
       ProcessResult result = exec(
           "publish", "event",

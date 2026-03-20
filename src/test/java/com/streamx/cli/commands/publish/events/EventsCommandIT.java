@@ -1,6 +1,10 @@
 package com.streamx.cli.commands.publish.events;
 
-import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.*;
+import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.DEFAULT_TEMPLATE;
+import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.INVALID_PATCH;
+import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.INVALID_TEMPLATE;
+import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.PAYLOAD_PATH_TEMPLATE;
+import static com.streamx.cli.commands.publish.events.TestDirectoryGenerator.TYPE_PATCH;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.test.MeshAssertions.assertEventsPublished;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +28,8 @@ public class EventsCommandIT extends CliBaseIT {
   void shouldPrintHelpInformation() throws Exception {
     ProcessResult result = exec("publish", "events", "--help");
 
-    assertThat(result.stdout()).contains("Publishes multiple events based on a directory structure");
+    assertThat(result.stdout())
+        .contains("Publishes multiple events based on a directory structure");
     assertThat(result.stderr()).isEmpty();
   }
 

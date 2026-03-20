@@ -13,21 +13,23 @@ public record EventsCommandResult(
     List<BatchError> batchErrors
 ) {
 
-    public record EventError(
-        Integer eventNumber,
-        Integer batchNumber,
-        String type,
-        String subject,
-        String templatePath,
-        String appliedPatch,
-        String errorMessage
-    ) {}
+  public record EventError(
+      Integer eventNumber,
+      Integer batchNumber,
+      String type,
+      String subject,
+      String templatePath,
+      String appliedPatch,
+      String errorMessage
+  ) {
+  }
 
-    public record BatchError(
-        int batchNumber,
-        int eventCount,
-        String templatePath,
-        String appliedPatch,
-        String errorMessage
-    ) {}
+  public record BatchError(
+      int batchNumber,
+      int eventCount,
+      String templatePath,
+      String appliedPatch,
+      String errorMessage
+  ) {
+  }
 }

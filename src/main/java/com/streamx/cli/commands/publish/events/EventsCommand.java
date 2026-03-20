@@ -23,127 +23,128 @@ import picocli.CommandLine.Command;
 
 @Command(name = "events",
     mixinStandardHelpOptions = true,
-    description = "Publishes multiple events based on a directory structure and .eventtemplate files")
+    description =
+        "Publishes multiple events based on a directory structure and .eventtemplate files")
 public class EventsCommand extends AbstractCommand<EventsCommandResult> {
 
-    @CommandLine.Mixin
-    IngestionClientPicocliOptions ingestionOptions;
+  @CommandLine.Mixin
+  IngestionClientPicocliOptions ingestionOptions;
 
-    @CommandLine.Parameters(
-        index = "0",
-        description = "Path to directory containing a .eventtemplate file (absolute or relative)"
-    )
-    public String path;
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Path to directory containing a .eventtemplate file (absolute or relative)"
+  )
+  public String path;
 
-    @CommandLine.Option(
-        names = {"--patch", "-p"},
-        description = "Name of the patch to apply (.{patchName}.eventtemplate)"
-    )
-    public String patchName;
+  @CommandLine.Option(
+      names = {"--patch", "-p"},
+      description = "Name of the patch to apply (.{patchName}.eventtemplate)"
+  )
+  public String patchName;
 
-    @CommandLine.Option(
-        names = {"--continue-on-error", "-x"},
-        description = "Continue even if some event publish failed"
-    )
-    public boolean continueOnError;
+  @CommandLine.Option(
+      names = {"--continue-on-error", "-x"},
+      description = "Continue even if some event publish failed"
+  )
+  public boolean continueOnError;
 
-    @CommandLine.Option(
-        names = {"--batch-size", "-b"},
-        description = "Publish events in batches if > 1. Per-event error reporting is omitted",
-        defaultValue = "1"
-    )
-    public Integer batchSize;
+  @CommandLine.Option(
+      names = {"--batch-size", "-b"},
+      description = "Publish events in batches if > 1. Per-event error reporting is omitted",
+      defaultValue = "1"
+  )
+  public Integer batchSize;
 
-    PublishingTracker tracker = new PublishingTracker();
+  PublishingTracker tracker = new PublishingTracker();
 
-    @Override
-    public CommandResult<EventsCommandResult> runCommand() {
-        Path rootPath = Paths.get(path).toAbsolutePath().normalize();
+  @Override
+  public CommandResult<EventsCommandResult> runCommand() {
+    Path rootPath = Paths.get(path).toAbsolutePath().normalize();
 
-        Path rootTemplateFile = rootPath.resolve(EVENTTEMPLATE_FILE);
-        if (!Files.exists(rootTemplateFile)) {
-            throw new CliException(msg.noEventTemplateInsideDirectory(rootPath.toString()));
-        }
+    Path rootTemplateFile = rootPath.resolve(EVENTTEMPLATE_FILE);
+    if (!Files.exists(rootTemplateFile)) {
+      throw new CliException(msg.noEventTemplateInsideDirectory(rootPath.toString()));
+    }
 
-        if (this.verbose) {
-            System.err.println(msg.resolvingStreamxClientConfig());
-        }
+    if (this.verbose) {
+      System.err.println(msg.resolvingStreamxClientConfig());
+    }
 
-        IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
+    IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
-        if (this.verbose) {
-            System.err.println(msg.initializingStreamxClient());
-            System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
-        }
+    if (this.verbose) {
+      System.err.println(msg.initializingStreamxClient());
+      System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
+    }
 
-        JsonNode rootTemplate = TemplateLoader.load(rootTemplateFile, rootPath);
-        String rootTemplatePath = rootTemplateFile.toString();
-        String appliedPatch = null;
+    JsonNode rootTemplate = TemplateLoader.load(rootTemplateFile, rootPath);
+    String rootTemplatePath = rootTemplateFile.toString();
+    String appliedPatch = null;
 
-        if (patchName != null) {
-            rootTemplate = TemplateLoader.applyPatch(
-                rootPath, rootTemplate, patchName,
-                () -> confirmContinueWithoutPatch(rootPath, patchName));
-            if (rootTemplate == null) {
-                return prepareResult();
-            }
-            appliedPatch = patchName;
-        }
-
-        TemplateContext rootContext = new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch);
-
-        try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
-            Publisher publisher = streamxClient.newPublisher();
-            DirectoryWalker walker =
-                new DirectoryWalker(tracker, publisher, batchSize, continueOnError);
-
-            try {
-                walker.walk(rootPath, rootContext);
-                walker.flushBatch();
-            } catch (AbortStreamException e) {
-                return prepareResult();
-            } catch (Exception e) {
-                tracker.recordFailure("''", "''", rootTemplatePath, appliedPatch, e.getMessage());
-                System.err.println(e.getMessage());
-                if (!continueOnError) {
-                    return prepareResult();
-                }
-            }
-        } catch (StreamxClientException e) {
-            throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
-        }
-
+    if (patchName != null) {
+      rootTemplate = TemplateLoader.applyPatch(
+          rootPath, rootTemplate, patchName,
+          () -> confirmContinueWithoutPatch(rootPath, patchName));
+      if (rootTemplate == null) {
         return prepareResult();
+      }
+      appliedPatch = patchName;
     }
 
-    private boolean confirmContinueWithoutPatch(Path rootPath, String patchName) {
-        String response = promptForInput(
-            msg.patchNotFound(patchName, rootPath.toString()), List.of("y", "n"));
-        return "y".equalsIgnoreCase(response);
-    }
+    TemplateContext rootContext = new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch);
 
-    private CommandResult<EventsCommandResult> prepareResult() {
-        EventsCommandResult eventsResult = tracker.toResult();
-        CommandResult<EventsCommandResult> result = new CommandResult<>(eventsResult);
+    try (StreamxClient streamxClient = StreamxClientFactory.create(ingestionClientConfig)) {
+      Publisher publisher = streamxClient.newPublisher();
+      DirectoryWalker walker =
+          new DirectoryWalker(tracker, publisher, batchSize, continueOnError);
 
-        boolean someEventsFailed = !eventsResult.eventErrors().isEmpty()
-            || !eventsResult.batchErrors().isEmpty();
-
-        if (someEventsFailed) {
-            result.setError(new CliException(msg.eventsPartiallyFailedToPublish()));
+      try {
+        walker.walk(rootPath, rootContext);
+        walker.flushBatch();
+      } catch (AbortStreamException e) {
+        return prepareResult();
+      } catch (Exception e) {
+        tracker.recordFailure("''", "''", rootTemplatePath, appliedPatch, e.getMessage());
+        System.err.println(e.getMessage());
+        if (!continueOnError) {
+          return prepareResult();
         }
-
-        if (someEventsFailed && !continueOnError) {
-            result.setExitCodeOverride(1);
-        } else {
-            result.setExitCodeOverride(0);
-        }
-
-        return result;
+      }
+    } catch (StreamxClientException e) {
+      throw new CliException(msg.unableToCreateStreamxClient(ingestionClientConfig.url()), e);
     }
 
-    @Override
-    public String getTextOutput(CommandResult<EventsCommandResult> result) {
-        return tracker.toSummary();
+    return prepareResult();
+  }
+
+  private boolean confirmContinueWithoutPatch(Path rootPath, String patchName) {
+    String response = promptForInput(
+        msg.patchNotFound(patchName, rootPath.toString()), List.of("y", "n"));
+    return "y".equalsIgnoreCase(response);
+  }
+
+  private CommandResult<EventsCommandResult> prepareResult() {
+    EventsCommandResult eventsResult = tracker.toResult();
+    CommandResult<EventsCommandResult> result = new CommandResult<>(eventsResult);
+
+    boolean someEventsFailed = !eventsResult.eventErrors().isEmpty()
+        || !eventsResult.batchErrors().isEmpty();
+
+    if (someEventsFailed) {
+      result.setError(new CliException(msg.eventsPartiallyFailedToPublish()));
     }
+
+    if (someEventsFailed && !continueOnError) {
+      result.setExitCodeOverride(1);
+    } else {
+      result.setExitCodeOverride(0);
+    }
+
+    return result;
+  }
+
+  @Override
+  public String getTextOutput(CommandResult<EventsCommandResult> result) {
+    return tracker.toSummary();
+  }
 }
