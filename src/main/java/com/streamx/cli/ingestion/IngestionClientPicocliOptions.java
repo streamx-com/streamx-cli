@@ -10,23 +10,25 @@ import picocli.CommandLine;
 
 public class IngestionClientPicocliOptions {
 
+  public static final String HEADING = "%nConnection Options:%n";
+
   @CommandLine.Option(
       names = {"--ingestion-url", "-u"},
-      description = {"StreamX ingestion URL.",
+      description = {"StreamX ingestion URL",
           "Falls back to settings property: " + IngestionClientConfig.STREAMX_INGESTION_URL}
   )
   public String url;
 
   @CommandLine.Option(
       names = {"--auth-token", "-a"},
-      description = {"Authentication token.",
+      description = {"Authentication token",
           "Falls back to settings property: " + IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN}
   )
   public String authToken;
 
   @CommandLine.Option(
       names = {"--insecure", "-k"},
-      description = {"Skip TLS verification.",
+      description = {"Skip TLS verification",
           "Falls back to settings property: " + IngestionClientConfig.STREAMX_INGESTION_INSECURE},
       arity = "0..1",
       fallbackValue = "true",

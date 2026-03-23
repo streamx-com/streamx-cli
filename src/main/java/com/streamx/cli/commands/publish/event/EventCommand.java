@@ -25,15 +25,18 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "event",
-    mixinStandardHelpOptions = true,
     header = "Publish a single event")
 public class EventCommand extends AbstractCommand<EventCommandResult> {
 
   private static final String RESULT_FILE_NAME = "publish-event-result.json";
   private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-  @CommandLine.Mixin
-  IngestionClientPicocliOptions ingestionOptions;
+  @CommandLine.ArgGroup(
+      exclusive = false,
+      heading = IngestionClientPicocliOptions.HEADING,
+      order = 1
+  )
+  IngestionClientPicocliOptions ingestionOptions = new IngestionClientPicocliOptions();
 
   @CommandLine.Parameters(
       index = "0",

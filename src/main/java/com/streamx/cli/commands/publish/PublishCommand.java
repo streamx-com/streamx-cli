@@ -8,7 +8,6 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "publish",
-    mixinStandardHelpOptions = true,
     header = "Publish events",
     subcommands = {
         StreamCommand.class,

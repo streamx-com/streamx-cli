@@ -388,4 +388,13 @@ public interface MessageProvider {
 
   @Message(id = 204, value = "Failed to create output directory: %s")
   String failedToCreateOutputDirectory(String reason);
+
+  @Message(id = 205, value = "streamx")
+  String rootCommandName();
+
+  @Message(id = 206, value = "[...options]")
+  String synopsisOptions();
+
+  @Message(id = 207, value = "[COMMAND]")
+  String synopsisCommand();
 }

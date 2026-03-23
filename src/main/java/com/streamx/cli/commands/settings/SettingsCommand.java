@@ -9,7 +9,6 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "settings",
-    mixinStandardHelpOptions = true,
     header = "Modify StreamX settings",
     subcommands = {
         GetCommand.class,

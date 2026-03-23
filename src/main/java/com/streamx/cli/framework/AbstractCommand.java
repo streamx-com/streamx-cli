@@ -18,6 +18,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
+
 /**
  * Each CLI command should extend this class.
  *
@@ -31,6 +32,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void setSpec(CommandSpec spec) {
     this.spec = spec;
     applyHiddenOptions();
+    spec.usageMessage().sortOptions(false);
   }
 
   @CommandLine.Option(
@@ -46,6 +48,9 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   )
   // Explicitly set default value here as a fallback for commands with the hidden output option.
   public OutputFormat output = OutputFormat.text;
+
+  @CommandLine.ArgGroup(exclusive = false, heading = "%nGlobal Options:%n", order = 100)
+  HelpOptions helpOptions = new HelpOptions();
 
   // Override this method to implement the command logic.
   public abstract CommandResult<ResultT> runCommand();
