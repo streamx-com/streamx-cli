@@ -23,13 +23,16 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "events",
-    mixinStandardHelpOptions = true,
     header =
         "Publishes multiple events based on a directory structure and .eventtemplate files")
 public class EventsCommand extends AbstractCommand<EventsCommandResult> {
 
-  @CommandLine.Mixin
-  IngestionClientPicocliOptions ingestionOptions;
+  @CommandLine.ArgGroup(
+      exclusive = false,
+      heading = IngestionClientPicocliOptions.HEADING,
+      order = 1
+  )
+  IngestionClientPicocliOptions ingestionOptions = new IngestionClientPicocliOptions();
 
   @CommandLine.Parameters(
       index = "0",

@@ -18,7 +18,6 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "set",
-    mixinStandardHelpOptions = true,
     header = "Set settings property"
 )
 public class SetCommand extends AbstractSilentCommand {

@@ -6,7 +6,6 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "local",
-    mixinStandardHelpOptions = true,
     header = "Operate local StreamX instance",
     subcommands = {
         RunCommand.class,

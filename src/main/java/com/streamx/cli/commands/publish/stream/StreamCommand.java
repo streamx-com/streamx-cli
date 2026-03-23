@@ -26,12 +26,15 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "stream",
-    mixinStandardHelpOptions = true,
     header = "Publishes stream of events")
 public class StreamCommand extends AbstractCommand<StreamCommandResult> {
 
-  @CommandLine.Mixin
-  IngestionClientPicocliOptions ingestionOptions;
+  @CommandLine.ArgGroup(
+      exclusive = false,
+      heading = IngestionClientPicocliOptions.HEADING,
+      order = 1
+  )
+  IngestionClientPicocliOptions ingestionOptions = new IngestionClientPicocliOptions();
 
   @CommandLine.Parameters(
       index = "0",

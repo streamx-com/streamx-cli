@@ -16,7 +16,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "run",
-    mixinStandardHelpOptions = true,
     header = "Run a StreamX Mesh locally")
 public class RunCommand extends AbstractSilentCommand {
   @CommandLine.Option(

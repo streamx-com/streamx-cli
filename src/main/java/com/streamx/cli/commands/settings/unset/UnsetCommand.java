@@ -19,7 +19,6 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "unset",
-    mixinStandardHelpOptions = true,
     header = "Unset settings property"
 )
 public class UnsetCommand extends AbstractSilentCommand {

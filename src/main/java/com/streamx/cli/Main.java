@@ -2,6 +2,7 @@ package com.streamx.cli;
 
 import com.streamx.cli.commands.StreamxCommand;
 import com.streamx.cli.framework.ShortErrorMessageHandler;
+import com.streamx.cli.framework.SynopsisHelper;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import jakarta.inject.Inject;
@@ -20,6 +21,8 @@ public class Main implements QuarkusApplication {
         .setExpandAtFiles(false)
         .setUsageHelpAutoWidth(true)
         .setExecutionStrategy(new CommandLine.RunLast());
+
+    SynopsisHelper.applyCustomSynopses(commandLine);
 
     return commandLine.execute(args);
   }
