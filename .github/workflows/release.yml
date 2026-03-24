@@ -34,6 +34,7 @@ jobs:
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
           gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_SNAPSHOT_DEPLOY_SA }}
+          gar_docker_registry: ${{ vars.GAR_DOCKER_REGISTRY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate GitHub App token
