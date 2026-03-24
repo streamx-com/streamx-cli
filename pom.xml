@@ -344,6 +344,7 @@
         <configuration>
           <tagNameFormat>@{project.version}</tagNameFormat>
           <scmCommentPrefix>[no ci] [maven-release-plugin]</scmCommentPrefix>
+          <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
         </configuration>
       </plugin>
       <plugin>
