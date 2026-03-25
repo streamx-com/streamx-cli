@@ -22,7 +22,7 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <graalvm.version>25.0.2</graalvm.version>
-    <streamx.version>2.0.31-SNAPSHOT</streamx.version>
+    <streamx.version>2.0.33-native-image-metadata-check-7</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
