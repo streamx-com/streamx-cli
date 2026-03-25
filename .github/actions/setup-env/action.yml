@@ -25,7 +25,7 @@ runs:
         token_format: access_token
 
     - name: Login to GAR
-      if: steps.auth.outcome == 'success' && inputs.gar_docker_registry != ''
+      if: runner.os != 'macOS' && steps.auth.outcome == 'success' && inputs.gar_docker_registry != ''
       uses: docker/login-action@v2
       with:
         registry: ${{ inputs.gar_docker_registry }}
