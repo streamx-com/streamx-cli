@@ -18,8 +18,7 @@ final class MeshTestConfig {
         "streamx.runner.pulsar.broker-port", "0",
         "streamx.runner.pulsar.http-port", "0",
         "streamx.runner.gateway.http-port", "0",
-        "streamx.runner.gateway.admin-port", "0",
-        "streamx.runner.ryuk.port", "0"
+        "streamx.runner.gateway.admin-port", "0"
     );
   }
 }
