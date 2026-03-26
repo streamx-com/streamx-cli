@@ -1,0 +1,170 @@
+{
+  "reflection": [
+    {
+      "type": "com.streamx.cli.ingestion.CloudEventsSerdeTest"
+    },
+    {
+      "type": "io.quarkus.bootstrap.logging.EmptyLogContextConfigurator"
+    },
+    {
+      "type": "io.quarkus.bootstrap.logging.InitialConfigurator"
+    },
+    {
+      "type": "io.quarkus.test.component.ComponentLauncherSessionListener"
+    },
+    {
+      "type": "io.quarkus.test.config.ConfigLauncherSession"
+    },
+    {
+      "type": "io.quarkus.test.junit.launcher.CustomLauncherInterceptor"
+    },
+    {
+      "type": "io.quarkus.vertx.mdc.provider.LateBoundMDCProvider"
+    },
+    {
+      "type": "java.lang.Boolean",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.util.logging.LogRecord",
+      "methods": [
+        {
+          "name": "getLongThreadID",
+          "parameterTypes": []
+        },
+        {
+          "name": "setLongThreadID",
+          "parameterTypes": [
+            "long"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory"
+    },
+    {
+      "type": "org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory"
+    },
+    {
+      "type": "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.apache.maven.surefire.api.provider.ProviderParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.jboss.logmanager.CopyOnWriteMap"
+    },
+    {
+      "type": "org.jboss.logmanager.ExtHandler"
+    },
+    {
+      "type": "org.jboss.logmanager.JBossLoggerFinder"
+    },
+    {
+      "type": "org.jboss.logmanager.LogManager"
+    },
+    {
+      "type": "org.jboss.logmanager.Logger$AttachmentKey"
+    },
+    {
+      "type": "org.jboss.logmanager.LoggerNode"
+    },
+    {
+      "type": "org.jboss.logmanager.StandardOutputStreams"
+    },
+    {
+      "type": "org.jboss.logmanager.configuration.DefaultConfiguratorFactory"
+    },
+    {
+      "type": "org.junit.platform.launcher.LauncherSession"
+    },
+    {
+      "type": "org.junit.platform.launcher.core.LauncherFactory",
+      "methods": [
+        {
+          "name": "openSession",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.management.VMManagementImpl",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "compTimeMonitoringSupport"
+        },
+        {
+          "name": "currentThreadCpuTimeSupport"
+        },
+        {
+          "name": "objectMonitorUsageSupport"
+        },
+        {
+          "name": "otherThreadCpuTimeSupport"
+        },
+        {
+          "name": "remoteDiagnosticCommandsSupport"
+        },
+        {
+          "name": "synchronizerUsageSupport"
+        },
+        {
+          "name": "threadAllocatedMemorySupport"
+        },
+        {
+          "name": "threadContentionMonitoringSupport"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "glob": "META-INF/services/java.net.spi.InetAddressResolverProvider"
+    },
+    {
+      "glob": "META-INF/services/org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logging.LoggerProvider"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logmanager.ConfiguratorFactory"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logmanager.LogContextConfigurator"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logmanager.LogContextInitializer"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logmanager.MDCProvider"
+    },
+    {
+      "glob": "META-INF/services/org.jboss.logmanager.NDCProvider"
+    },
+    {
+      "glob": "META-INF/services/org.junit.platform.launcher.LauncherSessionListener"
+    },
+    {
+      "glob": "junit-platform.properties"
+    },
+    {
+      "glob": "logging.properties"
+    }
+  ]
+}
