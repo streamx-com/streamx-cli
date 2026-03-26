@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class MeshDefinitionResolverInterpolationTest {
 
-  private static final String TEST_MESH_LOCATION = "target/test-classes/mesh-interpolated.yaml";
-  private static final Path TEST_MESH_PATH = Path.of(TEST_MESH_LOCATION);
+  private static final Path TEST_MESH_PATH =
+      Path.of("target/test-classes/mesh-interpolated.yaml");
 
   @Inject
   MeshDefinitionResolver uut;
@@ -43,6 +43,7 @@ class MeshDefinitionResolverInterpolationTest {
   @Test
   void shouldResolveWithMandatoryPropertyDefinedAndOptionalPropertyUndefined() throws IOException {
     System.setProperty("config.image.interpolated", "image-1");
+    System.setProperty("STREAMX_OWNER_SERVICE_NAME", "test-owner");
 
     ServiceMesh result = uut.resolve(TEST_MESH_PATH);
     assertSinkImage(result, "image-1");
@@ -53,6 +54,7 @@ class MeshDefinitionResolverInterpolationTest {
   void shouldResolveWithMandatoryAndOptionalPropertiesDefined() throws IOException {
     System.setProperty("config.image.interpolated", "image-1");
     System.setProperty("config.source.interpolated", "source-1");
+    System.setProperty("STREAMX_OWNER_SERVICE_NAME", "test-owner");
 
     ServiceMesh result = uut.resolve(TEST_MESH_PATH);
     assertSinkImage(result, "image-1");

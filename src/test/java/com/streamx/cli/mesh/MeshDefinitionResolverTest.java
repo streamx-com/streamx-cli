@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class MeshDefinitionResolverTest {
 
-  private static final String TEST_MESH_LOCATION = "target/test-classes/mesh.yaml";
-  private static final Path TEST_MESH_PATH = Path.of(TEST_MESH_LOCATION);
+  private static final Path TEST_MESH_PATH = Path.of("target/test-classes/mesh.yaml");
 
   @Inject
   MeshDefinitionResolver uut;

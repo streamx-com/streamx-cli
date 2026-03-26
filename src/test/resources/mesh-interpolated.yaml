@@ -55,3 +55,5 @@ edge:
         incoming:
           resources:
             ref: outbox.pages
+        environment:
+          QUARKUS_ELASTICSEARCH_HOSTS: ${STREAMX_OWNER_SERVICE_NAME}.opensearch:9201

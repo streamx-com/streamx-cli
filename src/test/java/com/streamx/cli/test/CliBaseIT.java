@@ -13,7 +13,9 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -31,6 +33,7 @@ public abstract class CliBaseIT {
   public static Path streamxHome;
 
   private Process process;
+  private final Map<String, String> envVars = new HashMap<>();
 
   private static boolean isNative() {
     return "true".equals(System.getProperty("native.image"));
@@ -44,11 +47,40 @@ public abstract class CliBaseIT {
     }
   }
 
+  /**
+   * Sets a variable that will be passed as a system property in JVM mode
+   * and as a real environment variable in native mode.
+   */
+  protected void setEnv(String key, String value) {
+    if (isNative()) {
+      envVars.put(key, value);
+    } else {
+      System.setProperty(key, value);
+    }
+  }
+
+  /**
+   * Removes a variable previously set via {@link #setEnv}.
+   */
+  protected void clearEnv(String key) {
+    if (isNative()) {
+      envVars.remove(key);
+    } else {
+      System.clearProperty(key);
+    }
+  }
+
   @AfterEach
   void cleanupProcess() {
     if (process != null && process.isAlive()) {
       process.destroyForcibly();
     }
+    if (!isNative()) {
+      for (String key : envVars.keySet()) {
+        System.clearProperty(key);
+      }
+    }
+    envVars.clear();
   }
 
   protected ProcessResult execWithStdin(InputStream stdin, String... args) throws Exception {
@@ -159,6 +191,7 @@ public abstract class CliBaseIT {
     ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(false);
     pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+    pb.environment().putAll(envVars);
     process = pb.start();
 
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
