@@ -9,24 +9,36 @@ import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
-import com.streamx.cli.test.MeshTestEnv;
+import com.streamx.cli.test.MeshAssertions;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.MeshWithAuthTestProfile;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import java.util.List;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(MeshWithAuthTestProfile.class)
 public class StreamCommandIngestionConfigIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
 
-  @Inject
-  MeshTestEnv meshTestEnv;
+  @BeforeAll
+  static void startMesh() {
+    MeshTestSupport.startMesh("target/test-classes/mesh-with-auth.yaml");
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
+
+  @BeforeEach
+  void resetBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
+  }
 
   @Test
   void shouldFailInNoAuthTokenProvided() throws Exception {
@@ -61,7 +73,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         "publish",
         "stream",
         "--auth-token",
-        meshTestEnv.awaitAuthToken()
+        MeshTestSupport.awaitAuthToken()
     );
 
     result.assertSuccess();
@@ -82,7 +94,7 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         "publish",
         "stream",
         "--auth-token",
-        meshTestEnv.awaitAuthToken(),
+        MeshTestSupport.awaitAuthToken(),
         "--ingestion-url",
         "http://localhost:4242"
     );
@@ -111,9 +123,9 @@ public class StreamCommandIngestionConfigIT extends CliBaseIT {
         "publish",
         "stream",
         "--auth-token",
-        meshTestEnv.awaitAuthToken(),
+        MeshTestSupport.awaitAuthToken(),
         "--ingestion-url",
-        "http://localhost:8080"
+        "http://localhost:" + MeshTestSupport.getProxyPort()
     );
 
     result.assertSuccess();

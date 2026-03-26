@@ -408,11 +408,13 @@
         <version>${surefire-plugin.version}</version>
         <configuration>
           <forkCount>${surefire.forkCount}</forkCount>
+          <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
           <argLine>
+            -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
             --enable-native-access=ALL-UNNAMED
             ${native.agent.argLine}
@@ -438,6 +440,7 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
           <argLine>
+            -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
             ${native.agent.argLine}
           </argLine>

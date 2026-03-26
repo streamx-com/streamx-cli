@@ -36,11 +36,6 @@ public abstract class CliBaseIT {
     return "true".equals(System.getProperty("native.image"));
   }
 
-  @BeforeEach
-  void resetPublishedEventsBaseline() {
-    MeshAssertions.resetPublishedEventsBaseline();
-  }
-
   @BeforeAll
   static void ensureBuilt() {
     System.out.println("STREAMX_HOME path is " + streamxHome.toAbsolutePath());

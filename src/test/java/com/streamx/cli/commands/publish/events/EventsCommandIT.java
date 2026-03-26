@@ -8,10 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.MeshAssertions;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,14 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(DefaultMeshTestProfile.class)
 public class EventsCommandIT extends CliBaseIT {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -56,8 +57,19 @@ public class EventsCommandIT extends CliBaseIT {
 
   @BeforeAll
   static void resolveStructure() throws URISyntaxException {
+    MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
     rootDir = Paths.get(
         EventsCommandIT.class.getResource("/commands/publish/events/test").toURI());
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
+
+  @BeforeEach
+  void resetBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
   }
 
   private static Path parseOutputDir(ProcessResult result) {

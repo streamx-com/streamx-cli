@@ -16,7 +16,7 @@ descriptors:
         incoming:
           resources: {}
         servicePorts:
-          - "8087:8080"
+          - "0:8080"
 
 sources:
   cli:
@@ -30,6 +30,8 @@ ingestion:
   rest-ingestion:
     containers:
       proxy:
+        servicePorts:
+          - "${test.proxy.host-port:8080}:8080"
         environment: {}
 
 processing:

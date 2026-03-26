@@ -7,6 +7,7 @@ import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +15,12 @@ import org.junit.jupiter.api.Test;
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
+  private static final String PREFIX =
+      "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+
   @Test
   void shouldRunStreamxExampleMesh() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     String meshPath = Paths.get("target/test-classes/mesh.yaml")
         .toAbsolutePath()
         .normalize()

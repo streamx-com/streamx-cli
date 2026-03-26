@@ -6,19 +6,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(DefaultMeshTestProfile.class)
 public class EventTemplateLoaderIT extends CliBaseIT {
+
+  @BeforeAll
+  static void startMesh() {
+    MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
 
   private static final String TEMPLATE_TYPE = "path.resolution.template";
   private static final String DEFAULT_TEMPLATE_TYPE = "page.published";
