@@ -22,10 +22,12 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <graalvm.version>25.0.2</graalvm.version>
-    <streamx.version>2.0.33-native-image-metadata-check-7</streamx.version>
+    <streamx.version>2.0.33-native-image-metadata-check-11-SNAPSHOT</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
+    <surefire.forkCount>1</surefire.forkCount>
+    <it.forkCount>1</it.forkCount>
 
     <native.agent.argLine>
       -agentlib:native-image-agent=config-output-dir=${project.basedir}/src/main/resources/META-INF/native-image
@@ -405,6 +407,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <forkCount>${surefire.forkCount}</forkCount>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -428,6 +431,8 @@
           </execution>
         </executions>
         <configuration>
+          <forkCount>${it.forkCount}</forkCount>
+          <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>

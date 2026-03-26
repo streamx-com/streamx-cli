@@ -23,7 +23,7 @@ jobs:
 
       - name: Test and build JAR
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload test reports
         if: always()
