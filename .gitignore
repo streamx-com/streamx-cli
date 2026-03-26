@@ -38,6 +38,9 @@ nb-configuration.xml
 # Plugin directory
 /.quarkus/cli/plugins/
 
+# Native image agent per-fork metadata (merged at build time)
+**/META-INF/native-image/fork-*/
+
 streamx.log
 streamx.*
 streamx-*.log
