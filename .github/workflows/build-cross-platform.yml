@@ -97,7 +97,8 @@ jobs:
           path: staging/${{ matrix.artifact }}
 
       - name: Upload runner JAR
-        if: matrix.name == 'linux-amd64'
+        # We need to upload the jar only once, as it cross-platform
+        if: matrix.name == 'linux-arm64'
         uses: actions/upload-artifact@v4
         with:
           name: streamx-runner-jar
