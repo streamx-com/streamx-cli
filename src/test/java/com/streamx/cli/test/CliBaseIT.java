@@ -304,9 +304,11 @@ public abstract class CliBaseIT {
     Thread thread = Thread.ofVirtual().start(() -> {
       System.setOut(teeOut);
       System.setErr(teeErr);
+      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
       try {
         exitCode.set(createCommandLine().execute(args));
       } finally {
+        System.clearProperty("STREAMX_HOME");
         System.setOut(originalOut);
         System.setErr(originalErr);
       }
