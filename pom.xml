@@ -573,6 +573,12 @@ done
               </systemPropertyVariables>
             </configuration>
           </plugin>
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets combine.self="override" />
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
