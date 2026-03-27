@@ -13,6 +13,10 @@ public class EventTemplatePlaceholders {
   // Placeholder for the base64 encoded payload file content
   public static final String PAYLOAD_CONTENT_BASE64 = "file://${payloadPath}";
 
+  // Placeholders for the raw (non-encoded) payload file content
+  public static final String PAYLOAD_CONTENT_FILE_RAW = "file-raw://${payloadPath}";
+  public static final String PAYLOAD_CONTENT_JSON = "json://${payloadPath}";
+
   // Placeholder for the relative path of the event payload file.
   // The syntax ${relativePath:n} is supported, where 'n' specifies the number of parent directories
   // to traverse from the event payload file's location. For example, ${relativePath:3} will resolve
