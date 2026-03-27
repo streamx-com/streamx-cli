@@ -507,7 +507,7 @@
                 <goals>
                   <goal>exec</goal>
                 </goals>
-                <phase>prepare-package</phase>
+                <phase>post-integration-test</phase>
                 <configuration>
                   <executable>bash</executable>
                   <arguments>
@@ -571,12 +571,6 @@ done
               <systemPropertyVariables>
                 <native.image>true</native.image>
               </systemPropertyVariables>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-clean-plugin</artifactId>
-            <configuration>
-              <filesets combine.self="override" />
             </configuration>
           </plugin>
         </plugins>
