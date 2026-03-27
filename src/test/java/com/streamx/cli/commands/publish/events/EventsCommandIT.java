@@ -178,11 +178,11 @@ public class EventsCommandIT extends CliBaseIT {
       List<String> subjects = collectEventField(outputDir, "subject");
 
       assertThat(subjects).containsExactlyInAnyOrder(
-          rootDir.toString(),
-          rootDir.resolve("sub").toString(),
-          rootDir.resolve("sub-with-template").toString(),
-          rootDir.resolve("sub-with-template/nested").toString(),
-          rootDir.resolve("sub-with-template/nested/deeper").toString()
+          "entry.json",
+          Path.of("sub", "entry.json").toString(),
+          Path.of("sub-with-template", "entry.json").toString(),
+          Path.of("sub-with-template", "nested", "entry.json").toString(),
+          Path.of("sub-with-template", "nested", "deeper", "entry.json").toString()
       );
     }
 
@@ -238,9 +238,9 @@ public class EventsCommandIT extends CliBaseIT {
       List<String> subjects = collectEventField(outputDir, "subject");
 
       assertThat(subjects).containsExactlyInAnyOrder(
-          tempDir.resolve("level1").toString(),
-          tempDir.resolve("level1/level2").toString(),
-          tempDir.resolve("level1/level2/level3").toString()
+          Path.of("level1", "payload-0.json").toString(),
+          Path.of("level1", "level2", "payload-0.json").toString(),
+          Path.of("level1", "level2", "level3", "payload-0.json").toString()
       );
     }
   }
@@ -590,9 +590,9 @@ public class EventsCommandIT extends CliBaseIT {
       Path outputDir = parseOutputDir(result);
 
       assertThat(readEvent(outputDir, "entry.json.json").path("subject").asText())
-          .isEqualTo(tempDir.toString());
+          .isEqualTo("entry.json");
       assertThat(readEvent(outputDir, "sub/nested.json.json").path("subject").asText())
-          .isEqualTo(tempDir.resolve("sub").toString());
+          .isEqualTo(Path.of("sub", "nested.json").toString());
     }
 
     @Test

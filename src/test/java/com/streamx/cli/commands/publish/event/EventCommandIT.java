@@ -295,11 +295,11 @@ public class EventCommandIT extends CliBaseIT {
       assertThat(data.get("path").asText()).isEqualTo(payloadFile.toString());
 
       // ${relativePath}
-      assertThat(data.get("relativePath").asText()).isEqualTo(subDir.toString());
+      assertThat(data.get("relativePath").asText()).isEqualTo("payload.html");
 
       // ${relativePath:2}
       assertThat(data.get("relativePathWithLevel").asText())
-          .isEqualTo(tempDir.resolve("a").toString());
+          .isEqualTo(Path.of("b", "c", "payload.html").toString());
 
       // non-placeholder value preserved
       assertThat(data.get("type").asText()).isEqualTo("data/page");

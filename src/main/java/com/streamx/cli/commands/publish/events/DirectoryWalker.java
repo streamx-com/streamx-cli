@@ -87,7 +87,7 @@ class DirectoryWalker {
     }
 
     for (Path payloadFile : payloadFiles) {
-      processPayloadFile(payloadFile, ctx);
+      processPayloadFile(payloadFile, rootPath, ctx);
     }
 
     for (Path subDir : subDirs) {
@@ -101,13 +101,13 @@ class DirectoryWalker {
         || (name.startsWith(".") && name.endsWith(EVENTTEMPLATE_FILE));
   }
 
-  private void processPayloadFile(Path payloadPath, TemplateContext ctx) {
+  private void processPayloadFile(Path payloadPath, Path rootPath, TemplateContext ctx) {
     int eventNumber = (batchSize <= 1) ? tracker.nextEventNumber() : 0;
 
     CloudEvent cloudEvent;
     try {
       cloudEvent = new EventTemplateProcessor(
-          ctx.template().toString(), payloadPath, null).toCloudEvent();
+          ctx.template().toString(), payloadPath, rootPath, null).toCloudEvent();
     } catch (Exception e) {
       String errorMessage = msg.eventPublishFailed(
           String.valueOf(eventNumber), "''", payloadPath.toString(), e.getMessage());
