@@ -379,16 +379,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>src/main/resources/META-INF/native-image</directory>
-              <includes>
-                <include>reachability-metadata.json</include>
-              </includes>
-            </fileset>
-          </filesets>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -509,29 +499,9 @@
                 </goals>
                 <phase>post-integration-test</phase>
                 <configuration>
-                  <executable>bash</executable>
+                  <executable>${project.basedir}/.github/scripts/merge-native-image-metadata.sh</executable>
                   <arguments>
-                    <argument>-c</argument>
-                    <argument><![CDATA[
-set -e
-OUTPUT_DIR="${project.basedir}/src/main/resources/META-INF/native-image"
-FORK_DIRS=$(find "$OUTPUT_DIR" -maxdepth 1 -type d -name 'fork-*' 2>/dev/null | sort)
-if [ -z "$FORK_DIRS" ]; then
-  exit 0
-fi
-INPUT_ARGS=""
-for dir in $FORK_DIRS; do
-  INPUT_ARGS="$INPUT_ARGS --input-dir=$dir"
-done
-if [ -f "$OUTPUT_DIR/reflect-config.json" ]; then
-  INPUT_ARGS="--input-dir=$OUTPUT_DIR $INPUT_ARGS"
-fi
-echo "[native-image-configure] Merging per-fork metadata into $OUTPUT_DIR"
-"${JAVA_HOME}/bin/native-image-configure" generate $INPUT_ARGS --output-dir="$OUTPUT_DIR"
-for dir in $FORK_DIRS; do
-  rm -rf "$dir"
-done
-                    ]]></argument>
+                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
                   </arguments>
                 </configuration>
               </execution>
