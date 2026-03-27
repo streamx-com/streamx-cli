@@ -24,7 +24,7 @@ public class RunCommandIT extends CliBaseIT {
   @Test
   void shouldFailWhenEnvVariableIsUndefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
-    setEnv("config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     clearEnv("STREAMX_OWNER_SERVICE_NAME");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
@@ -32,7 +32,7 @@ public class RunCommandIT extends CliBaseIT {
         .normalize()
         .toString();
 
-    AsyncProcessHandle handle = execAsync("local", "run", "-v", "-f=" + meshPath);
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
       Awaitility.await()
@@ -55,7 +55,7 @@ public class RunCommandIT extends CliBaseIT {
   @Test
   void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
-    clearEnv("config.image.interpolated");
+    exec("settings", "unset", "config.image.interpolated");
     setEnv("STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
@@ -63,7 +63,7 @@ public class RunCommandIT extends CliBaseIT {
         .normalize()
         .toString();
 
-    AsyncProcessHandle handle = execAsync("local", "run", "-v", "-f=" + meshPath);
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
       Awaitility.await()
@@ -86,7 +86,7 @@ public class RunCommandIT extends CliBaseIT {
   @Test
   void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
-    setEnv("config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     setEnv("STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
@@ -94,7 +94,7 @@ public class RunCommandIT extends CliBaseIT {
         .normalize()
         .toString();
 
-    AsyncProcessHandle handle = execAsync("local", "run", "-v", "-f=" + meshPath);
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
       Awaitility.await()

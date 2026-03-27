@@ -88,6 +88,10 @@ public final class MeshTestSupport {
     }
   }
 
+  public static boolean isMeshActive() {
+    return activeMeshManager != null;
+  }
+
   public static int getProxyPort() {
     return activeProxyPort;
   }

@@ -71,6 +71,14 @@ public abstract class CliBaseIT {
     }
   }
 
+  @BeforeEach
+  void configureIngestionUrlIfMeshActive() throws Exception {
+    if (MeshTestSupport.isMeshActive()) {
+      exec("settings", "set", "streamx.ingestion.url",
+          "http://localhost:" + MeshTestSupport.getProxyPort());
+    }
+  }
+
   @AfterEach
   void cleanupProcess() {
     if (process != null && process.isAlive()) {
