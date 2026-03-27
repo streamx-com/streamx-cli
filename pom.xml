@@ -543,6 +543,25 @@
               </systemPropertyVariables>
             </configuration>
           </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-native-image-metadata</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <executable>${project.basedir}/.github/scripts/prepare-native-image-metadata.sh</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
