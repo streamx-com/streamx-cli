@@ -55,7 +55,7 @@ jobs:
 
       - name: Run tests with native-image-agent
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -T 4 -Dsurefire.forkCount=8 -Dit.forkCount=4
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload Docker logs
         if: always()
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build native-image executable
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native -T 4 -Dsurefire.forkCount=8 -Dit.forkCount=4
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload test reports
         if: always()

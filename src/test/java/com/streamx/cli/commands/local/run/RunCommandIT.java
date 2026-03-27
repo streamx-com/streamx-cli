@@ -25,6 +25,7 @@ public class RunCommandIT extends CliBaseIT {
   void shouldFailWhenEnvVariableIsUndefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
     clearEnv("STREAMX_OWNER_SERVICE_NAME");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
@@ -56,7 +57,7 @@ public class RunCommandIT extends CliBaseIT {
   void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "unset", "config.image.interpolated");
-    setEnv("STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
