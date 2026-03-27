@@ -7,6 +7,7 @@ import io.quarkus.arc.ArcContainer;
 import io.quarkus.arc.InjectableInstance;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -289,8 +290,8 @@ public abstract class CliBaseIT {
     PrintStream originalOut = System.out;
     PrintStream originalErr = System.err;
 
-    PrintStream teeOut = new PrintStream(out, true);
-    PrintStream teeErr = new PrintStream(err, true);
+    PrintStream teeOut = new PrintStream(new TeeOutputStream(out, originalOut), true);
+    PrintStream teeErr = new PrintStream(new TeeOutputStream(err, originalErr), true);
 
     Thread thread = Thread.ofVirtual().start(() -> {
       System.setOut(teeOut);
@@ -304,5 +305,33 @@ public abstract class CliBaseIT {
     });
 
     return new AsyncProcessHandle(thread, out, err, exitCode);
+  }
+
+  private static class TeeOutputStream extends OutputStream {
+    private final OutputStream buffer;
+    private final OutputStream console;
+
+    TeeOutputStream(OutputStream buffer, OutputStream console) {
+      this.buffer = buffer;
+      this.console = console;
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+      buffer.write(b);
+      console.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+      buffer.write(b, off, len);
+      console.write(b, off, len);
+    }
+
+    @Override
+    public void flush() throws IOException {
+      buffer.flush();
+      console.flush();
+    }
   }
 }

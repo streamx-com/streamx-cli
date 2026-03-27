@@ -58,6 +58,11 @@ public class RunCommand extends AbstractSilentCommand {
 
       return new CommandResult<>(null);
     } catch (InterruptedException e) {
+      try {
+        meshManager.stop();
+      } catch (Exception ex) {
+        // best-effort cleanup
+      }
       Thread.currentThread().interrupt();
       return new CommandResult<>(null);
     } catch (ContainerStartupTimeoutException e) {
