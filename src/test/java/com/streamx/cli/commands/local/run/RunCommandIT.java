@@ -22,7 +22,7 @@ public class RunCommandIT extends CliBaseIT {
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
 
   @Test
-  void shouldFailWhenEnvVariableIsUndefined() throws Exception {
+  void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
@@ -39,12 +39,11 @@ public class RunCommandIT extends CliBaseIT {
       Awaitility.await()
           .atMost(Duration.ofMinutes(2))
           .pollInterval(Duration.ofSeconds(1))
-          .until(() -> !handle.thread().isAlive());
+          .until(() -> handle.getStderr()
+              .contains("Environment variable 'STREAMX_OWNER_SERVICE_NAME'"));
 
-      ProcessResult result = handle.toResult();
-      assertThat(result.exitCode()).isNotEqualTo(0);
-      assertThat(result.stderr())
-          .contains("Could not expand value")
+      assertThat(handle.getStderr())
+          .contains("WARNING:")
           .contains("STREAMX_OWNER_SERVICE_NAME");
     } finally {
       if (handle.thread().isAlive()) {
@@ -75,8 +74,8 @@ public class RunCommandIT extends CliBaseIT {
       ProcessResult result = handle.toResult();
       assertThat(result.exitCode()).isNotEqualTo(0);
       assertThat(result.stderr())
-          .contains("Could not expand value")
-          .contains("config.image.interpolated");
+          .contains("Property 'config.image.interpolated'")
+          .contains("is not set");
     } finally {
       if (handle.thread().isAlive()) {
         handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());

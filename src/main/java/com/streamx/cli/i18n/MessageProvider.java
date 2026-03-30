@@ -141,8 +141,6 @@ public interface MessageProvider {
   @Message(id = 136, value = "Expression cannot be null")
   String expressionCannotBeNull();
 
-  @Message(id = 137, value = "Could not expand value %s in expression %s")
-  String couldNotExpandValueInExpression(String key, String expression);
 
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
@@ -397,4 +395,11 @@ public interface MessageProvider {
 
   @Message(id = 207, value = "[COMMAND]")
   String synopsisCommand();
+
+  @Message(id = 208, value = "WARNING: Environment variable '%s'"
+      + " used in expression '%s' is not set")
+  String unresolvedEnvironmentVariable(String key, String expression);
+
+  @Message(id = 209, value = "Property '%s' used in expression '%s' is not set")
+  String unresolvedProperty(String key, String expression);
 }

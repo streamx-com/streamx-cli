@@ -52,9 +52,11 @@ public class InterpolationSupport {
         stringBuilder.append(value);
       } else if (resolveContext.hasDefault()) {
         resolveContext.expandDefault();
+      } else if (key.matches("[A-Z0-9_]+")) {
+        System.err.println(msg.unresolvedEnvironmentVariable(key, rawValue));
+        stringBuilder.append("${").append(key).append("}");
       } else {
-        throw new CliException(
-            msg.couldNotExpandValueInExpression(key, rawValue));
+        throw new CliException(msg.unresolvedProperty(key, rawValue));
       }
     });
   }

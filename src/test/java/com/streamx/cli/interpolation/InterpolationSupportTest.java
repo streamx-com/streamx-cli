@@ -74,13 +74,18 @@ public class InterpolationSupportTest {
   }
 
   @Test
-  void testExpandWithMissingProperty() {
-    // Case where property is not defined
-    String rawValue = "${undefined.property}";
+  void testExpandWithMissingEnvVariable() {
+    String rawValue = "${UNDEFINED_ENV_VAR}";
+    String result = interpolationSupport.expand(rawValue);
+    assertEquals("${UNDEFINED_ENV_VAR}", result);
+  }
 
+  @Test
+  void testExpandWithMissingProperty() {
+    String rawValue = "${undefined.property}";
     assertThrows(CliException.class,
         () -> interpolationSupport.expand(rawValue),
-        msg.couldNotExpandValueInExpression("undefined.property", "${undefined.property}")
+        msg.unresolvedProperty("undefined.property", "${undefined.property}")
     );
   }
 

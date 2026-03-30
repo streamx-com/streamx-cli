@@ -27,17 +27,29 @@ class MeshDefinitionResolverInterpolationTest {
   void clearSystemProperties() {
     System.clearProperty("config.image.interpolated");
     System.clearProperty("config.source.interpolated");
+    System.clearProperty("STREAMX_OWNER_SERVICE_NAME");
   }
 
   @Test
-  void shouldFailWithMandatoryPropertyUndefined() {
+  void shouldFailWithUndefinedProperty() {
+    System.setProperty("STREAMX_OWNER_SERVICE_NAME", "test-owner");
     assertThatThrownBy(() -> uut.resolve(TEST_MESH_PATH))
         .isInstanceOf(JsonMappingException.class)
         .hasRootCauseInstanceOf(CliException.class)
-        .hasRootCauseMessage(msg.couldNotExpandValueInExpression(
+        .hasRootCauseMessage(msg.unresolvedProperty(
             "config.image.interpolated",
             "${config.image.interpolated}"
         ));
+  }
+
+  @Test
+  void shouldKeepPlaceholderForUndefinedEnvVariable() throws IOException {
+    System.setProperty("config.image.interpolated", "image-1");
+    ServiceMesh result = uut.resolve(TEST_MESH_PATH);
+    String envValue = result.getEdge().get("web-server-sink")
+        .getContainers().get("sink").getEnvironment()
+        .get("QUARKUS_ELASTICSEARCH_HOSTS");
+    assertThat(envValue).isEqualTo("${STREAMX_OWNER_SERVICE_NAME}.opensearch:9201");
   }
 
   @Test
