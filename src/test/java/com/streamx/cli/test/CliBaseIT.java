@@ -30,6 +30,9 @@ public abstract class CliBaseIT {
 
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
+  protected static final String CONFIG_FILE_PATH =
+      "config/application.properties";
+
   @TempDir
   public static Path streamxHome;
 
@@ -38,6 +41,10 @@ public abstract class CliBaseIT {
 
   private static boolean isNative() {
     return "true".equals(System.getProperty("native.image"));
+  }
+
+  protected static Path getConfigPath() {
+    return streamxHome.resolve(CONFIG_FILE_PATH);
   }
 
   @BeforeAll

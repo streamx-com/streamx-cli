@@ -2,6 +2,7 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.StreamxHome;
 import io.quarkus.runtime.Quarkus;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,8 +37,19 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void setSpec(CommandSpec spec) {
     this.spec = spec;
     applyHiddenOptions();
+
     spec.usageMessage().sortOptions(false);
   }
+
+  @CommandLine.Option(
+      names = {CommonOption.STREAMX_HOME_SHORT, CommonOption.STREAMX_HOME_LONG},
+      description = "Path to the StreamX home directory."
+          + " Allows switching between multiple StreamX environments."
+          + " Defaults to ~/.streamx."
+          + " Can also be set via the STREAMX_HOME environment variable."
+          + " This flag takes priority over the environment variable"
+  )
+  public String streamxHome;
 
   @CommandLine.Option(
       names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
@@ -140,6 +152,10 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   public int execute() {
+    if (streamxHome != null) {
+      StreamxHome.setStreamxHomeCliArg(streamxHome);
+    }
+
     int exitCode = 0;
 
     try {

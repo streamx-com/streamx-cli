@@ -21,6 +21,7 @@ class StreamxHomeTest {
   @AfterEach
   void cleanup() {
     System.clearProperty("STREAMX_HOME");
+    StreamxHome.clearStreamxHomeCliArg();
   }
 
   @Test
@@ -33,7 +34,7 @@ class StreamxHomeTest {
       URL url = StreamxHome.getConfigUrl();
 
       Path result = Path.of(url.toURI());
-      assertEquals(tempDir.resolve("application.properties"), result);
+      assertEquals(tempDir.resolve("config/application.properties"), result);
       assertTrue(Files.exists(result));
     }
   }
@@ -45,7 +46,7 @@ class StreamxHomeTest {
     URL url = StreamxHome.getConfigUrl();
 
     Path result = Path.of(url.toURI());
-    assertEquals(tempDir.resolve("application.properties"), result);
+    assertEquals(tempDir.resolve("config/application.properties"), result);
     assertTrue(Files.exists(result), "application.properties should be created");
   }
 
@@ -58,18 +59,19 @@ class StreamxHomeTest {
       Path home = StreamxHome.getStreamxHome();
 
       String homeDir = System.getProperty("user.home");
-      assertEquals(Path.of(homeDir, ".streamx/config"), home);
+      assertEquals(Path.of(homeDir, ".streamx"), home);
     }
   }
 
   @Test
   void shouldCreateConfigDirectoryWhenItDoesNotExist() throws Exception {
-    Path nestedDir = tempDir.resolve("nested/config");
-    System.setProperty("STREAMX_HOME", nestedDir.toAbsolutePath().toString());
+    Path homeDir = tempDir.resolve("nested");
+    System.setProperty("STREAMX_HOME", homeDir.toAbsolutePath().toString());
 
     StreamxHome.getConfigUrl();
 
-    assertTrue(Files.isDirectory(nestedDir), "Config directory should be created");
-    assertTrue(Files.exists(nestedDir.resolve("application.properties")));
+    Path configDir = homeDir.resolve("config");
+    assertTrue(Files.isDirectory(configDir), "Config directory should be created");
+    assertTrue(Files.exists(configDir.resolve("application.properties")));
   }
 }

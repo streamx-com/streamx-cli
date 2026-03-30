@@ -15,7 +15,7 @@ class IngestionClientPicocliOptionsIT extends CliBaseIT {
 
   @BeforeEach
   void clearConfig() throws IOException {
-    Files.deleteIfExists(streamxHome.resolve("application.properties"));
+    Files.deleteIfExists(getConfigPath());
   }
 
   @Nested

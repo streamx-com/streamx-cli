@@ -17,7 +17,7 @@ class UnsetCommandIT extends CliBaseIT {
 
   @BeforeEach
   void clearConfig() throws IOException {
-    Files.deleteIfExists(streamxHome.resolve("application.properties"));
+    Files.deleteIfExists(getConfigPath());
   }
 
   @Test
@@ -59,7 +59,7 @@ class UnsetCommandIT extends CliBaseIT {
 
   private Properties loadProperties() throws IOException {
     Properties props = new Properties();
-    Path configFile = streamxHome.resolve("application.properties");
+    Path configFile = getConfigPath();
     try (InputStream inputStream = Files.newInputStream(configFile)) {
       props.load(inputStream);
     }
