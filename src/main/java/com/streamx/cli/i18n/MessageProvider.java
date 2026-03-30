@@ -402,4 +402,7 @@ public interface MessageProvider {
 
   @Message(id = 209, value = "Property '%s' used in expression '%s' is not set")
   String unresolvedProperty(String key, String expression);
+
+  @Message(id = 210, value = "Error details saved to: %s")
+  String errorDetailsSavedTo(String path);
 }
