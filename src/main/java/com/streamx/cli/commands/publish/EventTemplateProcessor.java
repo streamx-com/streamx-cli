@@ -81,12 +81,9 @@ public class EventTemplateProcessor {
   }
 
   private JsonNode processTextNode(String value) throws IOException {
-    if (value.contains(EventTemplatePlaceholders.PAYLOAD_CONTENT_FILE_RAW)
-        || value.contains(EventTemplatePlaceholders.PAYLOAD_CONTENT_JSON)) {
+    if (value.equals(EventTemplatePlaceholders.PAYLOAD_CONTENT_JSON)) {
       byte[] fileBytes = Files.readAllBytes(eventPayloadPath);
-      String payloadRaw = new String(fileBytes);
-      value = value.replace(EventTemplatePlaceholders.PAYLOAD_CONTENT_JSON, payloadRaw);
-      value = value.replace(EventTemplatePlaceholders.PAYLOAD_CONTENT_FILE_RAW, payloadRaw);
+      return MAPPER.readTree(fileBytes);
     }
 
     if (value.contains(EventTemplatePlaceholders.PAYLOAD_CONTENT_BASE64)) {

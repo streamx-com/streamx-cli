@@ -13,8 +13,7 @@ public class EventTemplatePlaceholders {
   // Placeholder for the base64 encoded payload file content
   public static final String PAYLOAD_CONTENT_BASE64 = "file://${payloadPath}";
 
-  // Placeholders for the raw (non-encoded) payload file content
-  public static final String PAYLOAD_CONTENT_FILE_RAW = "file-raw://${payloadPath}";
+  // Placeholder for the JSON payload file content (parsed and inlined as JSON)
   public static final String PAYLOAD_CONTENT_JSON = "json://${payloadPath}";
 
   // Placeholder for the relative path of the event payload file.

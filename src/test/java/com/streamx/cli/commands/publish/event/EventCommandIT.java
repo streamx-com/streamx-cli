@@ -308,7 +308,14 @@ public class EventCommandIT extends CliBaseIT {
     @Test
     void shouldSubstituteJsonPayloadPlaceholder(@TempDir Path tempDir) throws Exception {
       Path payloadFile = tempDir.resolve("payload.json");
-      String content = "{\"title\":\"Hello World\"}";
+      String content = """
+          {
+            "title": "Hello World",
+            "version": 3,
+            "published": true,
+            "tags": [{"name": "java"}, {"name": "cli"}],
+            "metadata": {"author": "test-user", "category": "docs"}
+          }""";
       Files.writeString(payloadFile, content);
 
       registerTemplate(tempDir,
@@ -326,32 +333,18 @@ public class EventCommandIT extends CliBaseIT {
       assertEventsPublished(1);
 
       JsonNode data = getEventData(result);
-      assertThat(data.get("content").asText()).isEqualTo(content);
-      assertThat(data.get("type").asText()).isEqualTo("data/page");
-    }
-
-    @Test
-    void shouldSubstituteFileRawPayloadPlaceholder(@TempDir Path tempDir) throws Exception {
-      Path payloadFile = tempDir.resolve("payload.json");
-      String content = "{\"title\":\"Hello World\"}";
-      Files.writeString(payloadFile, content);
-
-      registerTemplate(tempDir,
-          """
-              {"content": "file-raw://${payloadPath}", "type": "data/page"}""");
-
-      ProcessResult result = exec(
-          "publish", "event",
-          CUSTOM_TEMPLATE_TYPE,
-          payloadFile.toString(),
-          "--output", "json"
-      );
-
-      result.assertSuccess();
-      assertEventsPublished(1);
-
-      JsonNode data = getEventData(result);
-      assertThat(data.get("content").asText()).isEqualTo(content);
+      JsonNode jsonContent = data.get("content");
+      assertThat(jsonContent.isObject()).isTrue();
+      assertThat(jsonContent.get("title").asText()).isEqualTo("Hello World");
+      assertThat(jsonContent.get("version").asInt()).isEqualTo(3);
+      assertThat(jsonContent.get("published").asBoolean()).isTrue();
+      assertThat(jsonContent.get("tags").isArray()).isTrue();
+      assertThat(jsonContent.get("tags")).hasSize(2);
+      assertThat(jsonContent.get("tags").get(0).get("name").asText()).isEqualTo("java");
+      assertThat(jsonContent.get("tags").get(1).get("name").asText()).isEqualTo("cli");
+      assertThat(jsonContent.get("metadata").isObject()).isTrue();
+      assertThat(jsonContent.get("metadata").get("author").asText()).isEqualTo("test-user");
+      assertThat(jsonContent.get("metadata").get("category").asText()).isEqualTo("docs");
       assertThat(data.get("type").asText()).isEqualTo("data/page");
     }
 
