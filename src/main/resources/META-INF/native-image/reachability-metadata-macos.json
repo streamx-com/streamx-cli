@@ -1926,6 +1926,54 @@
       ]
     },
     {
+      "type": "com.streamx.cli.commands.completion.BashCompletionCommand",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.completion.CompletionCommand",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.completion.CompletionCommandIT",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldGenerateBashCompletionScript",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldGenerateZshCompletionScript",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldPrintHelpWithSubcommands",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.completion.ZshCompletionCommand",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "com.streamx.cli.commands.local.LocalCommand",
       "methods": [
         {
@@ -7804,6 +7852,14 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
           ]
         },
         {
@@ -16692,6 +16748,9 @@
     },
     {
       "glob": "com/streamx/cli/commands/StreamxCommandIT.class"
+    },
+    {
+      "glob": "com/streamx/cli/commands/completion/CompletionCommandIT.class"
     },
     {
       "glob": "com/streamx/cli/commands/local/run/RunCommandIT.class"

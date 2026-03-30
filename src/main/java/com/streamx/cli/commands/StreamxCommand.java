@@ -1,5 +1,6 @@
 package com.streamx.cli.commands;
 
+import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
@@ -13,7 +14,8 @@ import picocli.CommandLine;
     subcommands = {
         LocalCommand.class,
         SettingsCommand.class,
-        PublishCommand.class
+        PublishCommand.class,
+        CompletionCommand.class
     },
     versionProvider = VersionProvider.class
 )
