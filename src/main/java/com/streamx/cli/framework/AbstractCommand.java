@@ -22,6 +22,7 @@ import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 
 /**
@@ -39,17 +40,28 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     applyHiddenOptions();
 
     spec.usageMessage().sortOptions(false);
+    reorderSections();
   }
 
-  @CommandLine.Option(
-      names = {CommonOption.STREAMX_HOME_SHORT, CommonOption.STREAMX_HOME_LONG},
-      description = "Path to the StreamX home directory."
-          + " Allows switching between multiple StreamX environments."
-          + " Defaults to ~/.streamx."
-          + " Can also be set via the STREAMX_HOME environment variable."
-          + " This flag takes priority over the environment variable"
-  )
-  public String streamxHome;
+  private void reorderSections() {
+    List<String> keys = new java.util.ArrayList<>(
+        spec.usageMessage().sectionKeys()
+    );
+    int optIdx = keys.indexOf(UsageMessageSpec.SECTION_KEY_OPTION_LIST);
+    int cmdIdx = keys.indexOf(UsageMessageSpec.SECTION_KEY_COMMAND_LIST);
+    if (optIdx >= 0 && cmdIdx >= 0 && optIdx < cmdIdx) {
+      keys.remove(cmdIdx);
+      keys.add(optIdx, UsageMessageSpec.SECTION_KEY_COMMAND_LIST);
+      int headIdx = keys.indexOf(
+          UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING
+      );
+      if (headIdx >= 0) {
+        keys.remove(headIdx);
+        keys.add(optIdx, UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING);
+      }
+      spec.usageMessage().sectionKeys(keys);
+    }
+  }
 
   @CommandLine.Option(
       names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
@@ -152,8 +164,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   public int execute() {
-    if (streamxHome != null) {
-      StreamxHome.setStreamxHomeCliArg(streamxHome);
+    if (helpOptions.streamxHome != null) {
+      StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
     }
 
     int exitCode = 0;

@@ -83,8 +83,7 @@ class EventTemplateLoader {
 
       Path path = Paths.get(pathAsString);
       if (!path.isAbsolute()) {
-        Path configDir = Paths.get(url.toURI()).getParent();
-        path = configDir.resolve(path);
+        path = StreamxHome.getStreamxHome().resolve(path);
       }
 
       if (Files.exists(path) && Files.isRegularFile(path)) {

@@ -3140,6 +3140,10 @@
       "type": "com.streamx.cli.config.StreamxHome",
       "methods": [
         {
+          "name": "getConfigPath",
+          "parameterTypes": []
+        },
+        {
           "name": "getConfigUrl",
           "parameterTypes": []
         },
@@ -3150,6 +3154,39 @@
         {
           "name": "getStreamxHomeEnv",
           "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.config.StreamxHomeIT",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldReadFromCustomHome",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldUseShortAlias",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldUseStreamxHomeCliArgOverDefault",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldUseStreamxHomeCliArgOverEnv",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
         }
       ]
     },
@@ -3198,6 +3235,9 @@
         },
         {
           "name": "spec"
+        },
+        {
+          "name": "streamxHome"
         },
         {
           "name": "verbose"
@@ -3352,6 +3392,9 @@
       "fields": [
         {
           "name": "help"
+        },
+        {
+          "name": "streamxHome"
         },
         {
           "name": "version"
@@ -7910,6 +7953,14 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
         }
       ]
     },
@@ -8092,6 +8143,17 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy27",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy28",
       "methods": [
         {
           "name": "<init>",
@@ -8809,6 +8871,17 @@
       ]
     },
     {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy78",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy8",
       "methods": [
         {
@@ -9507,6 +9580,17 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy74",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy75",
       "methods": [
         {
           "name": "<init>",
@@ -13581,6 +13665,10 @@
         {
           "name": "getParameterCount",
           "parameterTypes": []
+        },
+        {
+          "name": "getParameters",
+          "parameterTypes": []
         }
       ]
     },
@@ -13591,7 +13679,21 @@
       "type": "java.lang.reflect.Method"
     },
     {
-      "type": "java.lang.reflect.Parameter"
+      "type": "java.lang.reflect.Parameter",
+      "methods": [
+        {
+          "name": "getModifiers",
+          "parameterTypes": []
+        },
+        {
+          "name": "getName",
+          "parameterTypes": []
+        },
+        {
+          "name": "isNamePresent",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "java.lang.reflect.RecordComponent",
@@ -17058,6 +17160,9 @@
     },
     {
       "glob": "com/streamx/cli/config/StreamxHome.class"
+    },
+    {
+      "glob": "com/streamx/cli/config/StreamxHomeIT.class"
     },
     {
       "glob": "com/streamx/cli/framework/CliException.class"
