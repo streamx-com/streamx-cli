@@ -36,7 +36,7 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Path to directory containing a .eventtemplate file (absolute or relative)"
+      description = "Path to directory tree with .eventtemplate files"
   )
   public String path;
 
@@ -81,11 +81,6 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
   public CommandResult<EventsCommandResult> runCommand() {
     Path rootPath = Paths.get(path).toAbsolutePath().normalize();
 
-    Path rootTemplateFile = rootPath.resolve(EVENTTEMPLATE_FILE);
-    if (!Files.exists(rootTemplateFile)) {
-      throw new CliException(msg.noEventTemplateInsideDirectory(rootPath.toString()));
-    }
-
     if (this.verbose) {
       System.err.println(msg.resolvingStreamxClientConfig());
     }
@@ -97,26 +92,34 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
       System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
 
-    JsonNode rootTemplate = TemplateLoader.load(rootTemplateFile, rootPath);
-    String rootTemplatePath = rootTemplateFile.toString();
-    String appliedPatch = null;
-    String patchPath = null;
+    Path rootTemplateFile = rootPath.resolve(EVENTTEMPLATE_FILE);
+    TemplateContext rootContext = null;
 
-    if (patchName != null) {
-      rootTemplate = TemplateLoader.applyPatch(
-          rootPath, rootTemplate, patchName,
-          () -> confirmContinueWithoutPatch(rootPath, patchName));
-      if (rootTemplate == null) {
+    if (Files.exists(rootTemplateFile)) {
+      JsonNode rootTemplate = TemplateLoader.load(rootTemplateFile, rootPath);
+      String rootTemplatePath = rootTemplateFile.toString();
+      String appliedPatch = null;
+      String patchPath = null;
+
+      if (patchName != null) {
+        rootTemplate = TemplateLoader.applyPatch(
+            rootPath, rootTemplate, patchName,
+            () -> confirmContinueWithoutPatch(rootPath, patchName));
+        if (rootTemplate == null) {
+          return prepareResult();
+        }
+        appliedPatch = patchName;
+
+        Path patchFile = rootPath.resolve("." + patchName + EVENTTEMPLATE_FILE);
+        patchPath = Files.exists(patchFile) ? patchFile.toString() : null;
+      }
+
+      rootContext = new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch, patchPath);
+    } else if (patchName != null) {
+      if (!confirmContinueWithoutPatch(rootPath, patchName)) {
         return prepareResult();
       }
-      appliedPatch = patchName;
-
-      Path patchFile = rootPath.resolve("." + patchName + EVENTTEMPLATE_FILE);
-      patchPath = Files.exists(patchFile) ? patchFile.toString() : null;
     }
-
-    TemplateContext rootContext =
-        new TemplateContext(rootTemplate, rootTemplatePath, appliedPatch, patchPath);
 
     DebugDirectoryWriter debugDirectoryWriter = null;
     if (dryRun || debug) {
@@ -153,7 +156,9 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
       } catch (AbortStreamException e) {
         return prepareResult();
       } catch (Exception e) {
-        tracker.recordFailure("''", "''", rootTemplatePath, appliedPatch, e.getMessage());
+        String templatePath = rootContext != null ? rootContext.templatePath() : null;
+        String appliedPatch = rootContext != null ? rootContext.appliedPatch() : null;
+        tracker.recordFailure("''", "''", templatePath, appliedPatch, e.getMessage());
         System.err.println(e.getMessage());
         if (!continueOnError) {
           return prepareResult();

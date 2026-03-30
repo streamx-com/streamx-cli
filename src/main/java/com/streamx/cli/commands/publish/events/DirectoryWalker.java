@@ -86,8 +86,10 @@ class DirectoryWalker {
       throw new CliException(msg.unableToPublishStream(dir.toString()), e);
     }
 
-    for (Path payloadFile : payloadFiles) {
-      processPayloadFile(payloadFile, rootPath, ctx);
+    if (ctx != null) {
+      for (Path payloadFile : payloadFiles) {
+        processPayloadFile(payloadFile, rootPath, ctx);
+      }
     }
 
     for (Path subDir : subDirs) {

@@ -54,12 +54,15 @@ public class EventsCommandIT extends CliBaseIT {
   private static final String INVALID_TEMPLATE = "{ this is not valid template !!";
 
   static Path rootDir;
+  static Path noRootTemplateDir;
 
   @BeforeAll
   static void resolveStructure() throws URISyntaxException {
     MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
     rootDir = Paths.get(
         EventsCommandIT.class.getResource("/commands/publish/events/test").toURI());
+    noRootTemplateDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/no-root-template").toURI());
   }
 
   @AfterAll
@@ -121,15 +124,38 @@ public class EventsCommandIT extends CliBaseIT {
   class Validation {
 
     @Test
-    void shouldFailWhenRootTemplateIsMissing(@TempDir Path tempDir) throws Exception {
+    void shouldSucceedWithZeroEventsWhenNoTemplateFoundAnywhere(@TempDir Path tempDir)
+        throws Exception {
       TestDirectoryGenerator.root()
           .withFiles(2)
           .build(tempDir);
 
       ProcessResult result = exec("publish", "events", tempDir.toString());
 
-      result.assertExitCode(1);
-      assertThat(result.stderr()).contains(msg.noEventTemplateInsideDirectory(tempDir.toString()));
+      result.assertSuccess();
+      assertEventsPublished(0);
+    }
+
+    @Test
+    void shouldAbortWhenPatchSpecifiedButNoRootTemplateAndUserDeclines() throws Exception {
+      ProcessResult result = execWithStdin(
+          "n\n",
+          "publish", "events", noRootTemplateDir.toString(), "--patch", "good");
+
+      result.assertExitCode(0);
+      assertThat(result.stderr())
+          .contains("good not found inside " + noRootTemplateDir);
+      assertEventsPublished(0);
+    }
+
+    @Test
+    void shouldContinueWhenPatchSpecifiedButNoRootTemplateAndUserConfirms() throws Exception {
+      ProcessResult result = execWithStdin(
+          "y\n",
+          "publish", "events", noRootTemplateDir.toString(), "--patch", "good");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
     }
 
     @Test
@@ -242,6 +268,17 @@ public class EventsCommandIT extends CliBaseIT {
           Path.of("level1", "level2", "payload-0.json").toString(),
           Path.of("level1", "level2", "level3", "payload-0.json").toString()
       );
+    }
+
+    @Test
+    void shouldTraverseTreeAndPublishFromSubdirsWithTemplateWhenRootHasNoTemplate()
+        throws Exception {
+
+      ProcessResult result = exec("publish", "events", noRootTemplateDir.toString());
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+      assertThat(result.stdout()).contains(msg.eventsPublished(3));
     }
   }
 
