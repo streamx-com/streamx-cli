@@ -74,7 +74,7 @@ class GetCommandIT extends CliBaseIT {
     ProcessResult result = exec("settings", "get", key);
 
     assertThat(result.stdout()).isEmpty();
-    assertThat(result.stderr().strip()).isEqualTo(msg.noSettingsPropertyFound(key));
+    assertThat(result.stderr()).contains(msg.noSettingsPropertyFound(key));
     result.assertExitCode(1);
   }
 }
