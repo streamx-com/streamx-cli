@@ -24,7 +24,7 @@ class {{brewFormulaName}} < Formula
 
   def install
     libexec.install Dir["*"]
-    bin.write_env_script libexec/"bin/{{distributionExecutableUnix}}",
+    (bin/"{{distributionExecutableName}}").write_env_script libexec/"bin/{{distributionExecutableUnix}}",
       Language::Java.overridable_java_home_env("21")
   end
 
