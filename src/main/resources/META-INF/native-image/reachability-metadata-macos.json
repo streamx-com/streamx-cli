@@ -7931,6 +7931,14 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
         }
       ]
     },
@@ -8159,6 +8167,13 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -16340,6 +16355,9 @@
     },
     {
       "type": "picocli.CommandLine$IFactory"
+    },
+    {
+      "type": "picocli.CommandLine$NoVersionProvider"
     },
     {
       "type": "picocli.CommandLine$ParseResult"

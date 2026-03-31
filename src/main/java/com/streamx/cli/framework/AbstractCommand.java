@@ -3,6 +3,7 @@ package com.streamx.cli.framework;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.util.VersionProvider;
 import io.quarkus.runtime.Quarkus;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,6 +31,7 @@ import picocli.CommandLine.Model.UsageMessageSpec;
  *
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
  */
+@CommandLine.Command(versionProvider = VersionProvider.class)
 public abstract class AbstractCommand<ResultT> implements Runnable {
   @CommandLine.Spec
   public CommandSpec spec;
