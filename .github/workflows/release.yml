@@ -179,7 +179,7 @@ jobs:
             target/jreleaser/trace.log
             target/jreleaser/output.properties
 
-      - name: Create versioned Homebrew formula
+      - name: Create versioned Homebrew formulas
         env:
           HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           BREW_TAP: ${{ steps.release-type.outputs.brew_tap }}
@@ -187,25 +187,41 @@ jobs:
         run: |
           git clone https://x-access-token:${HOMEBREW_GITHUB_TOKEN}@github.com/streamx-com/${BREW_TAP}.git
           cd ${BREW_TAP}/Formula
-          
-          FILENAME="streamx@${RELEASE_TAG}.rb"
-          
-          if [ -f "$FILENAME" ]; then
-            echo "Versioned formula already exists, skipping."
-            exit 0
-          fi
-          
-          echo "Copy the freshly-pushed unversioned formula"
-          cp streamx.rb "$FILENAME"
-          
+
           CLASS_SUFFIX=$(echo "$RELEASE_TAG" | sed -E 's/[^a-zA-Z0-9]+([a-zA-Z])/\U\1/g; s/[^a-zA-Z0-9]//g')
-          sed -i "s/class Streamx/class StreamxAT${CLASS_SUFFIX}/" "$FILENAME"
-          
-          git config user.name "streamx-cli-release-bot[bot]"
-          git config user.email "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
-          git add "$FILENAME"
-          git commit -m "Add versioned formula for ${RELEASE_TAG}"
-          git push
+
+          for BASE_FORMULA in streamx streamx-jvm; do
+            FILENAME="${BASE_FORMULA}@${RELEASE_TAG}.rb"
+
+            if [ -f "$FILENAME" ]; then
+              echo "Versioned formula ${FILENAME} already exists, skipping."
+              continue
+            fi
+
+            if [ ! -f "${BASE_FORMULA}.rb" ]; then
+              echo "Base formula ${BASE_FORMULA}.rb not found, skipping."
+              continue
+            fi
+
+            echo "Creating versioned formula ${FILENAME}"
+            cp "${BASE_FORMULA}.rb" "$FILENAME"
+
+            # Derive the class name from the base formula name
+            # streamx -> Streamx, streamx-jvm -> StreamxJvm
+            BASE_CLASS=$(echo "$BASE_FORMULA" | sed -E 's/(^|-)([a-z])/\U\2/g')
+            sed -i "s/class ${BASE_CLASS}/class ${BASE_CLASS}AT${CLASS_SUFFIX}/" "$FILENAME"
+
+            git add "$FILENAME"
+          done
+
+          if git diff --cached --quiet; then
+            echo "No new versioned formulas to commit."
+          else
+            git config user.name "streamx-cli-release-bot[bot]"
+            git config user.email "264353404+streamx-cli-release-bot[bot]@users.noreply.github.com"
+            git commit -m "Add versioned formulas for ${RELEASE_TAG}"
+            git push
+          fi
 
   release-test:
     needs: [prepare-release, build, release]
@@ -248,6 +264,18 @@ jobs:
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${RELEASE_TAG}
           streamx --version | grep -q "${RELEASE_TAG}"
           brew uninstall streamx@${RELEASE_TAG}
+
+      - name: Test Homebrew JVM install
+        run: |
+          echo "Test latest JVM version"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx-jvm
+          streamx --version | grep -q "${RELEASE_TAG}"
+          brew uninstall streamx-jvm
+
+          echo "Test versioned JVM formula"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx-jvm@${RELEASE_TAG}
+          streamx --version | grep -q "${RELEASE_TAG}"
+          brew uninstall streamx-jvm@${RELEASE_TAG}
 
       - name: Test native binary from GitHub release
         env:

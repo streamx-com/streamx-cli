@@ -9,7 +9,7 @@ public class HelpOptions {
       description = "Show this help message and exit"
   )
   boolean help;
-  
+
   @CommandLine.Option(
       names = {CommonOption.STREAMX_HOME_SHORT, CommonOption.STREAMX_HOME_LONG},
       description = "StreamX home path [default: ~/.streamx, env: STREAMX_HOME]"

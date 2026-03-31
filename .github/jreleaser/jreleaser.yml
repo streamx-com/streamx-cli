@@ -51,8 +51,11 @@ distributions:
     type: JAVA_BINARY
     executable:
       name: streamx
+    java:
+      version: '21'
     brew:
-      active: NEVER
+      active: ALWAYS
+      formulaName: streamx-jvm
 
 release:
   github:
