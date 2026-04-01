@@ -2412,6 +2412,10 @@
           ]
         },
         {
+          "name": "shouldResolveRelativePathWithoutLevelSameAsLevelZero",
+          "parameterTypes": []
+        },
+        {
           "name": "shouldTraverseTreeAndPublishFromSubdirsWithTemplateWhenRootHasNoTemplate",
           "parameterTypes": []
         }
