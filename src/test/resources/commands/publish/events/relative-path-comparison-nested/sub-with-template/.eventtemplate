@@ -1,0 +1,10 @@
+{
+  "specversion": "1.0",
+  "id": "test-id",
+  "source": "streamx-test",
+  "type": "com.streamx.blueprints.data.published.v1",
+  "datacontenttype": "application/json",
+  "subject": "${relativePath}",
+  "time": "2026-01-01T00:00:00.000000Z",
+  "data": { "content": "${relativePath:0}" }
+}

@@ -31,18 +31,18 @@ public class EventTemplateProcessor {
 
   private final String eventTemplate;
   private final Path eventPayloadPath;
-  private final Path basePath;
+  private final Path templateFilePath;
   private final String subject;
 
   public EventTemplateProcessor(String eventTemplate, Path eventPayloadPath, String subject) {
-    this(eventTemplate, eventPayloadPath, eventPayloadPath.getParent(), subject);
+    this(eventTemplate, eventPayloadPath, eventPayloadPath, subject);
   }
 
-  public EventTemplateProcessor(String eventTemplate, Path eventPayloadPath, Path basePath,
-      String subject) {
+  public EventTemplateProcessor(String eventTemplate, Path eventPayloadPath,
+      Path templateFilePath, String subject) {
     this.eventTemplate = eventTemplate;
     this.eventPayloadPath = eventPayloadPath;
-    this.basePath = basePath;
+    this.templateFilePath = templateFilePath;
     this.subject = subject;
   }
 
@@ -102,21 +102,8 @@ public class EventTemplateProcessor {
     while (matcher.find()) {
       found = true;
       String levelStr = matcher.group(1);
-      Path resolved;
-      if (levelStr != null) {
-        int level = Integer.parseInt(levelStr);
-        Path resolveFrom = basePath;
-        for (int i = 0; i < level; i++) {
-          resolveFrom = resolveFrom.getParent();
-          if (resolveFrom == null) {
-            throw new CliException(
-                msg.pathDoesNotHaveParentLevels(basePath.toString(), level));
-          }
-        }
-        resolved = resolveFrom.relativize(eventPayloadPath);
-      } else {
-        resolved = basePath.relativize(eventPayloadPath);
-      }
+      int level = levelStr != null ? Integer.parseInt(levelStr) : 0;
+      Path resolved = FileUtils.getNthParent(templateFilePath, level).relativize(eventPayloadPath);
       matcher.appendReplacement(result, Matcher.quoteReplacement(resolved.toString()));
     }
     if (found) {

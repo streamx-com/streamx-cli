@@ -57,6 +57,8 @@ public class EventsCommandIT extends CliBaseIT {
   static Path noRootTemplateDir;
   static Path relativePathLevelZeroDir;
   static Path relativePathLevelOneDir;
+  static Path relativePathComparisonDir;
+  static Path relativePathComparisonNestedDir;
 
   @BeforeAll
   static void resolveStructure() throws URISyntaxException {
@@ -71,6 +73,12 @@ public class EventsCommandIT extends CliBaseIT {
     relativePathLevelOneDir = Paths.get(
         EventsCommandIT.class.getResource("/commands/publish/events/relative-path-level-one")
             .toURI());
+    relativePathComparisonDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/relative-path-comparison")
+            .toURI());
+    relativePathComparisonNestedDir = Paths.get(
+        EventsCommandIT.class.getResource(
+            "/commands/publish/events/relative-path-comparison-nested").toURI());
   }
 
   @AfterAll
@@ -214,9 +222,9 @@ public class EventsCommandIT extends CliBaseIT {
       assertThat(subjects).containsExactlyInAnyOrder(
           "entry.json",
           Path.of("sub", "entry.json").toString(),
-          Path.of("sub-with-template", "entry.json").toString(),
-          Path.of("sub-with-template", "nested", "entry.json").toString(),
-          Path.of("sub-with-template", "nested", "deeper", "entry.json").toString()
+          "entry.json",
+          Path.of("nested", "entry.json").toString(),
+          Path.of("nested", "deeper", "entry.json").toString()
       );
     }
 
@@ -284,6 +292,71 @@ public class EventsCommandIT extends CliBaseIT {
           Path.of("relative-path-level-one", "entry.json").toString(),
           Path.of("relative-path-level-one", "sub", "nested.json").toString()
       );
+    }
+
+    @Test
+    void shouldResolveRelativePathWithoutLevelSameAsLevelZero() throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathComparisonDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+
+      Path outputDir = parseOutputDir(result);
+
+      // Template uses ${relativePath} in subject and ${relativePath:0} in data.content.
+      // They must produce identical values for every event.
+      try (var stream = java.nio.file.Files.walk(outputDir)) {
+        stream
+            .filter(p -> p.getFileName().toString().endsWith(".json"))
+            .filter(p -> !p.getFileName().toString().equals(TEMPLATE_OUTPUT_FILE))
+            .sorted()
+            .forEach(p -> {
+              try {
+                JsonNode event = MAPPER.readTree(p.toFile()).path("event");
+                String fromSubject = event.path("subject").asText();
+                String fromData = event.path("data").path("content").asText();
+                assertThat(fromSubject)
+                    .as("${relativePath} and ${relativePath:0} must match for " + p.getFileName())
+                    .isEqualTo(fromData);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            });
+      }
+    }
+
+    @Test
+    void shouldResolveRelativePathWithoutLevelSameAsLevelZeroWithNestedTemplate()
+        throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathComparisonNestedDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+
+      Path outputDir = parseOutputDir(result);
+
+      // Template uses ${relativePath} in subject and ${relativePath:0} in data.content.
+      // Even with nested .eventtemplate overrides, they must produce identical values.
+      try (var stream = java.nio.file.Files.walk(outputDir)) {
+        stream
+            .filter(p -> p.getFileName().toString().endsWith(".json"))
+            .filter(p -> !p.getFileName().toString().equals(TEMPLATE_OUTPUT_FILE))
+            .sorted()
+            .forEach(p -> {
+              try {
+                JsonNode event = MAPPER.readTree(p.toFile()).path("event");
+                String fromSubject = event.path("subject").asText();
+                String fromData = event.path("data").path("content").asText();
+                assertThat(fromSubject)
+                    .as("${relativePath} and ${relativePath:0} must match for " + p.getFileName())
+                    .isEqualTo(fromData);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            });
+      }
     }
 
     @Test

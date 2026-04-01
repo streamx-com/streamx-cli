@@ -18,8 +18,9 @@ public class EventTemplatePlaceholders {
 
   // Placeholder for the relative path of the event payload file.
   // The syntax ${relativePath:n} is supported, where 'n' specifies the number of parent directories
-  // to traverse from the event payload file's location. For example, ${relativePath:3} will resolve
-  // to the path of the 3rd parent directory.
+  // to include relative to the .eventtemplate file's location. For example, ${relativePath:0}
+  // resolves to the path relative to the template's directory, and ${relativePath:1} includes
+  // one additional parent directory above the template's location.
   public static final String RELATIVE_PATH = "${relativePath}";
 
   // Placeholder for the subject of the event
