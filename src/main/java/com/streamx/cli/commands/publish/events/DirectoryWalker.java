@@ -109,7 +109,8 @@ class DirectoryWalker {
     CloudEvent cloudEvent;
     try {
       cloudEvent = new EventTemplateProcessor(
-          ctx.template().toString(), payloadPath, rootPath, null).toCloudEvent();
+          ctx.template().toString(), payloadPath, rootPath,
+          Path.of(ctx.templatePath()), null).toCloudEvent();
     } catch (Exception e) {
       String errorMessage = msg.eventPublishFailed(
           String.valueOf(eventNumber), "''", payloadPath.toString(), e.getMessage());
