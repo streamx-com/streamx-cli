@@ -55,6 +55,8 @@ public class EventsCommandIT extends CliBaseIT {
 
   static Path rootDir;
   static Path noRootTemplateDir;
+  static Path relativePathLevelZeroDir;
+  static Path relativePathLevelOneDir;
 
   @BeforeAll
   static void resolveStructure() throws URISyntaxException {
@@ -63,6 +65,12 @@ public class EventsCommandIT extends CliBaseIT {
         EventsCommandIT.class.getResource("/commands/publish/events/test").toURI());
     noRootTemplateDir = Paths.get(
         EventsCommandIT.class.getResource("/commands/publish/events/no-root-template").toURI());
+    relativePathLevelZeroDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/relative-path-level-zero")
+            .toURI());
+    relativePathLevelOneDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/relative-path-level-one")
+            .toURI());
   }
 
   @AfterAll
@@ -241,6 +249,41 @@ public class EventsCommandIT extends CliBaseIT {
       JsonNode payload = readJson(outputDir.resolve("entry.json.json"));
       assertThat(payload.path("source").asText())
           .isEqualTo(tempDir.resolve("entry.json").toString());
+    }
+
+    @Test
+    void shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel() throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathLevelZeroDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+
+      Path outputDir = parseOutputDir(result);
+      List<String> subjects = collectEventField(outputDir, "subject");
+
+      assertThat(subjects).containsExactlyInAnyOrder(
+          "entry.json",
+          Path.of("sub", "nested.json").toString(),
+          Path.of("sub", "deep", "deep.json").toString()
+      );
+    }
+
+    @Test
+    void shouldResolveRelativePathWithLevelIncludingParentDirectories() throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathLevelOneDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(2);
+
+      Path outputDir = parseOutputDir(result);
+      List<String> subjects = collectEventField(outputDir, "subject");
+
+      assertThat(subjects).containsExactlyInAnyOrder(
+          Path.of("relative-path-level-one", "entry.json").toString(),
+          Path.of("relative-path-level-one", "sub", "nested.json").toString()
+      );
     }
 
     @Test

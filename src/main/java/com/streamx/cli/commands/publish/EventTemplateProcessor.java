@@ -105,7 +105,15 @@ public class EventTemplateProcessor {
       Path resolved;
       if (levelStr != null) {
         int level = Integer.parseInt(levelStr);
-        resolved = FileUtils.getNthParent(eventPayloadPath, level).relativize(eventPayloadPath);
+        Path resolveFrom = basePath;
+        for (int i = 0; i < level; i++) {
+          resolveFrom = resolveFrom.getParent();
+          if (resolveFrom == null) {
+            throw new CliException(
+                msg.pathDoesNotHaveParentLevels(basePath.toString(), level));
+          }
+        }
+        resolved = resolveFrom.relativize(eventPayloadPath);
       } else {
         resolved = basePath.relativize(eventPayloadPath);
       }

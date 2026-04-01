@@ -2392,6 +2392,26 @@
           "parameterTypes": []
         },
         {
+          "name": "shouldResolveRelativePathWithLevelIncludingParentDirectories",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldResolveRelativePathWithLevelIncludingParentDirectories",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
           "name": "shouldTraverseTreeAndPublishFromSubdirsWithTemplateWhenRootHasNoTemplate",
           "parameterTypes": []
         }
@@ -17154,6 +17174,9 @@
     },
     {
       "glob": "com/streamx/cli/commands/publish/event/EventTemplateLoaderIT.class"
+    },
+    {
+      "glob": "com/streamx/cli/commands/publish/events/EventsCommandIT$BasicPublishing.class"
     },
     {
       "glob": "com/streamx/cli/commands/publish/events/EventsCommandIT.class"
