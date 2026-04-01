@@ -7,10 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.MeshAssertions;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,14 +20,31 @@ import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(DefaultMeshTestProfile.class)
 public class EventCommandIT extends CliBaseIT {
+
+  @BeforeAll
+  static void startMesh() {
+    MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
+
+  @BeforeEach
+  void resetBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
+  }
 
   @Test
   void shouldPublishEventWithKnownEventTypes(@TempDir Path tempDir) throws Exception {
@@ -60,7 +77,6 @@ public class EventCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
-  @TestProfile(DefaultMeshTestProfile.class)
   class InvalidTemplate {
 
     @Test
@@ -85,7 +101,6 @@ public class EventCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
-  @TestProfile(DefaultMeshTestProfile.class)
   class InvalidPayload {
 
     @Test
@@ -141,7 +156,6 @@ public class EventCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
-  @TestProfile(DefaultMeshTestProfile.class)
   class VerboseOutput {
 
     @Test
@@ -167,7 +181,6 @@ public class EventCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
-  @TestProfile(DefaultMeshTestProfile.class)
   class PlaceholderSubstitution {
 
     private static final String CUSTOM_TEMPLATE_TYPE = "custom.template";
@@ -282,13 +295,56 @@ public class EventCommandIT extends CliBaseIT {
       assertThat(data.get("path").asText()).isEqualTo(payloadFile.toString());
 
       // ${relativePath}
-      assertThat(data.get("relativePath").asText()).isEqualTo(subDir.toString());
+      assertThat(data.get("relativePath").asText()).isEqualTo("payload.html");
 
       // ${relativePath:2}
       assertThat(data.get("relativePathWithLevel").asText())
-          .isEqualTo(tempDir.resolve("a").toString());
+          .isEqualTo(Path.of("b", "c", "payload.html").toString());
 
       // non-placeholder value preserved
+      assertThat(data.get("type").asText()).isEqualTo("data/page");
+    }
+
+    @Test
+    void shouldSubstituteJsonPayloadPlaceholder(@TempDir Path tempDir) throws Exception {
+      Path payloadFile = tempDir.resolve("payload.json");
+      String content = """
+          {
+            "title": "Hello World",
+            "version": 3,
+            "published": true,
+            "tags": [{"name": "java"}, {"name": "cli"}],
+            "metadata": {"author": "test-user", "category": "docs"}
+          }""";
+      Files.writeString(payloadFile, content);
+
+      registerTemplate(tempDir,
+          """
+              {"content": "json://${payloadPath}", "type": "data/page"}""");
+
+      ProcessResult result = exec(
+          "publish", "event",
+          CUSTOM_TEMPLATE_TYPE,
+          payloadFile.toString(),
+          "--output", "json"
+      );
+
+      result.assertSuccess();
+      assertEventsPublished(1);
+
+      JsonNode data = getEventData(result);
+      JsonNode jsonContent = data.get("content");
+      assertThat(jsonContent.isObject()).isTrue();
+      assertThat(jsonContent.get("title").asText()).isEqualTo("Hello World");
+      assertThat(jsonContent.get("version").asInt()).isEqualTo(3);
+      assertThat(jsonContent.get("published").asBoolean()).isTrue();
+      assertThat(jsonContent.get("tags").isArray()).isTrue();
+      assertThat(jsonContent.get("tags")).hasSize(2);
+      assertThat(jsonContent.get("tags").get(0).get("name").asText()).isEqualTo("java");
+      assertThat(jsonContent.get("tags").get(1).get("name").asText()).isEqualTo("cli");
+      assertThat(jsonContent.get("metadata").isObject()).isTrue();
+      assertThat(jsonContent.get("metadata").get("author").asText()).isEqualTo("test-user");
+      assertThat(jsonContent.get("metadata").get("category").asText()).isEqualTo("docs");
       assertThat(data.get("type").asText()).isEqualTo("data/page");
     }
 

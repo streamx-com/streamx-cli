@@ -7,13 +7,16 @@ import io.quarkus.arc.ArcContainer;
 import io.quarkus.arc.InjectableInstance;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -27,18 +30,21 @@ public abstract class CliBaseIT {
 
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
+  protected static final String CONFIG_FILE_PATH =
+      "config/application.properties";
+
   @TempDir
   public static Path streamxHome;
 
   private Process process;
+  private final Map<String, String> envVars = new HashMap<>();
 
   private static boolean isNative() {
     return "true".equals(System.getProperty("native.image"));
   }
 
-  @BeforeEach
-  void resetPublishedEventsBaseline() {
-    MeshAssertions.resetPublishedEventsBaseline();
+  protected static Path getConfigPath() {
+    return streamxHome.resolve(CONFIG_FILE_PATH);
   }
 
   @BeforeAll
@@ -49,11 +55,48 @@ public abstract class CliBaseIT {
     }
   }
 
+  /**
+   * Sets a variable that will be passed as a system property in JVM mode
+   * and as a real environment variable in native mode.
+   */
+  protected void setEnv(String key, String value) {
+    if (isNative()) {
+      envVars.put(key, value);
+    } else {
+      System.setProperty(key, value);
+    }
+  }
+
+  /**
+   * Removes a variable previously set via {@link #setEnv}.
+   */
+  protected void clearEnv(String key) {
+    if (isNative()) {
+      envVars.remove(key);
+    } else {
+      System.clearProperty(key);
+    }
+  }
+
+  @BeforeEach
+  void configureIngestionUrlIfMeshActive() throws Exception {
+    if (MeshTestSupport.isMeshActive()) {
+      exec("settings", "set", "streamx.ingestion.url",
+          "http://localhost:" + MeshTestSupport.getProxyPort());
+    }
+  }
+
   @AfterEach
   void cleanupProcess() {
     if (process != null && process.isAlive()) {
       process.destroyForcibly();
     }
+    if (!isNative()) {
+      for (String key : envVars.keySet()) {
+        System.clearProperty(key);
+      }
+    }
+    envVars.clear();
   }
 
   protected ProcessResult execWithStdin(InputStream stdin, String... args) throws Exception {
@@ -164,6 +207,7 @@ public abstract class CliBaseIT {
     ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(false);
     pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+    pb.environment().putAll(envVars);
     process = pb.start();
 
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
@@ -261,20 +305,50 @@ public abstract class CliBaseIT {
     PrintStream originalOut = System.out;
     PrintStream originalErr = System.err;
 
-    PrintStream teeOut = new PrintStream(out, true);
-    PrintStream teeErr = new PrintStream(err, true);
+    PrintStream teeOut = new PrintStream(new TeeOutputStream(out, originalOut), true);
+    PrintStream teeErr = new PrintStream(new TeeOutputStream(err, originalErr), true);
 
     Thread thread = Thread.ofVirtual().start(() -> {
       System.setOut(teeOut);
       System.setErr(teeErr);
+      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
       try {
         exitCode.set(createCommandLine().execute(args));
       } finally {
+        System.clearProperty("STREAMX_HOME");
         System.setOut(originalOut);
         System.setErr(originalErr);
       }
     });
 
     return new AsyncProcessHandle(thread, out, err, exitCode);
+  }
+
+  private static class TeeOutputStream extends OutputStream {
+    private final OutputStream buffer;
+    private final OutputStream console;
+
+    TeeOutputStream(OutputStream buffer, OutputStream console) {
+      this.buffer = buffer;
+      this.console = console;
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+      buffer.write(b);
+      console.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+      buffer.write(b, off, len);
+      console.write(b, off, len);
+    }
+
+    @Override
+    public void flush() throws IOException {
+      buffer.flush();
+      console.flush();
+    }
   }
 }

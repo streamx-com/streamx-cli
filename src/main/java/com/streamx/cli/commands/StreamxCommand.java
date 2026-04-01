@@ -1,10 +1,10 @@
 package com.streamx.cli.commands;
 
+import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
-import com.streamx.cli.util.VersionProvider;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -13,9 +13,9 @@ import picocli.CommandLine;
     subcommands = {
         LocalCommand.class,
         SettingsCommand.class,
-        PublishCommand.class
-    },
-    versionProvider = VersionProvider.class
+        PublishCommand.class,
+        CompletionCommand.class
+    }
 )
 public class StreamxCommand extends AbstractCommandGroup {
 }

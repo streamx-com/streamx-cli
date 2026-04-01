@@ -39,51 +39,8 @@ jobs:
           ]'
           echo "platforms=$(echo "$PLATFORMS" | jq -c .)" >> "$GITHUB_OUTPUT"
 
-  build-jar:
-    needs: setup
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref || github.ref }}
-      - uses: ./.github/actions/setup-env
-        with:
-          gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
-          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run tests with native-image-agent
-        run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
-
-      - name: Upload Docker logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-${{ github.job }}
-          path: target/docker-logs/
-          if-no-files-found: ignore
-
-      - name: Upload test reports
-        if: always()
-        uses: scacap/action-surefire-report@v1
-        with:
-          check_name: Test report - build-jar
-
-      - name: Upload reachability metadata
-        uses: actions/upload-artifact@v4
-        with:
-          name: reachability-metadata
-          path: src/main/resources/META-INF/native-image/
-
-      - name: Upload runner JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: streamx-runner-jar
-          path: target/*-runner.jar
-
-  build-native:
-    needs: [setup, build-jar]
+  build:
+    needs: [setup]
     strategy:
       fail-fast: false
       matrix:
@@ -97,24 +54,24 @@ jobs:
       - uses: ./.github/actions/setup-env
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
-          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_SNAPSHOT_DEPLOY_SA }}
+          gar_docker_registry: ${{ vars.GAR_DOCKER_REGISTRY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download reachability metadata
-        uses: actions/download-artifact@v4
-        with:
-          name: reachability-metadata
-          path: src/main/resources/META-INF/native-image/
+      - name: Run tests with native-image-agent (Linux only)
+        if: startsWith(matrix.name, 'linux')
+        run: |
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Build native-image executable
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload test reports
         if: always()
         uses: scacap/action-surefire-report@v1
         with:
-          check_name: Test report - build-native ${{ matrix.name }}
+          check_name: Test report - ${{ matrix.name }}
 
       - name: Upload Docker logs
         if: always()
@@ -138,3 +95,11 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: staging/${{ matrix.artifact }}
+
+      - name: Upload runner JAR
+        # We need to upload the jar only once, as it cross-platform
+        if: matrix.name == 'linux-arm64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: streamx-runner-jar
+          path: target/*-runner.jar

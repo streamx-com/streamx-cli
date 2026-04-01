@@ -108,7 +108,7 @@ public class MeshManager {
 
   private CliException getMeshException(Path meshPath, Exception e) {
     String message = msg.unableToReadMeshDefinition(meshPath.toString(), e.getMessage());
-    return new CliException(ExceptionUtils.appendLogSuggestion(message), e);
+    return new CliException(message, e);
   }
 
   public void stop() {

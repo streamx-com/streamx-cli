@@ -22,13 +22,15 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <graalvm.version>25.0.2</graalvm.version>
-    <streamx.version>2.0.31</streamx.version>
+    <streamx.version>2.0.36-native-image-metadata-check-12</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
+    <surefire.forkCount>1</surefire.forkCount>
+    <it.forkCount>1</it.forkCount>
 
     <native.agent.argLine>
-      -agentlib:native-image-agent=config-output-dir=${project.basedir}/src/main/resources/META-INF/native-image
+      -agentlib:native-image-agent=config-merge-dir=${project.basedir}/src/main/resources/META-INF/native-image/fork-${surefire.forkNumber}
     </native.agent.argLine>
   </properties>
 
@@ -344,6 +346,7 @@
         <configuration>
           <tagNameFormat>@{project.version}</tagNameFormat>
           <scmCommentPrefix>[no ci] [maven-release-plugin]</scmCommentPrefix>
+          <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
         </configuration>
       </plugin>
       <plugin>
@@ -376,16 +379,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>src/main/resources/META-INF/native-image</directory>
-              <includes>
-                <include>reachability-metadata.json</include>
-              </includes>
-            </fileset>
-          </filesets>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -404,11 +397,14 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <forkCount>${surefire.forkCount}</forkCount>
+          <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
           <argLine>
+            -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
             --enable-native-access=ALL-UNNAMED
             ${native.agent.argLine}
@@ -427,11 +423,14 @@
           </execution>
         </executions>
         <configuration>
+          <forkCount>${it.forkCount}</forkCount>
+          <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
           <argLine>
+            -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
             ${native.agent.argLine}
           </argLine>
@@ -481,6 +480,37 @@
       </properties>
     </profile>
     <profile>
+      <id>native-image-agent</id>
+      <activation>
+        <file>
+          <exists>${java.home}/bin/native-image</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>merge-native-image-metadata</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>post-integration-test</phase>
+                <configuration>
+                  <executable>${project.basedir}/.github/scripts/merge-native-image-metadata.sh</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>native</id>
       <activation>
         <property>
@@ -512,6 +542,25 @@
                 <native.image>true</native.image>
               </systemPropertyVariables>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-native-image-metadata</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <executable>${project.basedir}/.github/scripts/prepare-native-image-metadata.sh</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

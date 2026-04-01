@@ -20,7 +20,8 @@ public class InterpolationSupportTest {
   @AfterEach
   void cleanup() {
     Set<String> propertiesToClear = Set.of(
-        "this.is.a.property", "prop1", "prop2", "nested", "inner", "whitespace.property");
+        "this.is.a.property", "this.is.another.property", "prop1", "prop2", "nested", "inner",
+        "whitespace.property");
 
     propertiesToClear.forEach(System::clearProperty);
   }
@@ -38,16 +39,14 @@ public class InterpolationSupportTest {
   }
 
   @Test
-  void testExpandWithMultipleConfigSources() {
-    // Setup: Define the environment or system properties
-    System.setProperty("this.is.a.property", "From application.properties ->");
+  void testExpandWithMultipleSources() {
+    System.setProperty("this.is.a.property", "value1");
+    System.setProperty("this.is.another.property", "value2");
 
-    // Valid case
-    String rawValue = "${this.is.a.property} ${streamx.cli.settings.root-dir}";
+    String rawValue = "${this.is.a.property} ${this.is.another.property}";
     String result = interpolationSupport.expand(rawValue);
 
-    assertEquals("From application.properties -> ./target/test-classes/dev.streamx.cli.settings",
-        result);
+    assertEquals("value1 value2", result);
   }
 
   @Test
@@ -75,13 +74,18 @@ public class InterpolationSupportTest {
   }
 
   @Test
-  void testExpandWithMissingProperty() {
-    // Case where property is not defined
-    String rawValue = "${undefined.property}";
+  void testExpandWithMissingEnvVariable() {
+    String rawValue = "${UNDEFINED_ENV_VAR}";
+    String result = interpolationSupport.expand(rawValue);
+    assertEquals("${UNDEFINED_ENV_VAR}", result);
+  }
 
+  @Test
+  void testExpandWithMissingProperty() {
+    String rawValue = "${undefined.property}";
     assertThrows(CliException.class,
         () -> interpolationSupport.expand(rawValue),
-        msg.couldNotExpandValueInExpression("undefined.property", "${undefined.property}")
+        msg.unresolvedProperty("undefined.property", "${undefined.property}")
     );
   }
 

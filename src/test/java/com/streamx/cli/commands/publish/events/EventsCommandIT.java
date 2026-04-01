@@ -8,10 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.MeshAssertions;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,14 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(DefaultMeshTestProfile.class)
 public class EventsCommandIT extends CliBaseIT {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -53,11 +54,33 @@ public class EventsCommandIT extends CliBaseIT {
   private static final String INVALID_TEMPLATE = "{ this is not valid template !!";
 
   static Path rootDir;
+  static Path noRootTemplateDir;
+  static Path relativePathLevelZeroDir;
+  static Path relativePathLevelOneDir;
 
   @BeforeAll
   static void resolveStructure() throws URISyntaxException {
+    MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
     rootDir = Paths.get(
         EventsCommandIT.class.getResource("/commands/publish/events/test").toURI());
+    noRootTemplateDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/no-root-template").toURI());
+    relativePathLevelZeroDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/relative-path-level-zero")
+            .toURI());
+    relativePathLevelOneDir = Paths.get(
+        EventsCommandIT.class.getResource("/commands/publish/events/relative-path-level-one")
+            .toURI());
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
+
+  @BeforeEach
+  void resetBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
   }
 
   private static Path parseOutputDir(ProcessResult result) {
@@ -109,15 +132,38 @@ public class EventsCommandIT extends CliBaseIT {
   class Validation {
 
     @Test
-    void shouldFailWhenRootTemplateIsMissing(@TempDir Path tempDir) throws Exception {
+    void shouldSucceedWithZeroEventsWhenNoTemplateFoundAnywhere(@TempDir Path tempDir)
+        throws Exception {
       TestDirectoryGenerator.root()
           .withFiles(2)
           .build(tempDir);
 
       ProcessResult result = exec("publish", "events", tempDir.toString());
 
-      result.assertExitCode(1);
-      assertThat(result.stderr()).contains(msg.noEventTemplateInsideDirectory(tempDir.toString()));
+      result.assertSuccess();
+      assertEventsPublished(0);
+    }
+
+    @Test
+    void shouldAbortWhenPatchSpecifiedButNoRootTemplateAndUserDeclines() throws Exception {
+      ProcessResult result = execWithStdin(
+          "n\n",
+          "publish", "events", noRootTemplateDir.toString(), "--patch", "good");
+
+      result.assertExitCode(0);
+      assertThat(result.stderr())
+          .contains("good not found inside " + noRootTemplateDir);
+      assertEventsPublished(0);
+    }
+
+    @Test
+    void shouldContinueWhenPatchSpecifiedButNoRootTemplateAndUserConfirms() throws Exception {
+      ProcessResult result = execWithStdin(
+          "y\n",
+          "publish", "events", noRootTemplateDir.toString(), "--patch", "good");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
     }
 
     @Test
@@ -166,11 +212,11 @@ public class EventsCommandIT extends CliBaseIT {
       List<String> subjects = collectEventField(outputDir, "subject");
 
       assertThat(subjects).containsExactlyInAnyOrder(
-          rootDir.toString(),
-          rootDir.resolve("sub").toString(),
-          rootDir.resolve("sub-with-template").toString(),
-          rootDir.resolve("sub-with-template/nested").toString(),
-          rootDir.resolve("sub-with-template/nested/deeper").toString()
+          "entry.json",
+          Path.of("sub", "entry.json").toString(),
+          Path.of("sub-with-template", "entry.json").toString(),
+          Path.of("sub-with-template", "nested", "entry.json").toString(),
+          Path.of("sub-with-template", "nested", "deeper", "entry.json").toString()
       );
     }
 
@@ -206,6 +252,41 @@ public class EventsCommandIT extends CliBaseIT {
     }
 
     @Test
+    void shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel() throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathLevelZeroDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+
+      Path outputDir = parseOutputDir(result);
+      List<String> subjects = collectEventField(outputDir, "subject");
+
+      assertThat(subjects).containsExactlyInAnyOrder(
+          "entry.json",
+          Path.of("sub", "nested.json").toString(),
+          Path.of("sub", "deep", "deep.json").toString()
+      );
+    }
+
+    @Test
+    void shouldResolveRelativePathWithLevelIncludingParentDirectories() throws Exception {
+      ProcessResult result = exec(
+          "publish", "events", relativePathLevelOneDir.toString(), "--debug");
+
+      result.assertSuccess();
+      assertEventsPublished(2);
+
+      Path outputDir = parseOutputDir(result);
+      List<String> subjects = collectEventField(outputDir, "subject");
+
+      assertThat(subjects).containsExactlyInAnyOrder(
+          Path.of("relative-path-level-one", "entry.json").toString(),
+          Path.of("relative-path-level-one", "sub", "nested.json").toString()
+      );
+    }
+
+    @Test
     void shouldProcessDeeplyNestedDirectories(@TempDir Path tempDir) throws Exception {
       TestDirectoryGenerator.root()
           .withEventTemplate(TestDirectoryGenerator.DEFAULT_TEMPLATE)
@@ -226,10 +307,21 @@ public class EventsCommandIT extends CliBaseIT {
       List<String> subjects = collectEventField(outputDir, "subject");
 
       assertThat(subjects).containsExactlyInAnyOrder(
-          tempDir.resolve("level1").toString(),
-          tempDir.resolve("level1/level2").toString(),
-          tempDir.resolve("level1/level2/level3").toString()
+          Path.of("level1", "payload-0.json").toString(),
+          Path.of("level1", "level2", "payload-0.json").toString(),
+          Path.of("level1", "level2", "level3", "payload-0.json").toString()
       );
+    }
+
+    @Test
+    void shouldTraverseTreeAndPublishFromSubdirsWithTemplateWhenRootHasNoTemplate()
+        throws Exception {
+
+      ProcessResult result = exec("publish", "events", noRootTemplateDir.toString());
+
+      result.assertSuccess();
+      assertEventsPublished(3);
+      assertThat(result.stdout()).contains(msg.eventsPublished(3));
     }
   }
 
@@ -578,9 +670,9 @@ public class EventsCommandIT extends CliBaseIT {
       Path outputDir = parseOutputDir(result);
 
       assertThat(readEvent(outputDir, "entry.json.json").path("subject").asText())
-          .isEqualTo(tempDir.toString());
+          .isEqualTo("entry.json");
       assertThat(readEvent(outputDir, "sub/nested.json.json").path("subject").asText())
-          .isEqualTo(tempDir.resolve("sub").toString());
+          .isEqualTo(Path.of("sub", "nested.json").toString());
     }
 
     @Test

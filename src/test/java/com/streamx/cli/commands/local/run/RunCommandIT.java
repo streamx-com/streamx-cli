@@ -7,6 +7,7 @@ import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +15,20 @@ import org.junit.jupiter.api.Test;
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
+  private static final String PREFIX =
+      "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+
+  private static final String WEB_SERVER_SINK_IMAGE =
+      "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
+
   @Test
-  void shouldRunStreamxExampleMesh() throws Exception {
-    String meshPath = Paths.get("target/test-classes/mesh.yaml")
+  void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
+    clearEnv("STREAMX_OWNER_SERVICE_NAME");
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
         .normalize()
         .toString();
@@ -25,7 +37,68 @@ public class RunCommandIT extends CliBaseIT {
 
     try {
       Awaitility.await()
-          .atMost(Duration.ofMinutes(10))
+          .atMost(Duration.ofMinutes(2))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> handle.getStderr()
+              .contains("Environment variable 'STREAMX_OWNER_SERVICE_NAME'"));
+
+      assertThat(handle.getStderr())
+          .contains("WARNING:")
+          .contains("STREAMX_OWNER_SERVICE_NAME");
+    } finally {
+      if (handle.thread().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      }
+    }
+  }
+
+  @Test
+  void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    exec("settings", "unset", "config.image.interpolated");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(2))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> !handle.thread().isAlive());
+
+      ProcessResult result = handle.toResult();
+      assertThat(result.exitCode()).isNotEqualTo(0);
+      assertThat(result.stderr())
+          .contains("Property 'config.image.interpolated'")
+          .contains("is not set");
+    } finally {
+      if (handle.thread().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      }
+    }
+  }
+
+  @Test
+  void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(2))
           .pollInterval(Duration.ofSeconds(1))
           .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
 
@@ -43,4 +116,5 @@ public class RunCommandIT extends CliBaseIT {
       }
     }
   }
+
 }

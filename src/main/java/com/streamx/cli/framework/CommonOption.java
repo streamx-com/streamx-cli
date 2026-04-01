@@ -6,4 +6,7 @@ public class CommonOption {
 
   public static final String OUTPUT_SHORT = "-o";
   public static final String OUTPUT_LONG = "--output";
+
+  public static final String STREAMX_HOME_SHORT = "-H";
+  public static final String STREAMX_HOME_LONG = "--streamx-home";
 }

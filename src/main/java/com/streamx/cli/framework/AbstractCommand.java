@@ -2,10 +2,16 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.util.VersionProvider;
 import io.quarkus.runtime.Quarkus;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import org.jline.reader.Completer;
@@ -17,6 +23,7 @@ import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 
 /**
@@ -24,6 +31,7 @@ import picocli.CommandLine.Model.OptionSpec;
  *
  * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
  */
+@CommandLine.Command(versionProvider = VersionProvider.class)
 public abstract class AbstractCommand<ResultT> implements Runnable {
   @CommandLine.Spec
   public CommandSpec spec;
@@ -32,7 +40,29 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void setSpec(CommandSpec spec) {
     this.spec = spec;
     applyHiddenOptions();
+
     spec.usageMessage().sortOptions(false);
+    reorderSections();
+  }
+
+  private void reorderSections() {
+    List<String> keys = new java.util.ArrayList<>(
+        spec.usageMessage().sectionKeys()
+    );
+    int optIdx = keys.indexOf(UsageMessageSpec.SECTION_KEY_OPTION_LIST);
+    int cmdIdx = keys.indexOf(UsageMessageSpec.SECTION_KEY_COMMAND_LIST);
+    if (optIdx >= 0 && cmdIdx >= 0 && optIdx < cmdIdx) {
+      keys.remove(cmdIdx);
+      keys.add(optIdx, UsageMessageSpec.SECTION_KEY_COMMAND_LIST);
+      int headIdx = keys.indexOf(
+          UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING
+      );
+      if (headIdx >= 0) {
+        keys.remove(headIdx);
+        keys.add(optIdx, UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING);
+      }
+      spec.usageMessage().sectionKeys(keys);
+    }
   }
 
   @CommandLine.Option(
@@ -106,6 +136,8 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   public int handleExecutionError(Exception e) {
+    writeErrorToTempDir(e);
+
     if (verbose) {
       // Print exception stacktrace
       StringWriter sw = new StringWriter();
@@ -117,7 +149,27 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     return ShortErrorMessageHandler.shortErrorMessage(e, spec.commandLine());
   }
 
+  private void writeErrorToTempDir(Exception e) {
+    try {
+      DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+      String prefix = "streamx-cli-" + LocalDate.now().format(dateFormat) + "-";
+      Path tempDir = Files.createTempDirectory(prefix);
+      Path errorFile = tempDir.resolve("error.log");
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      Files.writeString(errorFile, sw.toString());
+      System.err.println(msg.errorDetailsSavedTo(errorFile.toAbsolutePath().toString()));
+    } catch (IOException ignored) {
+      // Best-effort; don't fail the CLI because of logging
+    }
+  }
+
   public int execute() {
+    if (helpOptions.streamxHome != null) {
+      StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
+    }
+
     int exitCode = 0;
 
     try {

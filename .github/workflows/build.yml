@@ -17,12 +17,13 @@ jobs:
       - uses: ./.github/actions/setup-env
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
-          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_SNAPSHOT_DEPLOY_SA }}
+          gar_docker_registry: ${{ vars.GAR_DOCKER_REGISTRY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test and build JAR
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload test reports
         if: always()

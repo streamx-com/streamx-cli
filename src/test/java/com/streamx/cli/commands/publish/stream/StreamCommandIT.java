@@ -10,26 +10,43 @@ import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.CloudEventGenerator;
+import com.streamx.cli.test.MeshAssertions;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.cli.test.profiles.DefaultMeshTestProfile;
 import com.sun.net.httpserver.HttpServer;
 import io.cloudevents.CloudEvent;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 @DisabledIfDockerUnavailable
-@TestProfile(DefaultMeshTestProfile.class)
 public class StreamCommandIT extends CliBaseIT {
   CloudEventGenerator cloudEventGenerator = new CloudEventGenerator();
+
+  @BeforeAll
+  static void startMesh() {
+    MeshTestSupport.startMesh("target/test-classes/mesh.yaml");
+  }
+
+  @AfterAll
+  static void stopMesh() {
+    MeshTestSupport.stopMesh();
+  }
+
+  @BeforeEach
+  void resetBaseline() {
+    MeshAssertions.resetPublishedEventsBaseline();
+  }
 
   @Test
   void shouldPrintHelpInformation() throws Exception {
@@ -313,7 +330,6 @@ public class StreamCommandIT extends CliBaseIT {
   @Nested
   @QuarkusTest
   @DisabledIfDockerUnavailable
-  @TestProfile(DefaultMeshTestProfile.class)
   class BatchStreaming {
 
     @Test
@@ -466,7 +482,6 @@ public class StreamCommandIT extends CliBaseIT {
   @Nested
   @QuarkusTest
   @DisabledIfDockerUnavailable
-  @TestProfile(DefaultMeshTestProfile.class)
   class ContinueOnError {
     @Test
     void shouldFailOnFirstInvalidEvent() throws Exception {
@@ -640,7 +655,6 @@ public class StreamCommandIT extends CliBaseIT {
   @Nested
   @QuarkusTest
   @DisabledIfDockerUnavailable
-  @TestProfile(DefaultMeshTestProfile.class)
   class InvalidSource {
     @Test
     void shouldFailWhenFileNotFound() throws Exception {

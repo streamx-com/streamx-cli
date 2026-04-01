@@ -8,6 +8,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ class ListCommandIT extends CliBaseIT {
 
   @BeforeEach
   void clearConfig() throws IOException {
-    Files.deleteIfExists(streamxHome.resolve("application.properties"));
+    Files.deleteIfExists(getConfigPath());
   }
 
   private void writeProperties(Map<String, String> propertiesToWrite) throws IOException {
@@ -34,7 +35,9 @@ class ListCommandIT extends CliBaseIT {
     for (Map.Entry<String, String> entry : propertiesToWrite.entrySet()) {
       initialProps.setProperty(entry.getKey(), entry.getValue());
     }
-    try (OutputStream out = Files.newOutputStream(streamxHome.resolve("application.properties"))) {
+    Path configFile = getConfigPath();
+    Files.createDirectories(configFile.getParent());
+    try (OutputStream out = Files.newOutputStream(configFile)) {
       initialProps.store(out, null);
     }
   }

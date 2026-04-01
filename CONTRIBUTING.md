@@ -15,6 +15,18 @@
 
 - Then you can run `./mvnw verify -Dnative` **without the clean goal** to build the native executable.
 
+## Native image reachability metadata
+
+The native image build requires GraalVM reachability metadata (`reachability-metadata.json`) to know which classes need reflection, resources, etc.
+
+- **macOS metadata** is committed as `src/main/resources/META-INF/native-image/reachability-metadata-macos.json`. To update it, run the metadata generation step on a Mac:
+  ```
+  ./mvnw verify -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
+  ```
+  The `reachability-metadata-macos.json` file is updated automatically. Commit the result.
+- **Linux metadata** is generated automatically on CI during the build.
+- The merge script (`.github/scripts/merge-native-image-metadata.sh`) combines all `reachability-metadata-*.json` files with any agent-traced fork metadata into the final `reachability-metadata.json` used by the native image build.
+
 ## Development
 
 **IMPORTANT:** mark test which run StreamX mesh with the `DisabledIfDockerUnavaliable` annotation.

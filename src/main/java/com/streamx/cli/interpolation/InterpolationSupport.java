@@ -3,63 +3,78 @@ package com.streamx.cli.interpolation;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static io.smallrye.common.expression.Expression.Flag;
 
+import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.CliException;
 import io.smallrye.common.expression.Expression;
 import jakarta.enterprise.context.Dependent;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Objects;
-import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import java.util.Properties;
 
 @Dependent
 public class InterpolationSupport {
 
-  /**
-   * Adapted from {@link io.smallrye.config.ExpressionConfigSourceInterceptor}
-   */
-  String expand(final String rawValue) {
+  String expand(String rawValue) {
     Objects.requireNonNull(rawValue, msg.expressionCannotBeNull());
 
-    // Avoid extra StringBuilder allocations from Expression
     if (rawValue.indexOf('$') == -1) {
       return rawValue;
     }
 
-    final Config config = ConfigProviderResolver.instance().getConfig();
-    final Expression expression = Expression.compile(
+    Properties streamxConfig = loadStreamxConfig();
+    return expand(rawValue, streamxConfig);
+  }
+
+  private String expand(String rawValue, Properties streamxConfig) {
+    Expression expression = Expression.compile(
         escapeDollarIfExists(rawValue),
         Flag.LENIENT_SYNTAX,
         Flag.NO_TRIM,
         Flag.NO_SMART_BRACES
     );
     return expression.evaluate((resolveContext, stringBuilder) -> {
-      Optional<String> resolve = config.getOptionalValue(resolveContext.getKey(), String.class);
+      String key = resolveContext.getKey();
 
-      // Fallback to system properties if not found in config
-      if (resolve.isEmpty()) {
-        String systemProperty = System.getProperty(resolveContext.getKey());
-        if (systemProperty != null) {
-          resolve = Optional.of(systemProperty);
-        }
+      // Resolution order: env variables, system properties, StreamxHome config.
+      String value = System.getenv(key);
+      if (value == null) {
+        value = System.getProperty(key);
+      }
+      if (value == null) {
+        value = streamxConfig.getProperty(key);
       }
 
-      if (resolve.isPresent()) {
-        String value = resolve.get();
-        // Recursively expand if the value contains variables
+      if (value != null) {
         if (value.indexOf('$') != -1) {
-          value = expand(value);
+          value = expand(value, streamxConfig);
         }
         stringBuilder.append(value);
       } else if (resolveContext.hasDefault()) {
         resolveContext.expandDefault();
+      } else if (key.matches("[A-Z0-9_]+")) {
+        System.err.println(msg.unresolvedEnvironmentVariable(key, rawValue));
+        stringBuilder.append("${").append(key).append("}");
       } else {
-        String errMessage = msg.couldNotExpandValueInExpression(resolveContext.getKey(), rawValue);
-        throw new CliException(errMessage);
+        throw new CliException(msg.unresolvedProperty(key, rawValue));
       }
     });
   }
 
-  private String escapeDollarIfExists(final String value) {
+  private Properties loadStreamxConfig() {
+    Properties props = new Properties();
+    try {
+      URL configUrl = StreamxHome.getConfigUrl();
+      try (InputStream in = configUrl.openStream()) {
+        props.load(in);
+      }
+    } catch (Exception e) {
+      // Config file may not exist; proceed without it
+    }
+    return props;
+  }
+
+  private String escapeDollarIfExists(String value) {
     int index = value.indexOf("\\$");
     if (index != -1) {
       int start = 0;

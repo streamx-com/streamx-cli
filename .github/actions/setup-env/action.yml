@@ -6,23 +6,43 @@ inputs:
     required: false
   gcp_service_account:
     required: false
+  gar_docker_registry:
+    required: false
   github_token:
     required: true
 
 runs:
   using: composite
   steps:
-    - name: Authenticate to Google Cloud
+    - id: auth
+      name: Authenticate to Google Cloud
       if: inputs.gcp_workload_identity_provider != ''
       uses: google-github-actions/auth@v2
+      continue-on-error: true
       with:
         workload_identity_provider: ${{ inputs.gcp_workload_identity_provider }}
         service_account: ${{ inputs.gcp_service_account }}
+        token_format: access_token
+
+    - name: Login to GAR
+      if: runner.os != 'macOS' && steps.auth.outcome == 'success' && inputs.gar_docker_registry != ''
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ inputs.gar_docker_registry }}
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
+
+    - name: Cache Maven repository
+      uses: actions/cache@v5
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ runner.os }}-${{ github.run_id }}
+        restore-keys: maven-${{ runner.os }}-
+        save-always: true
 
     - name: Set up JDK
       uses: graalvm/setup-graalvm@v1
       with:
         java-version: '25.0.1'
         distribution: 'graalvm-community'
-        cache: 'maven'
         github-token: ${{ inputs.github_token }}

@@ -16,7 +16,7 @@ descriptors:
         incoming:
           resources: {}
         servicePorts:
-          - "8087:8080"
+          - "0:8080"
 
 sources:
   cli:
@@ -30,6 +30,8 @@ ingestion:
   rest-ingestion:
     containers:
       proxy:
+        servicePorts:
+          - "${test.proxy.host-port:8080}:8080"
         environment:
           QUARKUS_HTTP_AUTH_PERMISSION_BEARER_POLICY: permit
 
@@ -53,3 +55,5 @@ edge:
         incoming:
           resources:
             ref: outbox.pages
+        environment:
+          QUARKUS_ELASTICSEARCH_HOSTS: ${STREAMX_OWNER_SERVICE_NAME}.opensearch:9201

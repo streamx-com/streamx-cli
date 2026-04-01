@@ -39,6 +39,15 @@ brew search streamx-com/tap
 brew install <formula>
 ```
 
+**Install JVM-based version:**
+
+There is also a `streamx-jvm` formula that runs on the JVM instead of a native binary.
+It brings OpenJDK as a dependency, which takes more disk space.
+
+```sh
+brew install streamx-com/tap/streamx-jvm
+```
+
 **Install preview version:**
 
 Use the commands above as for stable releases, but replace `streamx-com/tap` with `streamx-com/preview-tap`.
