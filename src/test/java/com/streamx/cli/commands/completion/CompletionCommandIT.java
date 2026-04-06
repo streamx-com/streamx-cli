@@ -25,7 +25,7 @@ class CompletionCommandIT extends CliBaseIT {
     String stdout = result.stdout();
     assertThat(stdout).contains("#compdef streamx");
     assertThat(stdout).contains("_arguments");
-    assertThat(stdout).contains("_describe");
+    assertThat(stdout).contains("compadd");
     assertThat(stdout).contains("compdef _streamx streamx");
   }
 
