@@ -61,32 +61,70 @@ public class ZshCompletionGenerator {
     sb.append("  local curcontext=\"$curcontext\"\n\n");
 
     sb.append("  if (( CURRENT == 2 )); then\n");
-    sb.append("    local -a commands=(\n");
 
+    // Use compadd -V with named groups to control display order.
+    // Group names are sorted lexicographically, so "1-commands" appears before "2-options".
+    sb.append("    local -a cmd_names=(");
     for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
-      String name = entry.getKey();
+      sb.append(" '").append(entry.getKey()).append("'");
+    }
+    sb.append(" )\n");
+
+    sb.append("    local -a cmd_descs=(");
+    for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
       String desc = getCommandDescription(entry.getValue().getCommandSpec());
-      sb.append("      '").append(escape(name)).append(":")
-          .append(escape(desc)).append("'\n");
+      sb.append(" '").append(entry.getKey()).append(" -- ").append(escapeShellString(desc))
+          .append("'");
     }
+    sb.append(" )\n");
 
-    sb.append("    )\n");
+    sb.append("    compadd -V 1-commands -l -d cmd_descs -a cmd_names\n");
 
     if (!options.isEmpty()) {
-      sb.append("    local -a opts=(\n");
+      // One entry per option. The inserted value is the long name (preferred)
+      // or short name as fallback. Display shows both forms.
+      sb.append("    local -a opt_names=(");
       for (OptionSpec opt : options) {
-        String desc = getFirstLine(opt.description());
+        String longName = null;
+        String shortName = null;
         for (String name : opt.names()) {
-          sb.append("      '").append(escape(name)).append(":")
-              .append(escape(desc)).append("'\n");
+          if (name.startsWith("--")) {
+            longName = name;
+          } else {
+            shortName = name;
+          }
         }
+        String value = longName != null ? longName : shortName;
+        sb.append(" '").append(value).append("'");
       }
-      sb.append("    )\n");
-    }
+      sb.append(" )\n");
 
-    sb.append("    _describe 'command' commands\n");
-    if (!options.isEmpty()) {
-      sb.append("    _describe 'option' opts\n");
+      sb.append("    local -a opt_descs=(");
+      for (OptionSpec opt : options) {
+        String longName = null;
+        String shortName = null;
+        for (String name : opt.names()) {
+          if (name.startsWith("--")) {
+            longName = name;
+          } else {
+            shortName = name;
+          }
+        }
+        String desc = getFirstLine(opt.description());
+        String label;
+        if (shortName != null && longName != null) {
+          label = shortName + " " + longName;
+        } else if (longName != null) {
+          label = longName;
+        } else {
+          label = shortName;
+        }
+        sb.append(" '").append(label).append(" -- ")
+            .append(escapeShellString(desc)).append("'");
+      }
+      sb.append(" )\n");
+
+      sb.append("    compadd -V 2-options -l -d opt_descs -a opt_names\n");
     }
 
     sb.append("  else\n");
@@ -263,6 +301,16 @@ public class ZshCompletionGenerator {
         .replace("[", "\\[")
         .replace("]", "\\]")
         .replace(":", "\\:");
+  }
+
+  /**
+   * Escape text for use inside single-quoted shell strings (for compadd display descriptions).
+   */
+  private static String escapeShellString(String text) {
+    if (text == null) {
+      return "";
+    }
+    return text.replace("'", "'\\''");
   }
 
   private static String sanitize(String name) {
