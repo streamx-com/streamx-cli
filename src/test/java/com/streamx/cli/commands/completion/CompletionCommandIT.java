@@ -22,6 +22,48 @@ class CompletionCommandIT extends CliBaseIT {
     ProcessResult result = exec("completion", "zsh");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains("#compdef streamx");
+    String stdout = result.stdout();
+    assertThat(stdout).contains("#compdef streamx");
+    assertThat(stdout).contains("_arguments");
+    assertThat(stdout).contains("_describe");
+    assertThat(stdout).contains("compdef _streamx streamx");
+  }
+
+  @Test
+  void shouldIncludeCommandDescriptionsInZshScript() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+
+    result.assertSuccess();
+    String stdout = result.stdout();
+    // Subcommand descriptions from @CommandLine.Command header attributes
+    assertThat(stdout).contains("Publish events");
+    assertThat(stdout).contains("Modify StreamX settings");
+    assertThat(stdout).contains("Operate local StreamX instance");
+    assertThat(stdout).contains("Generate shell completion scripts");
+  }
+
+  @Test
+  void shouldIncludeSubcommandFunctionsInZshScript() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+
+    result.assertSuccess();
+    String stdout = result.stdout();
+    assertThat(stdout).contains("_streamx_publish()");
+    assertThat(stdout).contains("_streamx_settings()");
+    assertThat(stdout).contains("_streamx_local()");
+    assertThat(stdout).contains("_streamx_publish_events()");
+    assertThat(stdout).contains("_streamx_publish_event()");
+    assertThat(stdout).contains("_streamx_publish_stream()");
+  }
+
+  @Test
+  void shouldIncludeOptionDescriptionsInZshScript() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+
+    result.assertSuccess();
+    String stdout = result.stdout();
+    assertThat(stdout).contains("Print debug information");
+    assertThat(stdout).contains("StreamX ingestion URL");
+    assertThat(stdout).contains("Continue even if some event publish failed");
   }
 }
