@@ -181,6 +181,54 @@ public class EventCommandIT extends CliBaseIT {
 
   @Nested
   @QuarkusTest
+  class OutputFormat {
+
+    @Test
+    void shouldFormatOutputAsJson(@TempDir Path tempDir) throws Exception {
+      Path payloadFile = tempDir.resolve("payload.html");
+      Files.writeString(payloadFile, "<html><body>Hello</body></html>");
+
+      ProcessResult result = exec(
+          "publish", "event",
+          "page.published",
+          payloadFile.toString(),
+          "--output", "json"
+      );
+
+      result.assertSuccess();
+      assertEventsPublished(1);
+
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode output = mapper.readTree(result.stdout().strip());
+      assertThat(output.has("subject")).isTrue();
+      assertThat(output.has("event")).isTrue();
+      assertThat(output.get("event").has("specversion")).isTrue();
+    }
+
+    @Test
+    void shouldFormatOutputAsYaml(@TempDir Path tempDir) throws Exception {
+      Path payloadFile = tempDir.resolve("payload.html");
+      Files.writeString(payloadFile, "<html><body>Hello</body></html>");
+
+      ProcessResult result = exec(
+          "publish", "event",
+          "page.published",
+          payloadFile.toString(),
+          "--output", "yaml"
+      );
+
+      result.assertSuccess();
+      assertEventsPublished(1);
+
+      String stdout = result.stdout().strip();
+      assertThat(stdout).contains("subject:");
+      assertThat(stdout).contains("event:");
+      assertThat(stdout).contains("specversion:");
+    }
+  }
+
+  @Nested
+  @QuarkusTest
   class PlaceholderSubstitution {
 
     private static final String CUSTOM_TEMPLATE_TYPE = "custom.template";

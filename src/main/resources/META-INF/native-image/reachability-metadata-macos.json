@@ -1957,10 +1957,6 @@
         {
           "name": "shouldGenerateZshCompletionScript",
           "parameterTypes": []
-        },
-        {
-          "name": "shouldPrintHelpWithSubcommands",
-          "parameterTypes": []
         }
       ]
     },
@@ -1995,10 +1991,6 @@
       "methods": [
         {
           "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "shouldFailWhenEnvVariableIsUndefined",
           "parameterTypes": []
         },
         {
@@ -2125,6 +2117,29 @@
         },
         {
           "name": "shouldFailWhenTemplateTypeNotFound",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.event.EventCommandIT$OutputFormat",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.streamx.cli.commands.publish.event.EventCommandIT"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsYaml",
           "parameterTypes": [
             "java.nio.file.Path"
           ]
@@ -2396,20 +2411,8 @@
           "parameterTypes": []
         },
         {
-          "name": "shouldResolveRelativePathWithLevelIncludingParentDirectories",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
-        },
-        {
           "name": "shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel",
           "parameterTypes": []
-        },
-        {
-          "name": "shouldResolveRelativePathWithLevelZeroSameAsWithoutLevel",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
         },
         {
           "name": "shouldResolveRelativePathWithoutLevelSameAsLevelZero",
@@ -2629,6 +2632,41 @@
       ]
     },
     {
+      "type": "com.streamx.cli.commands.publish.events.EventsCommandIT$OutputFormat",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.streamx.cli.commands.publish.events.EventsCommandIT"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsJsonWithErrors",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsYaml",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsYamlWithErrors",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
       "type": "com.streamx.cli.commands.publish.events.EventsCommandIT$PatchSupport",
       "methods": [
         {
@@ -2673,16 +2711,6 @@
           "parameterTypes": []
         },
         {
-          "name": "shouldAskForConfirmationWhenPatchSpecifiedButNoRootTemplate",
-          "parameterTypes": []
-        },
-        {
-          "name": "shouldAskForConfirmationWhenPatchSpecifiedButNoRootTemplate",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
-        },
-        {
           "name": "shouldContinueWhenPatchSpecifiedButNoRootTemplateAndUserConfirms",
           "parameterTypes": []
         },
@@ -2693,22 +2721,79 @@
           ]
         },
         {
-          "name": "shouldFailWhenRootTemplateIsMissing",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
-        },
-        {
           "name": "shouldSucceedWithZeroEventsWhenNoTemplateFoundAnywhere",
           "parameterTypes": [
             "java.nio.file.Path"
           ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.events.EventsCommandResult",
+      "methods": [
+        {
+          "name": "batchErrors",
+          "parameterTypes": []
         },
         {
-          "name": "shouldWarnWhenPatchSpecifiedButNoRootTemplate",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
+          "name": "batchFailureCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "batchSuccessCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "eventErrors",
+          "parameterTypes": []
+        },
+        {
+          "name": "failureCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "successCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "unknownCount",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.events.EventsCommandResult$BatchError"
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.events.EventsCommandResult$EventError",
+      "methods": [
+        {
+          "name": "appliedPatch",
+          "parameterTypes": []
+        },
+        {
+          "name": "batchNumber",
+          "parameterTypes": []
+        },
+        {
+          "name": "errorMessage",
+          "parameterTypes": []
+        },
+        {
+          "name": "eventNumber",
+          "parameterTypes": []
+        },
+        {
+          "name": "subject",
+          "parameterTypes": []
+        },
+        {
+          "name": "templatePath",
+          "parameterTypes": []
+        },
+        {
+          "name": "type",
+          "parameterTypes": []
         }
       ]
     },
@@ -2879,6 +2964,29 @@
         },
         {
           "name": "shouldFailWhenSourceIsDirectory",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.stream.StreamCommandIT$OutputFormat",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.streamx.cli.commands.publish.stream.StreamCommandIT"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFormatOutputAsYaml",
           "parameterTypes": [
             "java.nio.file.Path"
           ]
@@ -3263,9 +3371,6 @@
         },
         {
           "name": "spec"
-        },
-        {
-          "name": "streamxHome"
         },
         {
           "name": "verbose"
@@ -7784,30 +7889,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.logging.LogBuildTimeConfig",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
-          ]
         }
       ]
     },
@@ -7929,14 +8010,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
@@ -7958,14 +8031,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -7989,14 +8054,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
@@ -8007,14 +8064,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -8027,14 +8076,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
@@ -8046,14 +8087,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
@@ -8064,23 +8097,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.logging.LogBuildTimeConfig",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         },
         {
@@ -8100,14 +8116,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
@@ -8119,41 +8127,11 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy22",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy23",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy24",
       "methods": [
         {
           "name": "<init>",
@@ -8175,17 +8153,6 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy26",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy27",
       "methods": [
         {
@@ -8197,32 +8164,8 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy28",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy29",
       "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
         {
           "name": "<init>",
           "parameterTypes": [
@@ -8239,30 +8182,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.logging.LogBuildTimeConfig",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
           ]
         }
       ]
@@ -8297,30 +8216,6 @@
         {
           "name": "<init>",
           "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy33",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.RuntimeValue"
           ]
@@ -8346,53 +8241,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy36",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy38",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy39",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
         }
       ]
     },
@@ -8411,33 +8259,6 @@
             "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.logging.LogBuildTimeConfig",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy40",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
           ]
         }
       ]
@@ -8487,57 +8308,6 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy45",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy46",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy47",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy48",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy49",
       "methods": [
         {
@@ -8545,13 +8315,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
           ]
         }
       ]
@@ -8569,24 +8332,9 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
           ]
         }
       ]
@@ -8636,75 +8384,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy53",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy54",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy55",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy56",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.scheduler.runtime.SchedulerConfig"
           ]
         }
@@ -8723,35 +8402,8 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy65",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.RuntimeValue"
           ]
         }
@@ -8760,12 +8412,6 @@
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy66",
       "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
         {
           "name": "<init>",
           "parameterTypes": [
@@ -8818,13 +8464,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -8882,31 +8521,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy72",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -8967,28 +8581,6 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy78",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy79",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy8",
       "methods": [
         {
@@ -9012,35 +8604,6 @@
             "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.virtual.threads.VirtualThreadsConfig"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy80",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy81",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
           ]
         }
       ]
@@ -9081,7 +8644,7 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy12",
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy11",
       "methods": [
         {
           "name": "<init>",
@@ -9323,17 +8886,6 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy34",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy35",
       "methods": [
         {
@@ -9368,50 +8920,6 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy38",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy39",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy40",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy41",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy42",
       "methods": [
         {
           "name": "<init>",
@@ -9489,17 +8997,6 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy49",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy50",
       "methods": [
         {
           "name": "<init>",
@@ -9609,40 +9106,7 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy60",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy61",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy62",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy68",
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy63",
       "methods": [
         {
           "name": "<init>",
@@ -9709,39 +9173,6 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy74",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy75",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy76",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy78",
       "methods": [
         {
           "name": "<init>",
@@ -16443,19 +15874,6 @@
       ]
     },
     {
-      "type": "org.opentest4j.AssertionFailedError",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.Object",
-            "java.lang.Object"
-          ]
-        }
-      ]
-    },
-    {
       "type": "org.osgi.framework.BundleReference"
     },
     {
@@ -16704,15 +16122,6 @@
     },
     {
       "type": "sun.security.rsa.RSAKeyFactory$Legacy",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.security.rsa.RSAKeyPairGenerator$Legacy",
       "methods": [
         {
           "name": "<init>",
@@ -17268,9 +16677,6 @@
     },
     {
       "glob": "com/streamx/cli/commands/publish/event/EventTemplateLoaderIT.class"
-    },
-    {
-      "glob": "com/streamx/cli/commands/publish/events/EventsCommandIT$BasicPublishing.class"
     },
     {
       "glob": "com/streamx/cli/commands/publish/events/EventsCommandIT.class"
@@ -18279,9 +17685,6 @@
     },
     {
       "glob": "org/jline/nativ/Mac/arm64/libjlinenative.jnilib"
-    },
-    {
-      "glob": "org/jline/utils/ansi.caps"
     },
     {
       "glob": "org/jline/utils/capabilities.txt"

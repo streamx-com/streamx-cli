@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.ingestion.CloudEventsSerde;
 import com.streamx.cli.ingestion.ConcatenatedJsonSerde;
 import com.streamx.cli.test.CliBaseIT;
@@ -325,6 +326,61 @@ public class StreamCommandIT extends CliBaseIT {
     );
 
     assertEquals(expectedJson2, result2.stdout().strip());
+  }
+
+  @Nested
+  @QuarkusTest
+  @DisabledIfDockerUnavailable
+  class OutputFormat {
+
+    @Test
+    void shouldFormatOutputAsJson(@TempDir Path tempDir) throws Exception {
+      List<CloudEvent> events = cloudEventGenerator.generate(3);
+      List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+      String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
+
+      Path eventsFile = tempDir.resolve("events");
+      Files.writeString(eventsFile, eventsJsonString);
+
+      ProcessResult result = exec(
+          "publish", "stream",
+          eventsFile.toString(),
+          "--output", "json"
+      );
+
+      result.assertSuccess();
+      assertEventsPublished(events.size());
+
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode output = mapper.readTree(result.stdout().strip());
+      assertThat(output.get("successCount").asInt()).isEqualTo(3);
+      assertThat(output.get("failureCount").asInt()).isEqualTo(0);
+      assertThat(output.get("unknownCount").asInt()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldFormatOutputAsYaml(@TempDir Path tempDir) throws Exception {
+      List<CloudEvent> events = cloudEventGenerator.generate(3);
+      List<JsonNode> eventsJson = events.stream().map(CloudEventsSerde::toJson).toList();
+      String eventsJsonString = ConcatenatedJsonSerde.serialize(eventsJson);
+
+      Path eventsFile = tempDir.resolve("events");
+      Files.writeString(eventsFile, eventsJsonString);
+
+      ProcessResult result = exec(
+          "publish", "stream",
+          eventsFile.toString(),
+          "--output", "yaml"
+      );
+
+      result.assertSuccess();
+      assertEventsPublished(events.size());
+
+      String stdout = result.stdout().strip();
+      assertThat(stdout).contains("successCount: 3");
+      assertThat(stdout).contains("failureCount: 0");
+      assertThat(stdout).contains("unknownCount: 0");
+    }
   }
 
   @Nested
