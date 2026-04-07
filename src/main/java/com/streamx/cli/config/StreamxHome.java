@@ -6,12 +6,18 @@ import static com.streamx.cli.util.FileUtils.createIfNotExists;
 import com.streamx.cli.framework.CliException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StreamxHome {
   private static final String DEFAULT_HOME_DIR = ".streamx";
   private static String streamxHomeCliArg;
+  private static final Set<String> appliedKeys = ConcurrentHashMap.newKeySet();
 
   public static void setStreamxHomeCliArg(String path) {
     streamxHomeCliArg = path;
@@ -53,5 +59,30 @@ public class StreamxHome {
 
   static String getStreamxHomeEnv() {
     return System.getenv("STREAMX_HOME");
+  }
+
+  public static void applySettingsToSystemProperties() {
+    for (String key : appliedKeys) {
+      System.clearProperty(key);
+    }
+    appliedKeys.clear();
+
+    Path configPath = getConfigPath();
+    if (!Files.isRegularFile(configPath)) {
+      return;
+    }
+    Properties props = new Properties();
+    try (InputStream in = Files.newInputStream(configPath)) {
+      props.load(in);
+    } catch (IOException e) {
+      return;
+    }
+    for (String key : props.stringPropertyNames()) {
+      if (System.getProperty(key) != null) {
+        continue;
+      }
+      System.setProperty(key, props.getProperty(key));
+      appliedKeys.add(key);
+    }
   }
 }

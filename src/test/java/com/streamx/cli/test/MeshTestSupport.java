@@ -31,7 +31,7 @@ public final class MeshTestSupport {
   private MeshTestSupport() {
   }
 
-  private static int freePort() {
+  public static int freePort() {
     try (ServerSocket s = new ServerSocket(0)) {
       return s.getLocalPort();
     } catch (IOException e) {
@@ -62,6 +62,7 @@ public final class MeshTestSupport {
         "http://localhost:" + activeProxyPort);
     System.setProperty("test.proxy.host-port",
         String.valueOf(activeProxyPort));
+    System.setProperty("streamx.container.startup-timeout-seconds", "180");
 
     capturedToken = null;
     tokenLatch = new CountDownLatch(1);
