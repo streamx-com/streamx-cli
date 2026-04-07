@@ -405,4 +405,10 @@ public interface MessageProvider {
 
   @Message(id = 210, value = "Error details saved to: %s")
   String errorDetailsSavedTo(String path);
+
+  @Message(id = 211, value = "Default event templates index resource not found at %s")
+  String defaultEventTemplatesIndexNotFound(String resourcePath);
+
+  @Message(id = 212, value = "Unable to read default event templates index from %s")
+  String unableToReadDefaultEventTemplatesIndex(String resourcePath);
 }

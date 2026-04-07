@@ -18,8 +18,8 @@ public class AbstractCommandGroup extends AbstractCommand<Void> {
   @Override
   public List<String> getHiddenOptions() {
     return List.of(
-      CommonOption.OUTPUT_LONG,
-      CommonOption.VERBOSE_LONG
+      CommonOptions.OUTPUT_LONG,
+      CommonOptions.VERBOSE_LONG
     );
   }
 }

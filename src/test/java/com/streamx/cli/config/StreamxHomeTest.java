@@ -31,6 +31,7 @@ class StreamxHomeTest {
       mocked.when(StreamxHome::getStreamxHomeEnv)
           .thenReturn(tempDir.toAbsolutePath().toString());
 
+      StreamxHome.createConfigIfNotExists();
       URL url = StreamxHome.getConfigUrl();
 
       Path result = Path.of(url.toURI());
@@ -43,6 +44,7 @@ class StreamxHomeTest {
   void shouldUseStreamxHomeSystemProperty() throws Exception {
     System.setProperty("STREAMX_HOME", tempDir.toAbsolutePath().toString());
 
+    StreamxHome.createConfigIfNotExists();
     URL url = StreamxHome.getConfigUrl();
 
     Path result = Path.of(url.toURI());
@@ -68,7 +70,7 @@ class StreamxHomeTest {
     Path homeDir = tempDir.resolve("nested");
     System.setProperty("STREAMX_HOME", homeDir.toAbsolutePath().toString());
 
-    StreamxHome.getConfigUrl();
+    StreamxHome.createConfigIfNotExists();
 
     Path configDir = homeDir.resolve("config");
     assertTrue(Files.isDirectory(configDir), "Config directory should be created");

@@ -47,13 +47,13 @@ class AbstractCommandTest extends AbstractCommandBaseTest {
     AbstractTestCommand<Void> command1 = new AbstractTestCommand<>();
     new CommandLine(command1);
 
-    assertNotNull(command1.spec.findOption(CommonOption.OUTPUT_LONG));
+    assertNotNull(command1.spec.findOption(CommonOptions.OUTPUT_LONG));
 
     AbstractTestCommand<Void> command2 = new AbstractTestCommand<>();
-    command2.setHiddenOptionsHandler(() -> List.of(CommonOption.OUTPUT_LONG));
+    command2.setHiddenOptionsHandler(() -> List.of(CommonOptions.OUTPUT_LONG));
     new CommandLine(command2);
 
-    assertNull(command2.spec.findOption(CommonOption.OUTPUT_LONG));
+    assertNull(command2.spec.findOption(CommonOptions.OUTPUT_LONG));
   }
 
   @Test

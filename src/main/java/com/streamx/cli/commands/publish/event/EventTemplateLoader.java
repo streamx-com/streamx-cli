@@ -8,7 +8,6 @@ import com.streamx.cli.framework.CliException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,8 +16,6 @@ import org.jetbrains.annotations.NotNull;
 
 class EventTemplateLoader {
 
-  private static final String DEFAULT_TEMPLATES_DIR = "default-event-templates";
-  private static final String TEMPLATE_EXTENSION = ".json";
   private static final String TEMPLATE_SETTINGS_MAPPING_PREFIX = "eventtemplate.";
 
   record TemplateDescriptor(String template, String templatePath) {}
@@ -53,18 +50,26 @@ class EventTemplateLoader {
   }
 
   private TemplateDescriptor findDefaultTemplate(String templateName) {
-    String resourcePath = "/" + DEFAULT_TEMPLATES_DIR + "/" + templateName + TEMPLATE_EXTENSION;
-    try (InputStream inputStream = EventTemplateLoader.class.getResourceAsStream(resourcePath)) {
-      if (inputStream == null) {
-        return null;
+    Path onDisk = DefaultEventTemplates.resolveOnDisk(templateName);
+    if (Files.isRegularFile(onDisk)) {
+      try {
+        return new TemplateDescriptor(
+            Files.readString(onDisk),
+            onDisk.toAbsolutePath().toString()
+        );
+      } catch (IOException ignored) {
+        // fall back to embedded
       }
-      return new TemplateDescriptor(
-          new String(inputStream.readAllBytes(), StandardCharsets.UTF_8),
-          resourcePath
-      );
-    } catch (IOException e) {
+    }
+
+    String embedded = DefaultEventTemplates.loadEmbedded(templateName);
+    if (embedded == null) {
       return null;
     }
+    return new TemplateDescriptor(
+        embedded,
+        "/" + DefaultEventTemplates.DIRECTORY + "/" + templateName + DefaultEventTemplates.EXTENSION
+    );
   }
 
   private TemplateDescriptor findTemplateInSettings(String eventType) {

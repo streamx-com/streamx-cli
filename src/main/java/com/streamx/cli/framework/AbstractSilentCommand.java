@@ -6,7 +6,7 @@ import java.util.List;
 public abstract class AbstractSilentCommand extends AbstractCommand<Void> {
   @Override
   public List<String> getHiddenOptions() {
-    return List.of(CommonOption.OUTPUT_LONG);
+    return List.of(CommonOptions.OUTPUT_LONG);
   }
 
   @Override

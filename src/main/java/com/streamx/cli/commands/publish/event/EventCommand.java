@@ -40,7 +40,10 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Event template type",
+      description = {
+          "Event template type",
+          "Defaults: <streamx-home>/default-event-templates (~/.streamx by default)"
+      },
       arity = "0..1"
   )
   public String eventType;

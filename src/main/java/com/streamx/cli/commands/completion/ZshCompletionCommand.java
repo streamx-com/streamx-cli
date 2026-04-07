@@ -2,7 +2,7 @@ package com.streamx.cli.commands.completion;
 
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.framework.CommonOption;
+import com.streamx.cli.framework.CommonOptions;
 import java.util.List;
 import picocli.AutoComplete;
 import picocli.CommandLine;
@@ -36,7 +36,7 @@ public class ZshCompletionCommand extends AbstractCommand<String> {
 
   @Override
   public List<String> getHiddenOptions() {
-    return List.of(CommonOption.OUTPUT_LONG, CommonOption.VERBOSE_LONG);
+    return List.of(CommonOptions.OUTPUT_LONG, CommonOptions.VERBOSE_LONG);
   }
 
   @Override

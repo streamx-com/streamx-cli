@@ -173,6 +173,19 @@ public abstract class CliBaseIT {
     });
 
     cmd.setExecutionStrategy(parseResult -> {
+      Assertions.assertNotNull(parseResult);
+      List<CommandLine> parsed = parseResult.asCommandLineList();
+      CommandLine last = parsed.getLast();
+      Object command = last.getCommand();
+
+      if (command instanceof AbstractCommand<?> abstractCommand) {
+        try {
+          abstractCommand.populateStreamxHome();
+        } catch (Exception e) {
+          return abstractCommand.handleExecutionError(e);
+        }
+      }
+
       CommandLine.ParseResult pr = parseResult;
       while (pr != null) {
         if (pr.isUsageHelpRequested() || pr.isVersionHelpRequested()) {
@@ -182,10 +195,6 @@ public abstract class CliBaseIT {
         pr = pr.hasSubcommand() ? pr.subcommand() : null;
       }
 
-      Assertions.assertNotNull(parseResult);
-      List<CommandLine> parsed = parseResult.asCommandLineList();
-      CommandLine last = parsed.getLast();
-      Object command = last.getCommand();
       if (command instanceof AbstractCommand<?> abstractCommand) {
         return abstractCommand.execute();
       }

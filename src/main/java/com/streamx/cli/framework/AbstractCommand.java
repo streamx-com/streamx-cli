@@ -66,13 +66,13 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   @CommandLine.Option(
-      names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
+      names = {CommonOptions.VERBOSE_SHORT, CommonOptions.VERBOSE_LONG},
       description = "Print debug information"
   )
   public boolean verbose;
 
   @CommandLine.Option(
-      names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
+      names = {CommonOptions.OUTPUT_SHORT, CommonOptions.OUTPUT_LONG},
       description = "Specify output format: text, json, yaml",
       defaultValue = "text"
   )
@@ -80,7 +80,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public OutputFormat output = OutputFormat.text;
 
   @CommandLine.ArgGroup(exclusive = false, heading = "%nGlobal Options:%n", order = 100)
-  HelpOptions helpOptions = new HelpOptions();
+  CommonOptions helpOptions = new CommonOptions();
 
   // Override this method to implement the command logic.
   public abstract CommandResult<ResultT> runCommand();
@@ -165,11 +165,15 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     }
   }
 
-  public int execute() {
+  public void populateStreamxHome() {
     if (helpOptions.streamxHome != null) {
       StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
     }
 
+    StreamxHome.populate();
+  }
+
+  public int execute() {
     int exitCode = 0;
 
     try {
