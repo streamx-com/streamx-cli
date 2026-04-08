@@ -2,6 +2,7 @@ package com.streamx.cli.commands.completion;
 
 import com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates;
 import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import java.io.File;
@@ -196,6 +197,9 @@ public final class ZshCompletionGenerator {
       Class<?> type, OptionSpec opt, Iterable<String> completionCandidates) {
     if (completionCandidates instanceof RegisteredTemplateIdCompletionCandidates) {
       return "($(streamx __complete-registered-template-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof NonDefaultTemplateIdCompletionCandidates) {
+      return "($(streamx __complete-non-default-template-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof TemplateIdCompletionCandidates) {
       return "($(streamx __complete-template-ids 2>/dev/null))";

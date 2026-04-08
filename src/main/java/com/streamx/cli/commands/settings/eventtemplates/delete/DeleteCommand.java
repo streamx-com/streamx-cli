@@ -4,7 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog;
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog.TemplateLocation;
-import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -37,7 +37,7 @@ public class DeleteCommand extends AbstractCommand<DeleteCommandResult> {
       index = "0",
       arity = "0..1",
       description = "Template ID (prompts if omitted)",
-      completionCandidates = TemplateIdCompletionCandidates.class
+      completionCandidates = NonDefaultTemplateIdCompletionCandidates.class
   )
   public String templateId;
 

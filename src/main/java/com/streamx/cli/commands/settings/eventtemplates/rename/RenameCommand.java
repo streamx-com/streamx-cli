@@ -6,7 +6,7 @@ import com.streamx.cli.commands.publish.event.EventTemplateCatalog;
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog.TemplateLocation;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.commands.publish.event.UserEventTemplates;
-import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
@@ -45,7 +45,7 @@ public class RenameCommand extends AbstractCommand<RenameCommandResult> {
       index = "0",
       arity = "0..1",
       description = "Current template ID (prompts if omitted)",
-      completionCandidates = TemplateIdCompletionCandidates.class
+      completionCandidates = NonDefaultTemplateIdCompletionCandidates.class
   )
   public String oldId;
 

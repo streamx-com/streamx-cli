@@ -1,5 +1,6 @@
 package com.streamx.cli.commands;
 
+import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
@@ -21,6 +22,7 @@ import picocli.CommandLine;
         CompletionCommand.class,
         CompleteTemplateIdsCommand.class,
         CompleteRegisteredTemplateIdsCommand.class,
+        CompleteNonDefaultTemplateIdsCommand.class,
         CompleteSettingsKeysCommand.class,
         CompleteSettingsSetKeysCommand.class
     }

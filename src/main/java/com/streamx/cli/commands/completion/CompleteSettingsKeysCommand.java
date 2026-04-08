@@ -3,7 +3,6 @@ package com.streamx.cli.commands.completion;
 import com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.framework.CommonOptions;
 import java.util.ArrayList;
 import java.util.List;
 import picocli.CommandLine;
@@ -14,11 +13,6 @@ import picocli.CommandLine;
     header = "Internal: list every settings key currently stored, one per line"
 )
 public class CompleteSettingsKeysCommand extends AbstractCommand<List<String>> {
-
-  @Override
-  public List<String> getHiddenOptions() {
-    return List.of(CommonOptions.OUTPUT_LONG, CommonOptions.VERBOSE_LONG);
-  }
 
   @Override
   public CommandResult<List<String>> runCommand() {
