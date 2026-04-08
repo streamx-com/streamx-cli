@@ -26,8 +26,7 @@ import picocli.CommandLine;
     footer = {
         "",
         "Examples:",
-        "  streamx settings event-templates create                    # wizard",
-        "  echo -e 'my.thing\\ncom.example.v1' | streamx settings event-templates create"
+        "  streamx settings event-templates create"
     }
 )
 public class CreateCommand extends AbstractCommand<CreateCommandResult> {
