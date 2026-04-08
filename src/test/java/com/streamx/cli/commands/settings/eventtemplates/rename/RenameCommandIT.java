@@ -3,6 +3,8 @@ package com.streamx.cli.commands.settings.eventtemplates.rename;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
@@ -16,6 +18,30 @@ import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 class RenameCommandIT extends CliBaseIT {
+
+  private static final ObjectMapper JSON = new ObjectMapper();
+
+  @Test
+  void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
+    Path home = tempDir.resolve("streamx-home");
+    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Files.createDirectories(userDir);
+    Files.writeString(userDir.resolve("old.json"), sampleTemplate("com.example.v1"));
+
+    ProcessResult result = exec(
+        "settings", "event-templates", "rename",
+        "--streamx-home", home.toString(),
+        "old", "renamed",
+        "-o", "json"
+    );
+
+    result.assertSuccess();
+    JsonNode root = JSON.readTree(result.stdout());
+    assertThat(root.get("oldId").asText()).isEqualTo("old");
+    assertThat(root.get("newId").asText()).isEqualTo("renamed");
+    assertThat(root.get("source").asText()).isNotBlank();
+    assertThat(root.get("path").asText()).endsWith("renamed.json");
+  }
 
   @Test
   void shouldRenameUserTemplateFile(@TempDir Path tempDir) throws Exception {

@@ -3,6 +3,8 @@ package com.streamx.cli.commands.settings.eventtemplates.delete;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -13,6 +15,31 @@ import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 class DeleteCommandIT extends CliBaseIT {
+
+  private static final ObjectMapper JSON = new ObjectMapper();
+
+  @Test
+  void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
+    Path home = tempDir.resolve("streamx-home");
+    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Files.createDirectories(userDir);
+    Path target = userDir.resolve("my.thing.json");
+    Files.writeString(target, sampleTemplate("com.example.thing.v1"));
+
+    ProcessResult result = exec(
+        "settings", "event-templates", "delete",
+        "--streamx-home", home.toString(),
+        "my.thing",
+        "--yes",
+        "-o", "json"
+    );
+
+    result.assertSuccess();
+    JsonNode root = JSON.readTree(result.stdout());
+    assertThat(root.get("id").asText()).isEqualTo("my.thing");
+    assertThat(root.get("path").asText()).endsWith("my.thing.json");
+    assertThat(target).doesNotExist();
+  }
 
   @Test
   void shouldDeleteUserTemplateWithYesFlag(@TempDir Path tempDir) throws Exception {

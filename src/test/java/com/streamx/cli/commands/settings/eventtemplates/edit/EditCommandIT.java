@@ -2,6 +2,8 @@ package com.streamx.cli.commands.settings.eventtemplates.edit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -15,6 +17,8 @@ import org.junit.jupiter.api.io.TempDir;
 @QuarkusTest
 class EditCommandIT extends CliBaseIT {
 
+  private static final ObjectMapper JSON = new ObjectMapper();
+
   @BeforeEach
   void setNoOpEditor() {
 
@@ -25,6 +29,28 @@ class EditCommandIT extends CliBaseIT {
   @AfterEach
   void clearEditor() {
     clearEnv(EditCommand.EDITOR);
+  }
+
+  @Test
+  void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
+    Path home = tempDir.resolve("streamx-home");
+    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Files.createDirectories(userDir);
+    Path target = userDir.resolve("my.thing.json");
+    Files.writeString(target, "{\"type\":\"x\"}");
+
+    ProcessResult result = exec(
+        "settings", "event-templates", "edit",
+        "--streamx-home", home.toString(),
+        "my.thing",
+        "-o", "json"
+    );
+
+    result.assertSuccess();
+    JsonNode root = JSON.readTree(result.stdout());
+    assertThat(root.get("id").asText()).isEqualTo("my.thing");
+    assertThat(root.get("path").asText()).endsWith("my.thing.json");
+    assertThat(root.get("editor").asText()).isNotBlank();
   }
 
   @Test

@@ -3,6 +3,8 @@ package com.streamx.cli.commands.settings.eventtemplates.copy;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -13,6 +15,31 @@ import org.junit.jupiter.api.io.TempDir;
 
 @QuarkusTest
 class CopyCommandIT extends CliBaseIT {
+
+  private static final ObjectMapper JSON = new ObjectMapper();
+
+  @Test
+  void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
+    Path home = tempDir.resolve("streamx-home");
+    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Files.createDirectories(userDir);
+    Path source = userDir.resolve("source.json");
+    Files.writeString(source, sampleTemplate("com.example.source.v1"));
+
+    ProcessResult result = exec(
+        "settings", "event-templates", "copy",
+        "--streamx-home", home.toString(),
+        "source",
+        "destination",
+        "-o", "json"
+    );
+
+    result.assertSuccess();
+    JsonNode root = JSON.readTree(result.stdout());
+    assertThat(root.get("sourceId").asText()).isEqualTo("source");
+    assertThat(root.get("destId").asText()).isEqualTo("destination");
+    assertThat(root.get("path").asText()).endsWith("destination.json");
+  }
 
   @Test
   void shouldCopyDefaultTemplateToUserFolder(@TempDir Path tempDir) throws Exception {

@@ -41,6 +41,25 @@ class CreateCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
+    Path home = tempDir.resolve("streamx-home");
+
+    ProcessResult result = execWithStdin(
+        "my.json.template\ncom.example.my.json.template.v1\n",
+        "settings", "event-templates", "create",
+        "--streamx-home", home.toString(),
+        "-o", "json"
+    );
+
+    result.assertSuccess();
+
+    JsonNode root = JSON.readTree(result.stdout());
+    assertThat(root.get("id").asText()).isEqualTo("my.json.template");
+    assertThat(root.get("type").asText()).isEqualTo("com.example.my.json.template.v1");
+    assertThat(root.get("path").asText()).endsWith("my.json.template.json");
+  }
+
+  @Test
   void shouldFailWhenTypeBlank(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
 
