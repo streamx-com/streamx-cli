@@ -21,24 +21,23 @@ class CopyCommandIT extends CliBaseIT {
   @Test
   void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
-    Files.createDirectories(userDir);
-    Path source = userDir.resolve("source.json");
-    Files.writeString(source, sampleTemplate("com.example.source.v1"));
+
+    exec("settings", "event-templates", "list",
+        "--streamx-home", home.toString()).assertSuccess();
 
     ProcessResult result = exec(
         "settings", "event-templates", "copy",
         "--streamx-home", home.toString(),
-        "source",
-        "destination",
+        "page.published",
+        "my.page",
         "-o", "json"
     );
 
     result.assertSuccess();
     JsonNode root = JSON.readTree(result.stdout());
-    assertThat(root.get("sourceId").asText()).isEqualTo("source");
-    assertThat(root.get("destId").asText()).isEqualTo("destination");
-    assertThat(root.get("path").asText()).endsWith("destination.json");
+    assertThat(root.get("sourceId").asText()).isEqualTo("page.published");
+    assertThat(root.get("destId").asText()).isEqualTo("my.page");
+    assertThat(root.get("path").asText()).endsWith("my.page.json");
   }
 
   @Test

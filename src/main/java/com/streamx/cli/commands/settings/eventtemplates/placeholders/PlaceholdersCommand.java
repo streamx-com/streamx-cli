@@ -16,8 +16,7 @@ import picocli.CommandLine;
         "",
         "Examples:",
         "  streamx settings event-templates placeholders",
-        "  streamx settings event-templates placeholders -o json",
-        "  streamx settings event-templates placeholders -o yaml"
+        "  streamx settings event-templates placeholders -o json"
     }
 )
 public class PlaceholdersCommand extends AbstractCommand<List<Placeholder>> {

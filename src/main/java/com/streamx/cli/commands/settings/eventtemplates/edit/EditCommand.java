@@ -20,10 +20,8 @@ import picocli.CommandLine;
     name = "edit",
     header = "Open an event template in $EDITOR",
     description = {
-        "Editing a bundled default copies it into <streamxHome>/event-templates/custom/ first, "
-            + "so the edit lives in a stable, override-able location.",
-        "After the editor exits, the saved file is re-validated as JSON; if parsing fails, the "
-            + "editor is re-launched so the user can fix the mistake."
+        "Default templates are copied to <streamxHome>/event-templates/custom/ before editing.",
+        "On save, the file is re-validated as JSON; invalid JSON re-opens the editor."
     },
     footer = {
         "",

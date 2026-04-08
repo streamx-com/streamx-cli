@@ -19,8 +19,9 @@ import picocli.CommandLine;
     header = "Delete a user-created event template",
     description = {
         "Deletes a template from <streamxHome>/event-templates/custom/.",
-        "Defaults cannot be deleted this way — use `reset-default-templates` to restore them.",
-        "Registered templates cannot be deleted this way — use `unregister` instead."
+        "Default templates cannot be deleted this way - use "
+            + "`reset-default-templates` to restore them.",
+        "Registered templates cannot be deleted this way - use `unregister` instead."
     },
     footer = {
         "",

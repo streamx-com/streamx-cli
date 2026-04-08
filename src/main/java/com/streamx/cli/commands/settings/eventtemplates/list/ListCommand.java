@@ -14,7 +14,8 @@ import picocli.CommandLine;
     name = "list",
     header = "Display all available event templates",
     description = "Lists every template that `publish event` can resolve, along with its "
-        + "CloudEvent type, source (default / user / registered), and path on disk.",
+        + "CloudEvent type, source (default / custom / registered in settings), "
+        + "and path on disk.",
     footer = {
         "",
         "Examples:",

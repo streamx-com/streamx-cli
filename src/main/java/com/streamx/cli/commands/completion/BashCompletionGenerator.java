@@ -2,6 +2,7 @@ package com.streamx.cli.commands.completion;
 
 import com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates;
 import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,9 @@ public final class BashCompletionGenerator {
   }
 
   private static String mapCandidatesToCommand(Iterable<String> candidates) {
+    if (candidates instanceof RegisteredTemplateIdCompletionCandidates) {
+      return "__complete-registered-template-ids";
+    }
     if (candidates instanceof TemplateIdCompletionCandidates) {
       return "__complete-template-ids";
     }

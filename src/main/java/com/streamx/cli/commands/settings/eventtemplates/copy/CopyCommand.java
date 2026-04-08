@@ -21,12 +21,12 @@ import picocli.CommandLine;
     header = "Copy an existing event template under a new ID",
     description = "Copies the resolved content of <sourceId> into "
         + "<streamxHome>/event-templates/custom/<destId>.json. Works with templates from any "
-        + "source (default, custom, or registered). The copy always lands in the custom folder.",
+        + "source (default / custom / registered in settings). "
+        + "The copy always lands in the custom folder.",
     footer = {
         "",
         "Examples:",
         "  streamx settings event-templates copy page.published my.page",
-        "  streamx settings event-templates copy asset.published my.asset",
         "  streamx settings event-templates copy   # interactive"
     }
 )

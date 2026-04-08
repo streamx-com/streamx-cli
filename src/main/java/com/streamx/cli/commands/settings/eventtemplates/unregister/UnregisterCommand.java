@@ -4,7 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
-import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
@@ -24,10 +24,11 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "unregister",
-    header = "Unregister a settings-registered event template (defaults are not affected)",
+    header = "Unregister a settings-registered event template "
+        + "(default templates are not affected)",
     description = "Removes an `eventtemplate.<id>` entry from "
         + "<streamxHome>/config/application.properties. The underlying file on disk is not "
-        + "touched. This command only operates on settings-registered templates — it will "
+        + "touched. This command only operates on settings-registered templates - it will "
         + "not delete defaults or user-created templates.",
     footer = {
         "",
@@ -42,7 +43,7 @@ public class UnregisterCommand extends AbstractSilentCommand {
       index = "0",
       arity = "0..1",
       description = "Template ID to unregister (prompts if omitted)",
-      completionCandidates = TemplateIdCompletionCandidates.class
+      completionCandidates = RegisteredTemplateIdCompletionCandidates.class
   )
   public String templateId;
 
