@@ -22,6 +22,32 @@ class CompletionCommandIT extends CliBaseIT {
     ProcessResult result = exec("completion", "zsh");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains("#compdef streamx");
+    String stdout = result.stdout();
+    assertThat(stdout).contains("#compdef streamx");
+    assertThat(stdout).contains("_arguments");
+    assertThat(stdout).contains("compdef _streamx streamx");
+  }
+
+  @Test
+  void shouldEmitDynamicTemplateIdCompletionForPublishEvent() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains("$(streamx __complete-template-ids 2>/dev/null)");
+  }
+
+  @Test
+  void shouldHideInternalCompleteTemplateIdsCommandFromZshSubcommands() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+    result.assertSuccess();
+    assertThat(result.stdout()).doesNotContain("'__complete-template-ids'");
+  }
+
+  @Test
+  void shouldListAllTemplateIdsViaInternalHelper() throws Exception {
+    ProcessResult result = exec("__complete-template-ids");
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("page.published");
+    assertThat(result.stdout()).contains("asset.published");
   }
 }

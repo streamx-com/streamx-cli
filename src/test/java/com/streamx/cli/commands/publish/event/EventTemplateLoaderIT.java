@@ -53,9 +53,9 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     registerTemplate(TEMPLATE_TYPE, relativePath);
   }
 
-  private void registerTemplate(String eventType, String relativePath) throws Exception {
+  private void registerTemplate(String templateId, String relativePath) throws Exception {
     exec("settings", "set",
-        "eventtemplate." + eventType,
+        "eventtemplate." + templateId,
         relativePath
     ).assertSuccess();
   }
@@ -64,16 +64,16 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     registerTemplateAbsolute(TEMPLATE_TYPE, absolutePath);
   }
 
-  private void registerTemplateAbsolute(String eventType, Path absolutePath) throws Exception {
+  private void registerTemplateAbsolute(String templateId, Path absolutePath) throws Exception {
     exec("settings", "set",
-        "eventtemplate." + eventType,
+        "eventtemplate." + templateId,
         absolutePath.toString()
     ).assertSuccess();
   }
 
-  private void unregisterTemplate(String eventType) throws Exception {
+  private void unregisterTemplate(String templateId) throws Exception {
     exec("settings", "unset",
-        "eventtemplate." + eventType
+        "eventtemplate." + templateId
     ).assertSuccess();
   }
 
@@ -257,7 +257,8 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.eventTemplateNotFound(TEMPLATE_TYPE));
+    Path expectedPath = streamxHome.resolve("non-existent-template.json").toAbsolutePath();
+    assertThat(result.stderr()).contains(msg.eventTemplateFileMissing(expectedPath.toString()));
   }
 
   @Test
@@ -265,7 +266,8 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    registerTemplateAbsolute(tempDir.resolve("non-existent-template.json"));
+    Path missingTemplate = tempDir.resolve("non-existent-template.json");
+    registerTemplateAbsolute(missingTemplate);
 
     ProcessResult result = exec(
         "publish", "event",
@@ -274,7 +276,8 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.eventTemplateNotFound(TEMPLATE_TYPE));
+    assertThat(result.stderr())
+        .contains(msg.eventTemplateFileMissing(missingTemplate.toAbsolutePath().toString()));
   }
 
   @Test
@@ -295,7 +298,8 @@ public class EventTemplateLoaderIT extends CliBaseIT {
       );
 
       result.assertExitCode(1);
-      assertThat(result.stderr()).contains(msg.eventTemplateNotFound(TEMPLATE_TYPE));
+      assertThat(result.stderr())
+          .contains(msg.eventTemplateFileMissing(templateDir.toAbsolutePath().toString()));
     } finally {
       Files.deleteIfExists(templateDir);
     }
@@ -315,6 +319,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.eventTemplateNotFound(TEMPLATE_TYPE));
+    assertThat(result.stderr())
+        .contains(msg.eventTemplateFileMissing(tempDir.toAbsolutePath().toString()));
   }
 }

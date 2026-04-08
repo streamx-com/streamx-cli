@@ -47,6 +47,24 @@ public class EventCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldFailWhenTemplateIdMissing() throws Exception {
+    ProcessResult result = exec("publish", "event");
+
+    assertThat(result.exitCode()).isNotZero();
+    assertThat(result.stderr()).contains("Missing required parameter");
+    assertThat(result.stderr()).contains("templateId");
+  }
+
+  @Test
+  void shouldFailWhenEventPayloadPathMissing() throws Exception {
+    ProcessResult result = exec("publish", "event", "page.published");
+
+    assertThat(result.exitCode()).isNotZero();
+    assertThat(result.stderr()).contains("Missing required parameter");
+    assertThat(result.stderr()).contains("eventPayloadPath");
+  }
+
+  @Test
   void shouldPublishEventWithKnownEventTypes(@TempDir Path tempDir) throws Exception {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html><body>Hello</body></html>");
@@ -55,17 +73,17 @@ public class EventCommandIT extends CliBaseIT {
     Path templatesDir = Path.of(uri);
 
     try (Stream<Path> files = Files.list(templatesDir)) {
-      List<String> eventTypes = files
+      List<String> templateIds = files
           .filter(p -> p.toString().endsWith(".json"))
           .map(p -> p.getFileName().toString().replace(".json", ""))
           .toList();
 
-      for (String eventType : eventTypes) {
-        System.out.println("Testing well known event type: " + eventType);
+      for (String templateId : templateIds) {
+        System.out.println("Testing well known template ID: " + templateId);
         ProcessResult result = exec(
             "publish",
             "event",
-            eventType,
+            templateId,
             payloadFile.toString()
         );
 
@@ -273,35 +291,27 @@ public class EventCommandIT extends CliBaseIT {
       JsonNode output = getEvent(result);
       JsonNode cloudEvent = output.get("event");
 
-      // ${currentTime}
       String timeStr = cloudEvent.get("time").asText();
       OffsetDateTime eventTime =
           OffsetDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
       assertThat(eventTime).isBetween(before, after);
 
-      // ${uuid}
       assertThat(UUID.fromString(cloudEvent.get("id").asText())).isNotNull();
 
-      // ${subject}
       assertThat(output.get("subject").asText()).isEqualTo("custom/subject");
 
       JsonNode data = getEventData(result);
 
-      // file://${payloadPath}
       String expectedBase64 = Base64.getEncoder().encodeToString(content.getBytes());
       assertThat(data.get("content").asText()).isEqualTo(expectedBase64);
 
-      // ${payloadPath}
       assertThat(data.get("path").asText()).isEqualTo(payloadFile.toString());
 
-      // ${relativePath}
       assertThat(data.get("relativePath").asText()).isEqualTo("payload.html");
 
-      // ${relativePath:2}
       assertThat(data.get("relativePathWithLevel").asText())
           .isEqualTo(Path.of("b", "c", "payload.html").toString());
 
-      // non-placeholder value preserved
       assertThat(data.get("type").asText()).isEqualTo("data/page");
     }
 

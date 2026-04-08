@@ -2,6 +2,7 @@ package com.streamx.cli.commands.settings.get;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
@@ -17,7 +18,11 @@ import picocli.CommandLine;
     header = "Get settings property"
 )
 public class GetCommand extends AbstractCommand<String> {
-  @CommandLine.Parameters(index = "0", description = "Property key")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Property key",
+      completionCandidates = SettingsKeyCompletionCandidates.class
+  )
   public String key;
 
   @Override

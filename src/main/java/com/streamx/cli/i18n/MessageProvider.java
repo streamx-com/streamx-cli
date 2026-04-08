@@ -30,7 +30,7 @@ public interface MessageProvider {
       id = 104,
       value = """
           ❌ Something went wrong while running the command.
-          
+
           Please try again with `--verbose` for more details.
           If the problem persists, report it here:
           https://www.streamx.dev/contact-us.html
@@ -42,7 +42,7 @@ public interface MessageProvider {
       id = 110,
       value = """
           Timeout exceeded waiting for the container "%s" after %d seconds.
-          
+
           Try increasing the timeout by setting the """
           + StreamxBaseConfig.PN_CONTAINER_STARTUP_TIMEOUT_SECONDS + " property"
   )
@@ -53,7 +53,7 @@ public interface MessageProvider {
 
   @Message(id = 112, value = """
       Could not find a valid Docker environment.
-      
+
       Make sure that:
        * Docker is installed,
        * Docker is running""")
@@ -94,7 +94,7 @@ public interface MessageProvider {
 
   @Message(id = 123, value = """
       Unable to read mesh definition from %s
-      
+
       Details:
       %s""")
   String unableToReadMeshDefinition(String fromPath, String details);
@@ -119,7 +119,7 @@ public interface MessageProvider {
 
   @Message(id = 130, value = """
       %s
-      
+
       Full logs can be found in %s""")
   String fullLogsCanBeFoundIn(String originalMessage, String logPath);
 
@@ -140,7 +140,6 @@ public interface MessageProvider {
 
   @Message(id = 136, value = "Expression cannot be null")
   String expressionCannotBeNull();
-
 
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
@@ -310,10 +309,10 @@ public interface MessageProvider {
   String runningPublishEventCommand();
 
   @Message(id = 184, value = "No event template set for: %s")
-  String eventTemplateNotFound(String eventType);
+  String eventTemplateNotFound(String templateId);
 
   @Message(id = 185, value = "Event template for %s is corrupted")
-  String invalidEventTemplate(String eventType);
+  String invalidEventTemplate(String templateId);
 
   @Message(id = 186, value = "Unable to publish event: %s. You can find error details at: %s")
   String publishEventFailed(String reason, String errorDetailsPath);
@@ -411,4 +410,198 @@ public interface MessageProvider {
 
   @Message(id = 212, value = "Unable to read default event templates index from %s")
   String unableToReadDefaultEventTemplatesIndex(String resourcePath);
+
+  @Message(id = 213, value = "No event templates found.")
+  String eventTemplatesNoTemplatesFound();
+
+  @Message(id = 214, value = """
+      Event templates:
+      ================
+      """)
+  String eventTemplatesListHeader();
+
+  @Message(id = 215, value = "Failed to list event templates from %s: %s")
+  String failedToListEventTemplates(String path, String reason);
+
+  @Message(id = 216, value = "Template ID")
+  String eventTemplateCreatePromptId();
+
+  @Message(id = 217, value = "CloudEvent type")
+  String eventTemplateCreatePromptType();
+
+  @Message(id = 218, value = "Template ID is required")
+  String eventTemplateIdRequired();
+
+  @Message(id = 219, value = "An event template with ID '%s' already exists at %s")
+  String eventTemplateAlreadyExists(String id, String path);
+
+  @Message(id = 233, value = "Please pick a different template ID.")
+  String eventTemplatePickDifferentId();
+
+  @Message(id = 234,
+      value = "This will delete %s and restore the bundled default templates. Proceed? [y/N]")
+  String eventTemplatesResetConfirm(String path);
+
+  @Message(id = 235, value = "Reset cancelled.")
+  String eventTemplatesResetCancelled();
+
+  @Message(id = 236, value = "Failed to delete %s: %s")
+  String eventTemplatesResetDeleteFailed(String path, String reason);
+
+  @Message(id = 237, value = "Failed to repopulate default event templates at %s")
+  String eventTemplatesResetFailed(String path);
+
+  @Message(id = 238, value = "Reset default event templates at %s (%d restored)")
+  String eventTemplatesResetSucceeded(String path, int count);
+
+  @Message(id = 220, value = "Failed to create event template at %s: %s")
+  String failedToCreateEventTemplate(String path, String reason);
+
+  @Message(id = 221, value = "Created event template '%s' at %s")
+  String eventTemplateCreated(String id, String path);
+
+  @Message(id = 222, value = "No event templates are registered in settings")
+  String eventTemplateNoSettingsRegistrations();
+
+  @Message(id = 223, value = "Pick an event template to unregister")
+  String eventTemplateUnregisterPrompt();
+
+  @Message(id = 224, value = "Event template '%s' is not registered in settings")
+  String eventTemplateNotRegisteredInSettings(String id);
+
+  @Message(id = 225, value = "Pick an event template to show")
+  String eventTemplateGetPrompt();
+
+  @Message(id = 226, value = "Pick an event template to edit")
+  String eventTemplateEditPrompt();
+
+  @Message(id = 227, value = "Event template file is missing on disk: %s")
+  String eventTemplateFileMissing(String path);
+
+  @Message(id = 228, value = "Failed to copy default template from %s to %s: %s")
+  String failedToCopyEventTemplate(String from, String to, String reason);
+
+  @Message(id = 229, value = "Failed to launch editor '%s': %s")
+  String failedToLaunchEditor(String editor, String reason);
+
+  @Message(id = 230, value = "Editor '%s' exited with non-zero status %d")
+  String editorExitedWithError(String editor, int exitCode);
+
+  @Message(id = 231, value = "Edited event template '%s' at %s")
+  String eventTemplateEdited(String id, String path);
+
+  @Message(id = 240, value = "Failed to delete %s: %s")
+  String pathDeleteFailed(String path, String reason);
+
+  @Message(id = 241, value = "Saved template at %s is not valid JSON: %s")
+  String eventTemplateEditInvalidJson(String path, String reason);
+
+  @Message(id = 242, value = "Re-opening in %s so you can fix the error...")
+  String eventTemplateEditReopening(String editor);
+
+  @Message(id = 264, value = "ERROR: invalid JSON. Fix the file below "
+      + "and delete every line starting with `//` before saving "
+      + "(JSON does not support comments).")
+  String eventTemplateEditErrorBannerHeader();
+
+  @Message(id = 270,
+      value = "Absolute path of the event payload file passed to `publish event`.")
+  String placeholderDescriptionPayloadPath();
+
+  @Message(id = 271,
+      value = "Base64-encoded content of the payload file. "
+          + "Use this to embed binary or arbitrary text payloads inside a JSON event.")
+  String placeholderDescriptionPayloadContentBase64();
+
+  @Message(id = 272,
+      value = "Content of the payload file parsed as JSON and inlined directly into "
+          + "the event (the surrounding string node is replaced by the parsed JSON).")
+  String placeholderDescriptionPayloadContentJson();
+
+  @Message(id = 273,
+      value = "Path of the payload file relative to the event template's location. "
+          + "Supports the syntax ${relativePath:n}, where 'n' specifies how many "
+          + "additional parent directories above the template to include. "
+          + "Example: ${relativePath:0} resolves to the path relative to the template "
+          + "directory; ${relativePath:1} adds one extra parent level.")
+  String placeholderDescriptionRelativePath();
+
+  @Message(id = 274,
+      value = "Subject of the event. Resolves to the value passed as the third positional "
+          + "argument of `publish event`, or to ${payloadPath} when no subject is given.")
+  String placeholderDescriptionSubject();
+
+  @Message(id = 275,
+      value = "Universally unique identifier (UUID v4), regenerated for every published event.")
+  String placeholderDescriptionUuid();
+
+  @Message(id = 276,
+      value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
+  String placeholderDescriptionCurrentTime();
+
+  @Message(id = 243, value = "Cannot delete a default template. "
+      + "Use `streamx settings event-templates reset-default-templates` to restore defaults.")
+  String eventTemplateCannotDeleteDefault();
+
+  @Message(id = 244, value = "Cannot delete a registered template. "
+      + "Use `streamx settings event-templates unregister %s` instead.")
+  String eventTemplateCannotDeleteRegistered(String id);
+
+  @Message(id = 245, value = "Delete event template '%s' at %s? [y/N]")
+  String eventTemplateDeleteConfirm(String id, String path);
+
+  @Message(id = 246, value = "Delete cancelled.")
+  String eventTemplateDeleteCancelled();
+
+  @Message(id = 247, value = "Deleted event template '%s'")
+  String eventTemplateDeleted(String id);
+
+  @Message(id = 248, value = "Pick an event template to delete")
+  String eventTemplateDeletePrompt();
+
+  @Message(id = 249, value = "Source template ID")
+  String eventTemplateCopySourcePrompt();
+
+  @Message(id = 250, value = "New template ID")
+  String eventTemplateCopyDestPrompt();
+
+  @Message(id = 251, value = "Copied '%s' to '%s' at %s")
+  String eventTemplateCopied(String sourceId, String destId, String path);
+
+  @Message(id = 252, value = "Failed to copy '%s' to %s: %s")
+  String failedToCopyEventTemplateTo(String sourceId, String targetPath, String reason);
+
+  @Message(id = 253, value = "Template '%s' is valid")
+  String eventTemplateValidOk(String id);
+
+  @Message(id = 254, value = "Template '%s' is invalid: %s")
+  String eventTemplateValidFailed(String id, String reason);
+
+  @Message(id = 255, value = "Missing required CloudEvents field: '%s'")
+  String eventTemplateMissingCloudEventField(String field);
+
+  @Message(id = 256, value = "Pick an event template to validate")
+  String eventTemplateValidatePrompt();
+
+  @Message(id = 257, value = "Pick an event template to rename")
+  String eventTemplateRenamePrompt();
+
+  @Message(id = 258, value = "New template ID")
+  String eventTemplateRenameDestPrompt();
+
+  @Message(id = 259, value = "Renamed '%s' to '%s'")
+  String eventTemplateRenamed(String oldId, String newId);
+
+  @Message(id = 260, value = "Cannot rename a default template. "
+      + "Use `copy` to clone it under a new ID instead.")
+  String eventTemplateCannotRenameDefault();
+
+  @Message(id = 261, value = "Pick an event template to look up")
+  String eventTemplateWhichPrompt();
+
+  @Message(id = 262, value = "CloudEvent type is required")
+  String eventTemplateTypeRequired();
+
+  @Message(id = 263, value = "(TAB for options)")
+  String interactivePickerHint();
 }

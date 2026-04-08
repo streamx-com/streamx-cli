@@ -55,10 +55,6 @@ public abstract class CliBaseIT {
     }
   }
 
-  /**
-   * Sets a variable that will be passed as a system property in JVM mode
-   * and as a real environment variable in native mode.
-   */
   protected void setEnv(String key, String value) {
     if (isNative()) {
       envVars.put(key, value);
@@ -67,9 +63,6 @@ public abstract class CliBaseIT {
     }
   }
 
-  /**
-   * Removes a variable previously set via {@link #setEnv}.
-   */
   protected void clearEnv(String key) {
     if (isNative()) {
       envVars.remove(key);
@@ -128,7 +121,6 @@ public abstract class CliBaseIT {
     return execWithStdin(InputStream.nullInputStream(), args);
   }
 
-  /** In-process execution for JVM mode. */
   private ProcessResult execInProcess(InputStream stdin, String... args) {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -158,7 +150,6 @@ public abstract class CliBaseIT {
     }
   }
 
-  /** Creates a CommandLine instance for in-process execution. */
   protected CommandLine createCommandLine() {
     ArcContainer container = Arc.container();
     CommandLine cmd = new CommandLine(new StreamxCommand(), new CommandLine.IFactory() {
@@ -204,7 +195,6 @@ public abstract class CliBaseIT {
     return cmd;
   }
 
-  /** Sub-process execution for native mode. */
   private ProcessResult execSubprocess(
       InputStream stdin,
       long timeoutSeconds,
@@ -226,8 +216,7 @@ public abstract class CliBaseIT {
       try (OutputStream os = process.getOutputStream()) {
         stdin.transferTo(os);
         os.flush();
-      } catch (Exception ignored) {
-        // ignore
+      } catch (Exception expected) {
       }
     });
 
@@ -260,8 +249,7 @@ public abstract class CliBaseIT {
           target.write(buf, 0, len);
           target.flush();
         }
-      } catch (Exception ignored) {
-        // ignore
+      } catch (Exception expected) {
       }
     });
     return new StreamCapture(thread, buffer);

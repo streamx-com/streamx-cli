@@ -1243,6 +1243,36 @@
       ]
     },
     {
+      "type": "com.streamx.cli.commands.completion.CompleteSettingsKeysCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.completion.CompleteTemplateIdsCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "com.streamx.cli.commands.completion.CompletionCommand",
       "allDeclaredFields": true,
       "methods": [
@@ -1254,9 +1284,14 @@
     },
     {
       "type": "com.streamx.cli.commands.completion.CompletionCommandIT",
+      "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldEmitDynamicTemplateIdCompletionForPublishEvent",
           "parameterTypes": []
         },
         {
@@ -1265,6 +1300,14 @@
         },
         {
           "name": "shouldGenerateZshCompletionScript",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldHideInternalCompleteTemplateIdsCommandFromZshSubcommands",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldListAllTemplateIdsViaInternalHelper",
           "parameterTypes": []
         }
       ]
@@ -1298,6 +1341,10 @@
       "methods": [
         {
           "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldBridgeRunnerSettingToSystemPropertyForLocalRun",
           "parameterTypes": []
         },
         {
@@ -1346,16 +1393,6 @@
           "parameterTypes": []
         },
         {
-          "name": "resetTemplatesDirectory",
-          "parameterTypes": []
-        },
-        {
-          "name": "shouldFallBackToEmbeddedWhenFileDeleted",
-          "parameterTypes": [
-            "java.nio.file.Path"
-          ]
-        },
-        {
           "name": "shouldNotOverwriteUserModificationsOnSubsequentRuns",
           "parameterTypes": [
             "java.nio.file.Path"
@@ -1369,6 +1406,12 @@
         },
         {
           "name": "shouldPreferSettingsOverPopulatedTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRestoreDeletedDefaultTemplateOnNextRun",
           "parameterTypes": [
             "java.nio.file.Path"
           ]
@@ -1409,6 +1452,14 @@
         },
         {
           "name": "resetBaseline",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailWhenEventPayloadPathMissing",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailWhenTemplateIdMissing",
           "parameterTypes": []
         },
         {
@@ -1561,6 +1612,93 @@
         },
         {
           "name": "templatePath",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.event.EventTemplateCatalog$TemplateLocation",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "id",
+          "parameterTypes": []
+        },
+        {
+          "name": "path",
+          "parameterTypes": []
+        },
+        {
+          "name": "source",
+          "parameterTypes": []
+        },
+        {
+          "name": "type",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.event.EventTemplateCatalog$TemplateLocation[]"
+    },
+    {
+      "type": "com.streamx.cli.commands.publish.event.EventTemplateCatalogTest",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "blankIdReturnsEmptyOptional",
+          "parameterTypes": []
+        },
+        {
+          "name": "clearStreamxHome",
+          "parameterTypes": []
+        },
+        {
+          "name": "emptyHomeReturnsEmptyList",
+          "parameterTypes": []
+        },
+        {
+          "name": "findsDefaultTemplateInDefaultsFolder",
+          "parameterTypes": []
+        },
+        {
+          "name": "findsUserTemplateInUserFolder",
+          "parameterTypes": []
+        },
+        {
+          "name": "listAllSortsByIdAndDeduplicates",
+          "parameterTypes": []
+        },
+        {
+          "name": "listSettingsRegistrationsSkipsBlankAndNonPrefixedKeys",
+          "parameterTypes": []
+        },
+        {
+          "name": "redirectStreamxHome",
+          "parameterTypes": []
+        },
+        {
+          "name": "resolveRelativeToHomeAbsolutizesAgainstStreamxHome",
+          "parameterTypes": []
+        },
+        {
+          "name": "resolveRelativeToHomeKeepsAbsolutePathsUntouched",
+          "parameterTypes": []
+        },
+        {
+          "name": "settingsRegistrationOverridesUserAndDefaults",
+          "parameterTypes": []
+        },
+        {
+          "name": "templateIdsMirrorsListAllInOrder",
+          "parameterTypes": []
+        },
+        {
+          "name": "userFolderOverridesDefaultsFolder",
           "parameterTypes": []
         }
       ]
@@ -2285,6 +2423,723 @@
       ]
     },
     {
+      "type": "com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.EventTemplatesCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.copy.CopyCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.copy.CopyCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldCopyDefaultTemplateToUserFolder",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldCopyUserTemplateUnderNewId",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldCopyViaInteractivePrompts",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailForUnknownSource",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseToOverwriteExistingId",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.create.CreateCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.create.CreateCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldCreateTemplateFromWizard",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailWhenInputExhaustedDuringConflictLoop",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailWhenNameBlank",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailWhenTypeBlank",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRepromptOnConflictWithDefaultTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRepromptOnIdConflictAndContinueWithFreshId",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.delete.DeleteCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.delete.DeleteCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldCancelOnNo",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldDeleteUserTemplateAfterConfirmation",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldDeleteUserTemplateWithYesFlag",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailForUnknownTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseDeleteOfDefaultTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseDeleteOfRegisteredTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.edit.EditCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.edit.EditCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "clearEditor",
+          "parameterTypes": []
+        },
+        {
+          "name": "setNoOpEditor",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldCopyDefaultIntoUserFolderOnFirstEdit",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldEditUserTemplateInPlace",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldEditViaPrompt",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailForUnknownName",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.get.GetCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.get.GetCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailForUnknownName",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldGetTemplateAsJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldGetTemplateAsTextByName",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldGetTemplateAsYaml",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldGetTemplateViaPrompt",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.list.ListCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.list.ListCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldListBuiltinTemplatesAsJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldPrioritizeSettingsOverUserAndDefaults",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldPrioritizeUserOverDefaults",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRenderTextOutput",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRenderYamlOutput",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldShowUserTemplateFromEventTemplatesFolder",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.list.ListCommandResult",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "streamxHome",
+          "parameterTypes": []
+        },
+        {
+          "name": "templates",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.placeholders.PlaceholdersCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.register.RegisterCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.register.RegisterCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailWhenArgsMissing",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldWriteSettingsEntry",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.rename.RenameCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.rename.RenameCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldRefuseToRenameDefault",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseToRenameWhenNewIdAlreadyExists",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRenameSettingsRegisteredTemplate",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRenameUserTemplateFile",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.resetdefaulttemplates.ResetDefaultTemplatesCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.resetdefaulttemplates.ResetDefaultTemplatesCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldCancelOnEmptyAnswer",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldCancelWhenUserDoesNotConfirm",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldNotTouchUserEventTemplatesFolder",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldOutputJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldOutputYaml",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRecreateMissingDefaultsDir",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldResetWhenConfirmedWithYes",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldResetWithoutPromptWhenYesFlagSet",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.resetdefaulttemplates.ResetDefaultTemplatesCommandResult",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "path",
+          "parameterTypes": []
+        },
+        {
+          "name": "templates",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.unregister.UnregisterCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.unregister.UnregisterCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldNotTouchDefaultsFolder",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseUnknownName",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRefuseWhenNoRegistrationsExist",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRemoveSettingsEntryByName",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldRemoveSettingsEntryViaPrompt",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.validate.ValidateCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.validate.ValidateCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailOnInvalidJson",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldFailOnMissingRequiredField",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldReportMixedResultsWithAllFlag",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldValidateAllWithFlag",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldValidateBundledDefault",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.validate.ValidateCommandResult",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "invalidCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "results",
+          "parameterTypes": []
+        },
+        {
+          "name": "validCount",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.validate.ValidateCommandResult$TemplateValidation",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "error",
+          "parameterTypes": []
+        },
+        {
+          "name": "id",
+          "parameterTypes": []
+        },
+        {
+          "name": "path",
+          "parameterTypes": []
+        },
+        {
+          "name": "valid",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.which.WhichCommand",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.streamx.cli.commands.settings.eventtemplates.which.WhichCommandIT",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldFailForUnknown",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldOutputJsonWithFullLocation",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        },
+        {
+          "name": "shouldPrintAbsolutePathOfDefault",
+          "parameterTypes": [
+            "java.nio.file.Path"
+          ]
+        }
+      ]
+    },
+    {
       "type": "com.streamx.cli.commands.settings.get.GetCommand",
       "allDeclaredFields": true,
       "methods": [
@@ -2296,6 +3151,7 @@
     },
     {
       "type": "com.streamx.cli.commands.settings.get.GetCommandIT",
+      "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
@@ -2327,6 +3183,7 @@
     },
     {
       "type": "com.streamx.cli.commands.settings.list.ListCommandIT",
+      "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
@@ -2374,6 +3231,7 @@
     },
     {
       "type": "com.streamx.cli.commands.settings.set.SetCommandIT",
+      "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
@@ -2405,6 +3263,7 @@
     },
     {
       "type": "com.streamx.cli.commands.settings.unset.UnsetCommandIT",
+      "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
@@ -2432,6 +3291,10 @@
       "type": "com.streamx.cli.config.StreamxHome",
       "allDeclaredFields": true,
       "methods": [
+        {
+          "name": "createConfigIfNotExists",
+          "parameterTypes": []
+        },
         {
           "name": "getConfigPath",
           "parameterTypes": []
@@ -2497,11 +3360,35 @@
           "parameterTypes": []
         },
         {
+          "name": "shouldApplySettingsToSystemProperties",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldBridgeConfigToSystemProperties",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldClearStaleAppliedKeysOnReapply",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldConvertConfigKeyToEnvVarName",
+          "parameterTypes": []
+        },
+        {
           "name": "shouldCreateConfigDirectoryWhenItDoesNotExist",
           "parameterTypes": []
         },
         {
           "name": "shouldFallbackToDefaultWhenNeitherEnvOrSystemPropertyIsSet",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldNoOpWhenConfigFileMissing",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldNotOverrideExplicitlySetSystemProperty",
           "parameterTypes": []
         },
         {
@@ -2665,26 +3552,6 @@
     },
     {
       "type": "com.streamx.cli.framework.CommonOptions",
-      "fields": [
-        {
-          "name": "help"
-        },
-        {
-          "name": "streamxHome"
-        },
-        {
-          "name": "version"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.streamx.cli.framework.HelpOptions",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -7355,6 +8222,13 @@
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
           ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.virtual.threads.VirtualThreadsConfig"
+          ]
         }
       ]
     },
@@ -7441,6 +8315,15 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
           ]
@@ -7569,6 +8452,15 @@
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
           ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.logging.LogBuildTimeConfig",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
         }
       ]
     },
@@ -7623,6 +8515,14 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
@@ -7644,6 +8544,14 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -7726,17 +8634,6 @@
       ]
     },
     {
-      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy28",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        }
-      ]
-    },
-    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy29",
       "methods": [
         {
@@ -7760,7 +8657,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.logging.LogBuildTimeConfig",
             "io.quarkus.runtime.RuntimeValue",
             "io.quarkus.runtime.RuntimeValue"
           ]
@@ -7781,13 +8677,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
           ]
         }
       ]
@@ -7813,6 +8702,12 @@
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy32",
       "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        },
         {
           "name": "<init>",
           "parameterTypes": [
@@ -7879,12 +8774,6 @@
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy36",
       "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler"
-          ]
-        },
         {
           "name": "<init>",
           "parameterTypes": [
@@ -8047,6 +8936,25 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy49",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.scheduler.runtime.SchedulerConfig"
+          ]
         }
       ]
     },
@@ -8123,13 +9031,6 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
             "io.quarkus.scheduler.runtime.SchedulerConfig"
           ]
         }
@@ -8143,13 +9044,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
             "io.quarkus.runtime.RuntimeValue"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.scheduler.runtime.SchedulerConfig"
           ]
         }
       ]
@@ -8240,8 +9134,37 @@
       ]
     },
     {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy65",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy66",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$RecordingProxyProxy67",
       "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        },
         {
           "name": "<init>",
           "parameterTypes": [
@@ -8277,13 +9200,6 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
           ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.reflect.InvocationHandler",
-            "io.quarkus.runtime.RuntimeValue"
-          ]
         }
       ]
     },
@@ -8294,6 +9210,14 @@
           "name": "<init>",
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler",
+            "io.quarkus.runtime.RuntimeValue",
+            "io.quarkus.runtime.RuntimeValue"
           ]
         },
         {
@@ -8533,6 +9457,28 @@
           "parameterTypes": [
             "java.lang.reflect.InvocationHandler",
             "io.quarkus.virtual.threads.VirtualThreadsConfig"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy11",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy12",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
           ]
         }
       ]
@@ -8868,6 +9814,17 @@
       ]
     },
     {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy43",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy44",
       "methods": [
         {
@@ -9067,6 +10024,17 @@
     },
     {
       "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy62",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.reflect.InvocationHandler"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.quarkus.deployment.recording.BytecodeRecorderImpl$$ReturnValueProxy68",
       "methods": [
         {
           "name": "<init>",
@@ -13376,9 +14344,6 @@
       "serializable": true
     },
     {
-      "type": "java.io.FileDescriptor"
-    },
-    {
       "type": "java.io.Serializable"
     },
     {
@@ -14045,6 +15010,15 @@
       ]
     },
     {
+      "type": "java.lang.reflect.AnnotatedParameterizedType",
+      "methods": [
+        {
+          "name": "getAnnotatedActualTypeArguments",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "java.lang.reflect.AnnotatedType",
       "methods": [
         {
@@ -14056,10 +15030,6 @@
     {
       "type": "java.lang.reflect.Executable",
       "methods": [
-        {
-          "name": "getAnnotatedExceptionTypes",
-          "parameterTypes": []
-        },
         {
           "name": "getAnnotatedParameterTypes",
           "parameterTypes": []
@@ -14499,7 +15469,8 @@
       ]
     },
     {
-      "type": "java.util.AbstractCollection"
+      "type": "java.util.AbstractCollection",
+      "allDeclaredFields": true
     },
     {
       "type": "java.util.AbstractMap",
@@ -14585,10 +15556,12 @@
       ]
     },
     {
-      "type": "java.util.ImmutableCollections$AbstractImmutableCollection"
+      "type": "java.util.ImmutableCollections$AbstractImmutableCollection",
+      "allDeclaredFields": true
     },
     {
-      "type": "java.util.ImmutableCollections$AbstractImmutableList"
+      "type": "java.util.ImmutableCollections$AbstractImmutableList",
+      "allDeclaredFields": true
     },
     {
       "type": "java.util.ImmutableCollections$AbstractImmutableMap",
@@ -14631,6 +15604,10 @@
       "methods": [
         {
           "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "clone",
           "parameterTypes": []
         }
       ]
@@ -15030,9 +16007,6 @@
       "type": "net.bytebuddy.description.type.TypeDescription$ForLoadedType$Dispatcher"
     },
     {
-      "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableExceptionType$Dispatcher"
-    },
-    {
       "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableParameterType$Dispatcher"
     },
     {
@@ -15043,6 +16017,9 @@
     },
     {
       "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForComponentType$AnnotatedParameterizedType"
+    },
+    {
+      "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForTypeArgument$AnnotatedParameterizedType"
     },
     {
       "type": "net.bytebuddy.implementation.bind.annotation.AllArguments"
@@ -17431,45 +18408,6 @@
       "type": "org.eclipse.microprofile.context.ThreadContext"
     },
     {
-      "type": "org.fusesource.jansi.internal.CLibrary",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "HAVE_ISATTY"
-        },
-        {
-          "name": "HAVE_TTYNAME"
-        },
-        {
-          "name": "TCSADRAIN"
-        },
-        {
-          "name": "TCSAFLUSH"
-        },
-        {
-          "name": "TCSANOW"
-        },
-        {
-          "name": "TIOCGETA"
-        },
-        {
-          "name": "TIOCGETD"
-        },
-        {
-          "name": "TIOCGWINSZ"
-        },
-        {
-          "name": "TIOCSETA"
-        },
-        {
-          "name": "TIOCSETD"
-        },
-        {
-          "name": "TIOCSWINSZ"
-        }
-      ]
-    },
-    {
       "type": "org.instancio.internal.generator.lang.BooleanGenerator",
       "methods": [
         {
@@ -17622,33 +18560,6 @@
       "fields": [
         {
           "name": "producerIndex"
-        }
-      ]
-    },
-    {
-      "type": "org.jline.terminal.impl.exec.ExecTerminalProvider",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.jline.terminal.impl.jansi.JansiTerminalProvider",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.jline.terminal.impl.jna.JnaTerminalProvider",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
         }
       ]
     },
@@ -17847,10 +18758,26 @@
       ]
     },
     {
+      "type": "org.opentest4j.AssertionFailedError",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.Object",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
       "type": "org.osgi.framework.BundleReference"
     },
     {
       "type": "org.slf4j.impl.JBossSlf4jServiceProvider"
+    },
+    {
+      "type": "org.springframework.util.MultiValueMapAdapter"
     },
     {
       "type": "picocli.CommandLine"
@@ -18454,13 +19381,6 @@
     {
       "type": {
         "proxy": [
-          "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableExceptionType$Dispatcher"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
           "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableParameterType$Dispatcher"
         ]
       }
@@ -18483,6 +19403,13 @@
       "type": {
         "proxy": [
           "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForComponentType$AnnotatedParameterizedType"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForTypeArgument$AnnotatedParameterizedType"
         ]
       }
     },

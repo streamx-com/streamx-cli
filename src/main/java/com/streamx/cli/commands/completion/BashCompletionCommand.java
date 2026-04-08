@@ -4,7 +4,6 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.CommonOptions;
 import java.util.List;
-import picocli.AutoComplete;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -40,7 +39,7 @@ public class BashCompletionCommand extends AbstractCommand<String> {
   @Override
   public CommandResult<String> runCommand() {
     CommandSpec rootSpec = getRootCommandSpec();
-    String script = AutoComplete.bash(
+    String script = BashCompletionGenerator.generate(
         rootSpec.name(),
         rootSpec.commandLine()
     );

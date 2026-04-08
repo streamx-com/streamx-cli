@@ -4,7 +4,6 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.CommonOptions;
 import java.util.List;
-import picocli.AutoComplete;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -12,27 +11,26 @@ import picocli.CommandLine.Model.CommandSpec;
     name = "zsh",
     header = "Generate zsh completion script (use --help for setup instructions)",
     description = {
-        "To load completions in the current session:",
+        "Load completions in the CURRENT zsh shell (one-liner):",
+        "  autoload -U compinit && compinit && source <(streamx completion zsh)",
+        "",
+        "If your shell already runs compinit on startup (default for oh-my-zsh,",
+        "prezto, and most distros), this shorter form is enough:",
         "  source <(streamx completion zsh)",
         "",
-        "To load completions for every new session:",
+        "Persist completions for every new shell:",
         "  mkdir -p ~/.zsh/completions",
         "  streamx completion zsh > ~/.zsh/completions/_streamx",
         "",
-        "Then add the following to ~/.zshrc (before compinit):",
+        "Then add this to ~/.zshrc (before the line that runs compinit):",
         "  fpath=(~/.zsh/completions $$fpath)",
         "",
-        "You may need to restart your shell or run 'exec zsh'",
-        "for the changes to take effect."
+        "After editing ~/.zshrc, reload it in the current shell with:",
+        "  exec zsh",
+        "or open a new terminal."
     }
 )
 public class ZshCompletionCommand extends AbstractCommand<String> {
-
-  private static final String ZSH_PREAMBLE = """
-      #compdef streamx
-      autoload -U +X bashcompinit && bashcompinit
-      autoload -U +X compinit && compinit
-      """;
 
   @Override
   public List<String> getHiddenOptions() {
@@ -47,15 +45,14 @@ public class ZshCompletionCommand extends AbstractCommand<String> {
   @Override
   public CommandResult<String> runCommand() {
     CommandSpec rootSpec = getRootCommandSpec();
-    String bashScript = AutoComplete.bash(
+    String script = ZshCompletionGenerator.generate(
         rootSpec.name(),
         rootSpec.commandLine()
     );
-    String zshScript = ZSH_PREAMBLE + bashScript;
-    return new CommandResult<>(zshScript);
+    return new CommandResult<>(script);
   }
 
-  private CommandSpec getRootCommandSpec() {
+  protected CommandSpec getRootCommandSpec() {
     CommandSpec current = spec;
     while (current.parent() != null) {
       current = current.parent();

@@ -5,6 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.streamx.cli.commands.publish.EventTemplateProcessor;
+import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -25,7 +26,16 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "event",
-    header = "Publish a single event")
+    header = "Publish a single event",
+    footer = {
+        "",
+        "Examples:",
+        "  streamx publish event page.published ./article.html",
+        "  streamx publish event asset.published ./photo.png my.asset.key",
+        "  streamx publish event my.custom ./data.json -u https://ingest.example.com",
+        "",
+        "Run `streamx settings event-templates list` to see available template IDs."
+    })
 public class EventCommand extends AbstractCommand<EventCommandResult> {
 
   private static final String RESULT_FILE_NAME = "publish-event-result.json";
@@ -41,17 +51,18 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
   @CommandLine.Parameters(
       index = "0",
       description = {
-          "Event template type",
-          "Defaults: <streamx-home>/default-event-templates (~/.streamx by default)"
+          "Template ID (the template to use for this event).",
+          "Resolved from <streamx-home>/event-templates/custom and "
+              + "<streamx-home>/event-templates/default (~/.streamx by default).",
+          "Run `streamx settings event-templates list` to see all available templates."
       },
-      arity = "0..1"
+      completionCandidates = TemplateIdCompletionCandidates.class
   )
-  public String eventType;
+  public String templateId;
 
   @CommandLine.Parameters(
       index = "1",
-      description = "Payload path",
-      arity = "0..1"
+      description = "Payload path"
   )
   public String eventPayloadPath;
 
@@ -84,7 +95,7 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
     }
 
     EventTemplateLoader templateLoader = new EventTemplateLoader();
-    EventTemplateLoader.TemplateDescriptor templateDescriptor = templateLoader.load(eventType);
+    EventTemplateLoader.TemplateDescriptor templateDescriptor = templateLoader.load(templateId);
     Path payloadPath = Path.of(eventPayloadPath);
 
     EventTemplateProcessor templateProcessor =

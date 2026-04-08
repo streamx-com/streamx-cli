@@ -13,10 +13,11 @@ import java.util.List;
 
 public final class DefaultEventTemplates {
 
-  public static final String DIRECTORY = "default-event-templates";
+  public static final String DIRECTORY = "event-templates/default";
   public static final String EXTENSION = ".json";
 
-  private static final String INDEX_RESOURCE = "/" + DIRECTORY + "/_index";
+  static final String RESOURCE_DIRECTORY = "default-event-templates";
+  private static final String INDEX_RESOURCE = "/" + RESOURCE_DIRECTORY + "/_index";
 
   private DefaultEventTemplates() {
   }
@@ -39,15 +40,17 @@ public final class DefaultEventTemplates {
       Path targetDir = StreamxHome.getStreamxHome().resolve(DIRECTORY);
       Files.createDirectories(targetDir);
       for (String templateName : templateNames()) {
+        Path file = targetDir.resolve(templateName + EXTENSION);
+        if (Files.exists(file)) {
+          continue;
+        }
         String content = loadEmbedded(templateName);
         if (content == null) {
           continue;
         }
-        Path file = targetDir.resolve(templateName + EXTENSION);
         Files.writeString(file, content, StandardCharsets.UTF_8);
       }
-    } catch (IOException ignored) {
-      // best-effort
+    } catch (IOException expected) {
     }
   }
 
@@ -58,7 +61,7 @@ public final class DefaultEventTemplates {
   }
 
   public static String loadEmbedded(String templateName) {
-    String resourcePath = "/" + DIRECTORY + "/" + templateName + EXTENSION;
+    String resourcePath = "/" + RESOURCE_DIRECTORY + "/" + templateName + EXTENSION;
     try (InputStream inputStream = DefaultEventTemplates.class.getResourceAsStream(resourcePath)) {
       if (inputStream == null) {
         return null;

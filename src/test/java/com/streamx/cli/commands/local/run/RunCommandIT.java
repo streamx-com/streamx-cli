@@ -83,6 +83,50 @@ public class RunCommandIT extends CliBaseIT {
     }
   }
 
+  /**
+   * Verifies that {@link com.streamx.cli.config.StreamxHome#bridgeConfigToSystemProperties()}
+   * propagates a runner-related setting from the streamxHome config file to a JVM system
+   * property, where the streamx-service-mesh runner picks it up via {@code ConfigProvider}.
+   *
+   * <p>The setup intentionally uses ONLY {@code exec("settings", "set", ...)} (no
+   * {@code System.setProperty}) to write the runner key. If the bridge works the runner
+   * will use that prefix when naming its containers and the test passes; if it doesn't,
+   * the runner falls back to the default {@code sx-} prefix.
+   */
+  @Test
+  void shouldBridgeRunnerSettingToSystemPropertyForLocalRun() throws Exception {
+    String bridgedPrefix = "sx-bridge-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+    System.clearProperty("streamx.runner.mesh-name-prefix");
+
+    exec("settings", "set", "streamx.runner.mesh-name-prefix", bridgedPrefix).assertSuccess();
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE).assertSuccess();
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME",
+        bridgedPrefix + "test-owner").assertSuccess();
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(2))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+
+      assertThat(handle.getStdout())
+          .as("runner should use the prefix from streamxHome settings via the bridge")
+          .contains(bridgedPrefix);
+    } finally {
+      if (handle.thread().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      }
+      System.clearProperty("streamx.runner.mesh-name-prefix");
+    }
+  }
+
   @Test
   void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);

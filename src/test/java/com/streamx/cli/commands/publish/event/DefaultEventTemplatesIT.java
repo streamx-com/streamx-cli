@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
@@ -60,7 +61,7 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    assertThat(customHome).doesNotExist();
+    seedIngestionUrl(customHome);
 
     exec(
         "publish", "event",
@@ -85,6 +86,8 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
     Path customHome = tempDir.resolve("streamx-home");
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
+
+    seedIngestionUrl(customHome);
 
     exec(
         "publish", "event",
@@ -126,6 +129,8 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
+    seedIngestionUrl(customHome);
+
     ProcessResult result = exec(
         "publish", "event",
         "--streamx-home", customHome.toString(),
@@ -141,13 +146,16 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
   }
 
   @Test
-  void shouldFallBackToEmbeddedWhenFileDeleted(@TempDir Path tempDir) throws Exception {
+  void shouldRestoreDeletedDefaultTemplateOnNextRun(@TempDir Path tempDir) throws Exception {
+
     Path customHome = tempDir.resolve("streamx-home");
     Path templatesDir = customHome.resolve(DefaultEventTemplates.DIRECTORY);
     Files.createDirectories(templatesDir);
 
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
+
+    seedIngestionUrl(customHome);
 
     exec(
         "publish", "event",
@@ -156,7 +164,7 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
         payloadFile.toString()
     ).assertSuccess();
 
-    assertThat(templatesDir.resolve(DEFAULT_TEMPLATE_TYPE + ".json")).doesNotExist();
+    assertThat(templatesDir.resolve(DEFAULT_TEMPLATE_TYPE + ".json")).isRegularFile();
   }
 
   @Test
@@ -170,6 +178,8 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
         customHome.resolve("override-page-published.json"),
         templateWithOrigin("settings")
     );
+
+    seedIngestionUrl(customHome);
 
     exec("settings", "set",
         "--streamx-home", customHome.toString(),
@@ -191,11 +201,22 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
     assertThat(data.get("origin").asText()).isEqualTo("settings");
   }
 
+  private void seedIngestionUrl(Path customHome) throws Exception {
+    if (!MeshTestSupport.isMeshActive()) {
+      return;
+    }
+    exec("settings", "set",
+        "--streamx-home", customHome.toString(),
+        IngestionClientConfig.STREAMX_INGESTION_URL,
+        "http://localhost:" + MeshTestSupport.getProxyPort()
+    ).assertSuccess();
+  }
+
   private static List<String> embeddedTemplateNames()
       throws IOException, URISyntaxException {
     Path resourceDir = Path.of(
         DefaultEventTemplatesIT.class
-            .getResource("/" + DefaultEventTemplates.DIRECTORY)
+            .getResource("/" + DefaultEventTemplates.RESOURCE_DIRECTORY)
             .toURI()
     );
     try (Stream<Path> files = Files.list(resourceDir)) {
