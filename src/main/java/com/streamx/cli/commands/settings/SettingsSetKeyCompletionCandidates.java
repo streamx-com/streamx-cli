@@ -1,6 +1,5 @@
 package com.streamx.cli.commands.settings;
 
-import com.streamx.cli.commands.publish.event.EventTemplateCatalog;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.runner.config.StreamxBaseConfig;
@@ -11,6 +10,7 @@ import java.util.TreeSet;
 public class SettingsSetKeyCompletionCandidates implements Iterable<String> {
 
   static final List<String> WELL_KNOWN_KEYS = List.of(
+      EventTemplateLoader.TEMPLATE_SETTINGS_MAPPING_PREFIX,
       IngestionClientConfig.STREAMX_INGESTION_URL,
       IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN,
       IngestionClientConfig.STREAMX_INGESTION_INSECURE,
@@ -39,13 +39,6 @@ public class SettingsSetKeyCompletionCandidates implements Iterable<String> {
 
   public static Iterable<String> loadKeys() {
     TreeSet<String> keys = new TreeSet<>(WELL_KNOWN_KEYS);
-    try {
-      for (String templateId : EventTemplateCatalog.templateIds()) {
-        keys.add(EventTemplateLoader.TEMPLATE_SETTINGS_MAPPING_PREFIX + templateId);
-      }
-    } catch (Exception ignored) {
-      // catalog read may fail; skip eventtemplate.* completions in that case
-    }
     SettingsKeyCompletionCandidates.loadKeys().forEach(keys::add);
     return keys;
   }
