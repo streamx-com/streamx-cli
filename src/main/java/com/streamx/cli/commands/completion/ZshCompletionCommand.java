@@ -11,23 +11,18 @@ import picocli.CommandLine.Model.CommandSpec;
     name = "zsh",
     header = "Generate zsh completion script (use --help for setup instructions)",
     description = {
-        "Load completions in the CURRENT zsh shell (one-liner):",
-        "  autoload -U compinit && compinit && source <(streamx completion zsh)",
+        "If installed via Homebrew, zsh completions are set up automatically.",
+        "New terminal sessions will have completions available out of the box.",
         "",
-        "If your shell already runs compinit on startup (default for oh-my-zsh,",
-        "prezto, and most distros), this shorter form is enough:",
-        "  source <(streamx completion zsh)",
-        "",
-        "Persist completions for every new shell:",
+        "Manual setup (without Homebrew):",
         "  mkdir -p ~/.zsh/completions",
         "  streamx completion zsh > ~/.zsh/completions/_streamx",
         "",
         "Then add this to ~/.zshrc (before the line that runs compinit):",
         "  fpath=(~/.zsh/completions $$fpath)",
         "",
-        "After editing ~/.zshrc, reload it in the current shell with:",
-        "  exec zsh",
-        "or open a new terminal."
+        "To load completions in the current session only:",
+        "  source <(streamx completion zsh)"
     }
 )
 public class ZshCompletionCommand extends AbstractCommand<String> {

@@ -11,17 +11,16 @@ import picocli.CommandLine.Model.CommandSpec;
     name = "bash",
     header = "Generate bash completion script (use --help for setup instructions)",
     description = {
-        "To load completions in the current session:",
-        "  source <(streamx completion bash)",
+        "If installed via Homebrew, bash completions are set up automatically.",
+        "The bash-completion package is required:",
+        "  brew install bash-completion@2",
+        "Follow its caveats to configure your shell, then open a new terminal.",
         "",
-        "To load completions for every new session:",
+        "Manual setup (without Homebrew):",
         "  streamx completion bash > /etc/bash_completion.d/streamx",
         "",
-        "If using Homebrew (macOS or Linux):",
-        "  streamx completion bash > $$(brew --prefix)/etc/bash_completion.d/streamx",
-        "",
-        "You may need to restart your shell for the changes to take effect.",
-        "Note: bash-completion package must be installed."
+        "To load completions in the current session only:",
+        "  source <(streamx completion bash)"
     }
 )
 public class BashCompletionCommand extends AbstractCommand<String> {
