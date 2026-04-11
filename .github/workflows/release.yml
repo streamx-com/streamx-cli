@@ -152,17 +152,25 @@ jobs:
           RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           chmod +x artifacts/streamx-*
-          
+
+          echo "Generate shell completions from JAR"
+          mkdir -p artifacts/completions
+          java -jar target/*-runner.jar completion bash > artifacts/completions/streamx.bash
+          java -jar target/*-runner.jar completion zsh > artifacts/completions/_streamx
+
           echo "Pre-create platform ZIPs for native binaries"
           for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
             mkdir -p staging/$PLATFORM/bin
+            mkdir -p staging/$PLATFORM/share/completions
             cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
+            cp artifacts/completions/streamx.bash staging/$PLATFORM/share/completions/
+            cp artifacts/completions/_streamx staging/$PLATFORM/share/completions/
             cp LICENSE.txt staging/$PLATFORM/
             cd staging
             zip -r ../artifacts/streamx-${RELEASE_TAG}-${PLATFORM}.zip $PLATFORM/
             cd ..
           done
-          
+
           echo "Prepare Java binary JAR"
           cp target/*-runner.jar artifacts/streamx-jar.jar
 

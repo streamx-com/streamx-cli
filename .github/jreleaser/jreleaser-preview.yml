@@ -31,6 +31,8 @@ assemble:
         - input: .
           includes:
             - LICENSE.txt
+        - input: artifacts/completions
+          output: share/completions
 
 distributions:
   streamx:

@@ -27,12 +27,9 @@ class {{brewFormulaName}} < Formula
     (bin/"{{distributionExecutableName}}").write_env_script libexec/"bin/{{distributionExecutableUnix}}",
       Language::Java.overridable_java_home_env("21")
 
-    # Generate and install shell completions
-    output = Utils.safe_popen_read(bin/"{{distributionExecutableName}}", "completion", "bash")
-    (bash_completion/"{{distributionExecutableName}}").write output
-
-    output = Utils.safe_popen_read(bin/"{{distributionExecutableName}}", "completion", "zsh")
-    (zsh_completion/"_{{distributionExecutableName}}").write output
+    # Install pre-generated shell completions
+    bash_completion.install libexec/"share/completions/{{distributionExecutableName}}.bash" => "{{distributionExecutableName}}"
+    zsh_completion.install libexec/"share/completions/_{{distributionExecutableName}}"
   end
 
   test do
