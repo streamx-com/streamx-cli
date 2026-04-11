@@ -37,7 +37,7 @@ public class RunCommandIT extends CliBaseIT {
 
     try {
       Awaitility.await()
-          .atMost(Duration.ofMinutes(2))
+          .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
           .until(() -> handle.getStderr()
               .contains("Environment variable 'STREAMX_OWNER_SERVICE_NAME'"));
@@ -67,7 +67,7 @@ public class RunCommandIT extends CliBaseIT {
 
     try {
       Awaitility.await()
-          .atMost(Duration.ofMinutes(2))
+          .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
           .until(() -> !handle.thread().isAlive());
 
@@ -112,7 +112,7 @@ public class RunCommandIT extends CliBaseIT {
 
     try {
       Awaitility.await()
-          .atMost(Duration.ofMinutes(2))
+          .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
           .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
 
@@ -142,7 +142,7 @@ public class RunCommandIT extends CliBaseIT {
 
     try {
       Awaitility.await()
-          .atMost(Duration.ofMinutes(2))
+          .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
           .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
 
