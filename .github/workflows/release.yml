@@ -258,6 +258,11 @@ jobs:
           echo "Test latest version"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
           streamx --version | grep -q "${RELEASE_TAG}"
+
+          echo "Verify shell completions were installed"
+          test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
+          test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
+
           brew uninstall streamx
 
           echo "Test versioned formula"
@@ -270,6 +275,11 @@ jobs:
           echo "Test latest JVM version"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx-jvm
           streamx --version | grep -q "${RELEASE_TAG}"
+
+          echo "Verify shell completions were installed"
+          test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
+          test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
+
           brew uninstall streamx-jvm
 
           echo "Test versioned JVM formula"

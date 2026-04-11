@@ -6,10 +6,10 @@ require_relative "{{.}}"
 class {{brewFormulaName}} < Formula
   desc "{{projectDescription}}"
   homepage "{{projectLinkHomepage}}"
-  url "{{distributionUrl}}"{{#brewDownloadStrategy}}, :using => {{.}}{{/brewDownloadStrategy}}
   version "{{projectVersion}}"
-  sha256 "{{distributionChecksumSha256}}"
   license "{{projectLicense}}"
+
+  {{brewMultiPlatform}}
 
   {{#brewHasLivecheck}}
   livecheck do
@@ -24,8 +24,7 @@ class {{brewFormulaName}} < Formula
 
   def install
     libexec.install Dir["*"]
-    (bin/"{{distributionExecutableName}}").write_env_script libexec/"bin/{{distributionExecutableUnix}}",
-      Language::Java.overridable_java_home_env("21")
+    bin.install_symlink "#{libexec}/bin/{{distributionExecutableUnix}}" => "{{distributionExecutableName}}"
 
     # Generate and install shell completions
     output = Utils.safe_popen_read(bin/"{{distributionExecutableName}}", "completion", "bash")

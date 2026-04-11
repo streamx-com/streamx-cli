@@ -37,6 +37,8 @@ distributions:
     type: BINARY
     executable:
       name: streamx
+    brew:
+      templateDirectory: .github/jreleaser/distributions/streamx/brew
     artifacts:
       - path: artifacts/streamx-{{projectVersion}}-linux-x86_64.zip
         platform: linux-x86_64
