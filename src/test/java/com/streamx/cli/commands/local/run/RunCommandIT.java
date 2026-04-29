@@ -215,4 +215,36 @@ public class RunCommandIT extends CliBaseIT {
     }
   }
 
+  @Test
+  void shouldStartMeshSecondTimeAfterPreviousStopped() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+
+    runUntilReadyThenStop(meshPath);
+    runUntilReadyThenStop(meshPath);
+  }
+
+  private void runUntilReadyThenStop(String meshPath) throws InterruptedException {
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(3))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+
+      assertThat(handle.getStderr())
+          .doesNotContain("MissingReflectionRegistrationError");
+    } finally {
+      if (handle.thread().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      }
+    }
+  }
+
 }
