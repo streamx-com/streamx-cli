@@ -4,7 +4,6 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.CommonOption;
 import java.util.List;
-import picocli.AutoComplete;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -28,12 +27,6 @@ import picocli.CommandLine.Model.CommandSpec;
 )
 public class ZshCompletionCommand extends AbstractCommand<String> {
 
-  private static final String ZSH_PREAMBLE = """
-      #compdef streamx
-      autoload -U +X bashcompinit && bashcompinit
-      autoload -U +X compinit && compinit
-      """;
-
   @Override
   public List<String> getHiddenOptions() {
     return List.of(CommonOption.OUTPUT_LONG, CommonOption.VERBOSE_LONG);
@@ -47,15 +40,14 @@ public class ZshCompletionCommand extends AbstractCommand<String> {
   @Override
   public CommandResult<String> runCommand() {
     CommandSpec rootSpec = getRootCommandSpec();
-    String bashScript = AutoComplete.bash(
+    String script = ZshCompletionGenerator.generate(
         rootSpec.name(),
         rootSpec.commandLine()
     );
-    String zshScript = ZSH_PREAMBLE + bashScript;
-    return new CommandResult<>(zshScript);
+    return new CommandResult<>(script);
   }
 
-  private CommandSpec getRootCommandSpec() {
+  protected CommandSpec getRootCommandSpec() {
     CommandSpec current = spec;
     while (current.parent() != null) {
       current = current.parent();

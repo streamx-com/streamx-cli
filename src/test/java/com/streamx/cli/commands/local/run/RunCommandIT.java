@@ -110,6 +110,8 @@ public class RunCommandIT extends CliBaseIT {
 
       ProcessResult result = handle.toResult();
       result.assertSuccess();
+      assertThat(result.stdout()).contains("Stopping mesh...");
+      assertThat(result.stderr()).doesNotContain("Exception");
     } finally {
       if (handle.thread().isAlive()) {
         handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
