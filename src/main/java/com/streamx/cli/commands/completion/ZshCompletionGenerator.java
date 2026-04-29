@@ -1,5 +1,10 @@
 package com.streamx.cli.commands.completion;
 
+import com.streamx.cli.commands.settings.SettingsKeyCompletionCandidates;
+import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
+import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,11 +15,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 
-/**
- * Generates native zsh completion scripts from picocli's CommandSpec tree.
- * Uses zsh's {@code _arguments} and {@code _describe} for rich completions with descriptions.
- */
-public class ZshCompletionGenerator {
+public final class ZshCompletionGenerator {
 
   private ZshCompletionGenerator() {
   }
@@ -29,10 +30,9 @@ public class ZshCompletionGenerator {
   }
 
   private static void generateFunction(
-      StringBuilder sb, String functionName, CommandLine commandLine
-  ) {
+      StringBuilder sb, String functionName, CommandLine commandLine) {
     CommandSpec spec = commandLine.getCommandSpec();
-    Map<String, CommandLine> subcommands = commandLine.getSubcommands();
+    Map<String, CommandLine> subcommands = visibleSubcommands(commandLine);
     List<OptionSpec> options = collectVisibleOptions(spec);
     List<PositionalParamSpec> positionals = spec.positionalParameters();
 
@@ -56,14 +56,10 @@ public class ZshCompletionGenerator {
       StringBuilder sb,
       String functionName,
       List<OptionSpec> options,
-      Map<String, CommandLine> subcommands
-  ) {
+      Map<String, CommandLine> subcommands) {
     sb.append("  local curcontext=\"$curcontext\"\n\n");
-
     sb.append("  if (( CURRENT == 2 )); then\n");
 
-    // Use compadd -V with named groups to control display order.
-    // Group names are sorted lexicographically, so "1-commands" appears before "2-options".
     sb.append("    local -a cmd_names=(");
     for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
       sb.append(" '").append(entry.getKey()).append("'");
@@ -73,62 +69,29 @@ public class ZshCompletionGenerator {
     sb.append("    local -a cmd_descs=(");
     for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
       String desc = getCommandDescription(entry.getValue().getCommandSpec());
-      sb.append(" '").append(entry.getKey()).append(" -- ").append(escapeShellString(desc))
-          .append("'");
+      sb.append(" '").append(entry.getKey()).append(" -- ")
+          .append(escapeShellString(desc)).append("'");
     }
     sb.append(" )\n");
-
     sb.append("    compadd -V 1-commands -l -d cmd_descs -a cmd_names\n");
 
     if (!options.isEmpty()) {
-      // One entry per option. The inserted value is the long name (preferred)
-      // or short name as fallback. Display shows both forms.
       sb.append("    local -a opt_names=(");
       for (OptionSpec opt : options) {
-        String longName = null;
-        String shortName = null;
-        for (String name : opt.names()) {
-          if (name.startsWith("--")) {
-            longName = name;
-          } else {
-            shortName = name;
-          }
-        }
-        String value = longName != null ? longName : shortName;
-        sb.append(" '").append(value).append("'");
+        sb.append(" '").append(preferredOptionName(opt)).append("'");
       }
       sb.append(" )\n");
-
       sb.append("    local -a opt_descs=(");
       for (OptionSpec opt : options) {
-        String longName = null;
-        String shortName = null;
-        for (String name : opt.names()) {
-          if (name.startsWith("--")) {
-            longName = name;
-          } else {
-            shortName = name;
-          }
-        }
         String desc = getFirstLine(opt.description());
-        String label;
-        if (shortName != null && longName != null) {
-          label = shortName + " " + longName;
-        } else if (longName != null) {
-          label = longName;
-        } else {
-          label = shortName;
-        }
-        sb.append(" '").append(label).append(" -- ")
+        sb.append(" '").append(optionLabel(opt)).append(" -- ")
             .append(escapeShellString(desc)).append("'");
       }
       sb.append(" )\n");
-
       sb.append("    compadd -V 2-options -l -d opt_descs -a opt_names\n");
     }
 
     sb.append("  else\n");
-    // Subcommand already selected — shift words and dispatch.
     sb.append("    local subcmd=${words[2]}\n");
     sb.append("    curcontext=\"${curcontext%:*:*}:")
         .append(sanitize(functionName.substring(1)))
@@ -136,12 +99,10 @@ public class ZshCompletionGenerator {
     sb.append("    (( CURRENT-- ))\n");
     sb.append("    shift words\n");
     sb.append("    case $subcmd in\n");
-
     for (String name : subcommands.keySet()) {
       sb.append("      ").append(name).append(") ")
           .append(functionName).append("_").append(sanitize(name)).append(" ;;\n");
     }
-
     sb.append("    esac\n");
     sb.append("  fi\n");
   }
@@ -149,12 +110,9 @@ public class ZshCompletionGenerator {
   private static void generateLeafFunction(
       StringBuilder sb,
       List<OptionSpec> options,
-      List<PositionalParamSpec> positionals
-  ) {
-    // Only include positionals that have a real completion action (files, enums).
-    // Positionals with empty actions block option completion on bare TAB.
+      List<PositionalParamSpec> positionals) {
     List<PositionalParamSpec> actionablePositionals = positionals.stream()
-        .filter(p -> !getCompletionAction(p.type(), null).isEmpty())
+        .filter(p -> !getCompletionAction(p).isEmpty())
         .toList();
 
     if (options.isEmpty() && actionablePositionals.isEmpty()) {
@@ -174,7 +132,6 @@ public class ZshCompletionGenerator {
     }
 
     if (actionablePositionals.isEmpty()) {
-      // Remove trailing backslash from last option line
       int lastBackslash = sb.lastIndexOf(" \\");
       if (lastBackslash >= 0) {
         sb.delete(lastBackslash, lastBackslash + 2);
@@ -211,22 +168,18 @@ public class ZshCompletionGenerator {
     if (isBoolean(opt)) {
       return "";
     }
-
     String label = opt.paramLabel();
-    String action = getCompletionAction(opt.type(), opt);
-
+    String action = getCompletionAction(opt.type(), opt, null);
     if (label == null || label.isEmpty()) {
       label = "value";
     }
-
     return ":" + escape(label) + ":" + action;
   }
 
   private static String formatPositional(PositionalParamSpec param) {
     String desc = getFirstLine(param.description());
-    String action = getCompletionAction(param.type(), null);
+    String action = getCompletionAction(param);
     boolean optional = param.arity().min() == 0;
-
     String spec;
     if (optional) {
       spec = "'::" + escape(desc) + ":" + action + "'";
@@ -236,7 +189,27 @@ public class ZshCompletionGenerator {
     return spec;
   }
 
-  private static String getCompletionAction(Class<?> type, OptionSpec opt) {
+  private static String getCompletionAction(PositionalParamSpec param) {
+    return getCompletionAction(param.type(), null, param.completionCandidates());
+  }
+
+  private static String getCompletionAction(
+      Class<?> type, OptionSpec opt, Iterable<String> completionCandidates) {
+    if (completionCandidates instanceof RegisteredTemplateIdCompletionCandidates) {
+      return "($(streamx __complete-registered-template-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof NonDefaultTemplateIdCompletionCandidates) {
+      return "($(streamx __complete-non-default-template-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof TemplateIdCompletionCandidates) {
+      return "($(streamx __complete-template-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof SettingsSetKeyCompletionCandidates) {
+      return "($(streamx __complete-settings-set-keys 2>/dev/null))";
+    }
+    if (completionCandidates instanceof SettingsKeyCompletionCandidates) {
+      return "($(streamx __complete-settings-keys 2>/dev/null))";
+    }
     if (type != null && type.isEnum()) {
       Object[] constants = type.getEnumConstants();
       StringBuilder values = new StringBuilder("(");
@@ -249,12 +222,39 @@ public class ZshCompletionGenerator {
       values.append(")");
       return values.toString();
     }
-
     if (type != null && (Path.class.isAssignableFrom(type) || File.class.isAssignableFrom(type))) {
       return "_files";
     }
-
     return "";
+  }
+
+  private static String preferredOptionName(OptionSpec opt) {
+    String shortName = null;
+    String longName = null;
+    for (String name : opt.names()) {
+      if (name.startsWith("--")) {
+        longName = name;
+      } else {
+        shortName = name;
+      }
+    }
+    return longName != null ? longName : shortName;
+  }
+
+  private static String optionLabel(OptionSpec opt) {
+    String shortName = null;
+    String longName = null;
+    for (String name : opt.names()) {
+      if (name.startsWith("--")) {
+        longName = name;
+      } else {
+        shortName = name;
+      }
+    }
+    if (shortName != null && longName != null) {
+      return shortName + " " + longName;
+    }
+    return longName != null ? longName : shortName;
   }
 
   private static boolean isBoolean(OptionSpec opt) {
@@ -269,6 +269,17 @@ public class ZshCompletionGenerator {
         continue;
       }
       result.add(opt);
+    }
+    return result;
+  }
+
+  private static Map<String, CommandLine> visibleSubcommands(CommandLine commandLine) {
+    java.util.LinkedHashMap<String, CommandLine> result = new java.util.LinkedHashMap<>();
+    for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+      if (entry.getValue().getCommandSpec().usageMessage().hidden()) {
+        continue;
+      }
+      result.put(entry.getKey(), entry.getValue());
     }
     return result;
   }
@@ -303,9 +314,6 @@ public class ZshCompletionGenerator {
         .replace(":", "\\:");
   }
 
-  /**
-   * Escape text for use inside single-quoted shell strings (for compadd display descriptions).
-   */
   private static String escapeShellString(String text) {
     if (text == null) {
       return "";

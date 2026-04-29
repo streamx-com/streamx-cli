@@ -1,5 +1,6 @@
 package com.streamx.cli.commands.settings;
 
+import com.streamx.cli.commands.settings.eventtemplates.EventTemplatesCommand;
 import com.streamx.cli.commands.settings.get.GetCommand;
 import com.streamx.cli.commands.settings.list.ListCommand;
 import com.streamx.cli.commands.settings.set.SetCommand;
@@ -11,6 +12,7 @@ import picocli.CommandLine;
     name = "settings",
     header = "Modify StreamX settings",
     subcommands = {
+        EventTemplatesCommand.class,
         GetCommand.class,
         ListCommand.class,
         SetCommand.class,

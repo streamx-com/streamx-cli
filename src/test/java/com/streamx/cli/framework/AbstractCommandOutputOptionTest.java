@@ -51,7 +51,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
   void shouldFormatResultAsJsonIfNoCustomFormatterProvided() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
-    commandLine.parseArgs(CommonOption.OUTPUT_LONG, "text");
+    commandLine.parseArgs(CommonOptions.OUTPUT_LONG, "text");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 
@@ -99,7 +99,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
   void shouldFormatResultWithCustomFormatter() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<TestObject>();
     CommandLine commandLine = new CommandLine(command);
-    commandLine.parseArgs(CommonOption.OUTPUT_LONG, "text");
+    commandLine.parseArgs(CommonOptions.OUTPUT_LONG, "text");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.setGetTextOutputHandler((cr) -> """
         String value: %s,
@@ -121,7 +121,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
   void shouldFormatResultAsJson() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
-    commandLine.parseArgs(CommonOption.OUTPUT_LONG, "json");
+    commandLine.parseArgs(CommonOptions.OUTPUT_LONG, "json");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 
@@ -169,7 +169,7 @@ class AbstractCommandOutputOptionTest extends AbstractCommandBaseTest {
   void shouldFormatResultAsYaml() {
     AbstractTestCommand<TestObject> command = new AbstractTestCommand<>();
     CommandLine commandLine = new CommandLine(command);
-    commandLine.parseArgs(CommonOption.OUTPUT_LONG, "yaml");
+    commandLine.parseArgs(CommonOptions.OUTPUT_LONG, "yaml");
     command.setRunCommandHandler(() -> new CommandResult<>(result));
     command.execute();
 

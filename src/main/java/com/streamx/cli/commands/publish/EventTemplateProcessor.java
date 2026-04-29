@@ -50,6 +50,9 @@ public class EventTemplateProcessor {
     try {
       JsonNode templateJson = MAPPER.readTree(eventTemplate);
       JsonNode processed = processNode(templateJson);
+      if (subject != null && processed.isObject()) {
+        ((ObjectNode) processed).put("subject", subject);
+      }
       return CloudEventsSerde.fromJson(processed);
     } catch (Exception e) {
       throw new CliException(msg.failedToProcessEventTemplatePlaceholders(e.getMessage()), e);

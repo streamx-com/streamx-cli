@@ -2,6 +2,7 @@ package com.streamx.cli.commands.settings.set;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
@@ -21,7 +22,11 @@ import picocli.CommandLine;
     header = "Set settings property"
 )
 public class SetCommand extends AbstractSilentCommand {
-  @CommandLine.Parameters(index = "0", description = "Property key")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Property key",
+      completionCandidates = SettingsSetKeyCompletionCandidates.class
+  )
   public String key;
 
   @CommandLine.Parameters(index = "1", description = "Property value")

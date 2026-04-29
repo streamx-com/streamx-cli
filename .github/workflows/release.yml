@@ -152,17 +152,25 @@ jobs:
           RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
           chmod +x artifacts/streamx-*
-          
+
+          echo "Generate shell completions from JAR"
+          mkdir -p artifacts/completions
+          java -jar target/*-runner.jar completion bash > artifacts/completions/streamx.bash
+          java -jar target/*-runner.jar completion zsh > artifacts/completions/_streamx
+
           echo "Pre-create platform ZIPs for native binaries"
           for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
             mkdir -p staging/$PLATFORM/bin
+            mkdir -p staging/$PLATFORM/share/completions
             cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
+            cp artifacts/completions/streamx.bash staging/$PLATFORM/share/completions/
+            cp artifacts/completions/_streamx staging/$PLATFORM/share/completions/
             cp LICENSE.txt staging/$PLATFORM/
             cd staging
             zip -r ../artifacts/streamx-${RELEASE_TAG}-${PLATFORM}.zip $PLATFORM/
             cd ..
           done
-          
+
           echo "Prepare Java binary JAR"
           cp target/*-runner.jar artifacts/streamx-jar.jar
 
@@ -258,6 +266,11 @@ jobs:
           echo "Test latest version"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
           streamx --version | grep -q "${RELEASE_TAG}"
+
+          echo "Verify shell completions were installed"
+          test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
+          test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
+
           brew uninstall streamx
 
           echo "Test versioned formula"
@@ -270,6 +283,11 @@ jobs:
           echo "Test latest JVM version"
           brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx-jvm
           streamx --version | grep -q "${RELEASE_TAG}"
+
+          echo "Verify shell completions were installed"
+          test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
+          test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
+
           brew uninstall streamx-jvm
 
           echo "Test versioned JVM formula"

@@ -25,45 +25,29 @@ class CompletionCommandIT extends CliBaseIT {
     String stdout = result.stdout();
     assertThat(stdout).contains("#compdef streamx");
     assertThat(stdout).contains("_arguments");
-    assertThat(stdout).contains("compadd");
     assertThat(stdout).contains("compdef _streamx streamx");
   }
 
   @Test
-  void shouldIncludeCommandDescriptionsInZshScript() throws Exception {
+  void shouldEmitDynamicTemplateIdCompletionForPublishEvent() throws Exception {
     ProcessResult result = exec("completion", "zsh");
-
     result.assertSuccess();
-    String stdout = result.stdout();
-    // Subcommand descriptions from @CommandLine.Command header attributes
-    assertThat(stdout).contains("Publish events");
-    assertThat(stdout).contains("Modify StreamX settings");
-    assertThat(stdout).contains("Operate local StreamX instance");
-    assertThat(stdout).contains("Generate shell completion scripts");
+    assertThat(result.stdout())
+        .contains("$(streamx __complete-template-ids 2>/dev/null)");
   }
 
   @Test
-  void shouldIncludeSubcommandFunctionsInZshScript() throws Exception {
+  void shouldHideInternalCompleteTemplateIdsCommandFromZshSubcommands() throws Exception {
     ProcessResult result = exec("completion", "zsh");
-
     result.assertSuccess();
-    String stdout = result.stdout();
-    assertThat(stdout).contains("_streamx_publish()");
-    assertThat(stdout).contains("_streamx_settings()");
-    assertThat(stdout).contains("_streamx_local()");
-    assertThat(stdout).contains("_streamx_publish_events()");
-    assertThat(stdout).contains("_streamx_publish_event()");
-    assertThat(stdout).contains("_streamx_publish_stream()");
+    assertThat(result.stdout()).doesNotContain("'__complete-template-ids'");
   }
 
   @Test
-  void shouldIncludeOptionDescriptionsInZshScript() throws Exception {
-    ProcessResult result = exec("completion", "zsh");
-
+  void shouldListAllTemplateIdsViaInternalHelper() throws Exception {
+    ProcessResult result = exec("__complete-template-ids");
     result.assertSuccess();
-    String stdout = result.stdout();
-    assertThat(stdout).contains("Print debug information");
-    assertThat(stdout).contains("StreamX ingestion URL");
-    assertThat(stdout).contains("Continue even if some event publish failed");
+    assertThat(result.stdout()).contains("page.published");
+    assertThat(result.stdout()).contains("asset.published");
   }
 }

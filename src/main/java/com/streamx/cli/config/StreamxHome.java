@@ -3,10 +3,11 @@ package com.streamx.cli.config;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static com.streamx.cli.util.FileUtils.createIfNotExists;
 
+import com.streamx.cli.commands.publish.event.DefaultEventTemplates;
 import com.streamx.cli.framework.CliException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,21 +47,38 @@ public class StreamxHome {
     return getStreamxHome().resolve("config/application.properties");
   }
 
-  public static URL getConfigUrl() throws CliException {
+  public static URL getConfigUrl() {
+    try {
+      return getConfigPath().toUri().toURL();
+    } catch (MalformedURLException e) {
+      throw new CliException(msg.unableToGetSettingsFilePath(), e);
+    }
+  }
+
+  public static void createConfigIfNotExists() {
     try {
       Path pathToFile = getConfigPath();
-      File file = createIfNotExists(pathToFile.getParent(), pathToFile);
-
-      return file.toURI().toURL();
+      createIfNotExists(pathToFile.getParent(), pathToFile);
     } catch (IOException e) {
       throw new CliException(msg.unableToGetSettingsFilePath(), e);
     }
   }
 
-  static String getStreamxHomeEnv() {
-    return System.getenv("STREAMX_HOME");
+  public static void populate() {
+
+    DefaultEventTemplates.populate();
+    createConfigIfNotExists();
+    applySettingsToSystemProperties();
   }
 
+  /**
+   * Loads every key/value from {@code streamxHome/config/application.properties} and forwards
+   * them to JVM system properties so any code that reads via {@link
+   * org.eclipse.microprofile.config.ConfigProvider} (e.g. {@code StreamxBaseConfig} in
+   * the streamx-service-mesh runner) picks them up. System properties already set externally
+   * (e.g. via {@code -Dkey=value}) take precedence and are left untouched. Keys applied by
+   * a previous call are cleared first so a fresh re-apply reflects the current file.
+   */
   public static void applySettingsToSystemProperties() {
     for (String key : appliedKeys) {
       System.clearProperty(key);
@@ -74,7 +92,7 @@ public class StreamxHome {
     Properties props = new Properties();
     try (InputStream in = Files.newInputStream(configPath)) {
       props.load(in);
-    } catch (IOException e) {
+    } catch (IOException ignored) {
       return;
     }
     for (String key : props.stringPropertyNames()) {
@@ -84,5 +102,9 @@ public class StreamxHome {
       System.setProperty(key, props.getProperty(key));
       appliedKeys.add(key);
     }
+  }
+
+  static String getStreamxHomeEnv() {
+    return System.getenv("STREAMX_HOME");
   }
 }

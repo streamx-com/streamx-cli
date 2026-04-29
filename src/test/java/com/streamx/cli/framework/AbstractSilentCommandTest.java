@@ -12,9 +12,9 @@ class AbstractSilentCommandTest extends AbstractCommandBaseTest {
   @Test
   void shouldNotHaveOutputOption() {
     AbstractSilentTestCommand command = new AbstractSilentTestCommand();
-    new CommandLine(command); // Trigger all PicocLi initialization
+    new CommandLine(command);
 
-    assertNull(command.spec.findOption(CommonOption.OUTPUT_LONG));
+    assertNull(command.spec.findOption(CommonOptions.OUTPUT_LONG));
   }
 
   @Test

@@ -16,7 +16,7 @@ class AbstractCommandVerboseOptionTest extends AbstractCommandBaseTest {
       throw new CliException("Test exception");
     });
     CommandLine commandLine = new CommandLine(command);
-    commandLine.parseArgs(CommonOption.VERBOSE_LONG);
+    commandLine.parseArgs(CommonOptions.VERBOSE_LONG);
 
     command.execute();
 

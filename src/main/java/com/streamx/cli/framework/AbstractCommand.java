@@ -14,23 +14,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
-import org.jline.reader.Completer;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.completer.StringsCompleter;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.UsageMessageSpec;
 
-
-/**
- * Each CLI command should extend this class.
- *
- * @param <ResultT> Must be serializable by Jackson (POJO, JsonSerializable, etc.)
- */
 @CommandLine.Command(versionProvider = VersionProvider.class)
 public abstract class AbstractCommand<ResultT> implements Runnable {
   @CommandLine.Spec
@@ -66,33 +54,28 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   @CommandLine.Option(
-      names = {CommonOption.VERBOSE_SHORT, CommonOption.VERBOSE_LONG},
+      names = {CommonOptions.VERBOSE_SHORT, CommonOptions.VERBOSE_LONG},
       description = "Print debug information"
   )
   public boolean verbose;
 
   @CommandLine.Option(
-      names = {CommonOption.OUTPUT_SHORT, CommonOption.OUTPUT_LONG},
+      names = {CommonOptions.OUTPUT_SHORT, CommonOptions.OUTPUT_LONG},
       description = "Specify output format: text, json, yaml",
       defaultValue = "text"
   )
-  // Explicitly set default value here as a fallback for commands with the hidden output option.
+
   public OutputFormat output = OutputFormat.text;
 
   @CommandLine.ArgGroup(exclusive = false, heading = "%nGlobal Options:%n", order = 100)
-  HelpOptions helpOptions = new HelpOptions();
+  CommonOptions helpOptions = new CommonOptions();
 
-  // Override this method to implement the command logic.
   public abstract CommandResult<ResultT> runCommand();
 
-  // Override this method to hide specific command line options.
-  // May be useful to hide the "--output" option for
-  // commands that don't print anything in case of success.
   public List<String> getHiddenOptions() {
     return List.of();
   }
 
-  // Override this method to provide human-readable output.
   public String getTextOutput(CommandResult<ResultT> result) {
     return result.toText(OutputFormat.json, null);
   }
@@ -112,34 +95,21 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     spec.commandLine().usage(System.out);
   }
 
-  // Use this method for asking user input in interactive commands.
   public String promptForInput(
       String prompt,
       @Nullable List<String> autocompleteOptions
   ) {
-    try (Terminal terminal = createTerminal()) {
-      LineReaderBuilder builder = LineReaderBuilder.builder()
-          .terminal(terminal);
-
-      Completer completer;
-      if (autocompleteOptions != null) {
-        completer = new StringsCompleter(autocompleteOptions);
-        builder.completer(completer);
-      }
-
-      LineReader reader = builder.build();
-
-      return reader.readLine(prompt).strip();
-    } catch (IOException e) {
-      throw new CliException(msg.failedToHandleInteractiveInput(), e);
-    }
+    return InteractivePicker.pick(prompt, autocompleteOptions);
   }
 
   public int handleExecutionError(Exception e) {
-    writeErrorToTempDir(e);
+
+    if (!(e instanceof CliException)) {
+      writeErrorToTempDir(e);
+    }
 
     if (verbose) {
-      // Print exception stacktrace
+
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
       e.printStackTrace(pw);
@@ -160,17 +130,20 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
       e.printStackTrace(pw);
       Files.writeString(errorFile, sw.toString());
       System.err.println(msg.errorDetailsSavedTo(errorFile.toAbsolutePath().toString()));
-    } catch (IOException ignored) {
-      // Best-effort; don't fail the CLI because of logging
+    } catch (IOException expected) {
     }
   }
 
-  public int execute() {
+  public void populateStreamxHome() {
     if (helpOptions.streamxHome != null) {
       StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
     }
     StreamxHome.applySettingsToSystemProperties();
 
+    StreamxHome.populate();
+  }
+
+  public int execute() {
     int exitCode = 0;
 
     try {
@@ -200,16 +173,5 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void run() {
     int exitCode = execute();
     Quarkus.asyncExit(exitCode);
-  }
-
-  private Terminal createTerminal() throws IOException {
-    if (System.console() != null) {
-      return TerminalBuilder.builder().system(true).build();
-    }
-
-    return TerminalBuilder.builder()
-        .system(false)
-        .streams(System.in, System.err)
-        .build();
   }
 }
