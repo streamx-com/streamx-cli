@@ -138,6 +138,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     if (helpOptions.streamxHome != null) {
       StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
     }
+    StreamxHome.applySettingsToSystemProperties();
 
     StreamxHome.populate();
   }

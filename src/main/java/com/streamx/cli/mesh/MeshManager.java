@@ -117,19 +117,18 @@ public class MeshManager {
   }
 
   private void doStop() {
-    try {
-      print(msg.stoppingMesh());
+    print(msg.stoppingMesh());
 
+    try {
       runner.stopMesh();
       runner.stopBase();
-
-      print(msg.meshStopped());
-      print("");
-    } catch (Exception e) {
-      if (errorHandlingExecutor != null && !errorHandlingExecutor.failsafe) {
-        throw ExceptionUtils.sneakyThrow(e);
-      }
+    } catch (Exception ignored) {
+      // Best-effort: context may be unavailable if CDI was destroyed during JVM shutdown.
+      // Remaining containers will be cleaned up by Ryuk.
     }
+
+    print(msg.meshStopped());
+    print("");
   }
 
   public void reload() {

@@ -887,6 +887,103 @@ public class EventsCommandIT extends CliBaseIT {
   }
 
   @Nested
+  class OutputFormat {
+
+    @Test
+    void shouldFormatOutputAsJson(@TempDir Path tempDir) throws Exception {
+      TestDirectoryGenerator.root()
+          .withEventTemplate(TestDirectoryGenerator.DEFAULT_TEMPLATE)
+          .withFiles("page.json")
+          .build(tempDir);
+
+      ProcessResult result = exec(
+          "publish", "events", tempDir.toString(), "--output", "json");
+
+      result.assertSuccess();
+      assertEventsPublished(1);
+
+      JsonNode output = MAPPER.readTree(result.stdout().strip());
+      assertThat(output.get("successCount").asInt()).isEqualTo(1);
+      assertThat(output.get("failureCount").asInt()).isEqualTo(0);
+      assertThat(output.get("unknownCount").asInt()).isEqualTo(0);
+      assertThat(output.get("eventErrors").isArray()).isTrue();
+      assertThat(output.get("eventErrors")).isEmpty();
+    }
+
+    @Test
+    void shouldFormatOutputAsYaml(@TempDir Path tempDir) throws Exception {
+      TestDirectoryGenerator.root()
+          .withEventTemplate(TestDirectoryGenerator.DEFAULT_TEMPLATE)
+          .withFiles("page.json")
+          .build(tempDir);
+
+      ProcessResult result = exec(
+          "publish", "events", tempDir.toString(), "--output", "yaml");
+
+      result.assertSuccess();
+      assertEventsPublished(1);
+
+      String stdout = result.stdout().strip();
+      assertThat(stdout).contains("successCount: 1");
+      assertThat(stdout).contains("failureCount: 0");
+      assertThat(stdout).contains("unknownCount: 0");
+    }
+
+    @Test
+    void shouldFormatOutputAsJsonWithErrors(@TempDir Path tempDir) throws Exception {
+      String badTypeTemplate = TestDirectoryGenerator.DEFAULT_TEMPLATE.replace(
+          "com.streamx.blueprints.page.published.v1", "bad.type");
+
+      TestDirectoryGenerator.root()
+          .withEventTemplate(TestDirectoryGenerator.DEFAULT_TEMPLATE)
+          .withFiles("valid.json")
+          .withSubDirectory("invalid", sub -> sub
+              .withEventTemplate(badTypeTemplate)
+              .withFiles("entry.json"))
+          .build(tempDir);
+
+      ProcessResult result = exec(
+          "publish", "events", tempDir.toString(),
+          "--continue-on-error", "--output", "json");
+
+      result.assertExitCode(0);
+      assertEventsPublished(1);
+
+      JsonNode output = MAPPER.readTree(result.stdout().strip());
+      assertThat(output.get("successCount").asInt()).isEqualTo(1);
+      assertThat(output.get("failureCount").asInt()).isEqualTo(1);
+      assertThat(output.get("eventErrors").size()).isEqualTo(1);
+      assertThat(output.get("eventErrors").get(0).get("type").asText()).isEqualTo("bad.type");
+    }
+
+    @Test
+    void shouldFormatOutputAsYamlWithErrors(@TempDir Path tempDir) throws Exception {
+      String badTypeTemplate = TestDirectoryGenerator.DEFAULT_TEMPLATE.replace(
+          "com.streamx.blueprints.page.published.v1", "bad.type");
+
+      TestDirectoryGenerator.root()
+          .withEventTemplate(TestDirectoryGenerator.DEFAULT_TEMPLATE)
+          .withFiles("valid.json")
+          .withSubDirectory("invalid", sub -> sub
+              .withEventTemplate(badTypeTemplate)
+              .withFiles("entry.json"))
+          .build(tempDir);
+
+      ProcessResult result = exec(
+          "publish", "events", tempDir.toString(),
+          "--continue-on-error", "--output", "yaml");
+
+      result.assertExitCode(0);
+      assertEventsPublished(1);
+
+      String stdout = result.stdout().strip();
+      assertThat(stdout).contains("successCount: 1");
+      assertThat(stdout).contains("failureCount: 1");
+      assertThat(stdout).contains("type: \"bad.type\"");
+    }
+  }
+
+  @Nested
   class LargeScale {
 
     @Test
