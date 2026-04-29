@@ -2,12 +2,18 @@ package com.streamx.cli.commands.local.run;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
+import com.streamx.runner.event.ContainerFailed;
+import io.quarkus.arc.Arc;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.enterprise.event.Observes;
+import java.net.ServerSocket;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +26,12 @@ public class RunCommandIT extends CliBaseIT {
 
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
+
+  private static final AtomicInteger CONTAINER_FAILED_COUNT = new AtomicInteger(0);
+
+  void onContainerFailed(@Observes ContainerFailed event) {
+    CONTAINER_FAILED_COUNT.incrementAndGet();
+  }
 
   @Test
   void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
@@ -48,6 +60,46 @@ public class RunCommandIT extends CliBaseIT {
     } finally {
       if (handle.thread().isAlive()) {
         handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      }
+    }
+  }
+
+  @Test
+  void shouldFailWhenRequiredPortIsAlreadyAllocated() throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+
+    String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+
+    int failureBaseline = CONTAINER_FAILED_COUNT.get();
+
+    try (ServerSocket blocker = new ServerSocket(0)) {
+      int blockedPort = blocker.getLocalPort();
+      System.setProperty("streamx.runner.gateway.http-port", String.valueOf(blockedPort));
+
+      AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+
+      try {
+        Awaitility.await()
+            .atMost(Duration.ofMinutes(3))
+            .pollInterval(Duration.ofSeconds(1))
+            .until(() -> CONTAINER_FAILED_COUNT.get() > failureBaseline);
+
+        assertThat(CONTAINER_FAILED_COUNT.get()).isGreaterThan(failureBaseline);
+      } finally {
+        if (handle.thread().isAlive()) {
+          handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+        }
+        try {
+          Arc.container().select(MeshManager.class).get().stop();
+        } catch (Exception ignored) {
+          // best-effort cleanup
+        }
+        System.clearProperty("streamx.runner.gateway.http-port");
       }
     }
   }
