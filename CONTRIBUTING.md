@@ -9,23 +9,8 @@
 
 ## Build
 
-- Ensure that you have Java 25 GraalVM installed.
-- First you need to run `./mvnw clean verify` to build the project with.
-  It's needed to generate metadata for building native-image in the next step.
-
-- Then you can run `./mvnw verify -Dnative` **without the clean goal** to build the native executable.
-
-## Native image reachability metadata
-
-The native image build requires GraalVM reachability metadata (`reachability-metadata.json`) to know which classes need reflection, resources, etc.
-
-- **macOS metadata** is committed as `src/main/resources/META-INF/native-image/reachability-metadata-macos.json`. To update it, run the metadata generation step on a Mac:
-  ```
-  ./mvnw verify -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
-  ```
-  The `reachability-metadata-macos.json` file is updated automatically. Commit the result.
-- **Linux metadata** is generated automatically on CI during the build.
-- The merge script (`.github/scripts/merge-native-image-metadata.sh`) combines all `reachability-metadata-*.json` files with any agent-traced fork metadata into the final `reachability-metadata.json` used by the native image build.
+- Ensure that you have [Mandrel 23](https://github.com/graalvm/mandrel/releases/tag/mandrel-23.1.11.0-Final) installed.
+- Then you can run `./mvnw clean install -Dnative` to build the native executable.
 
 ## Development
 
