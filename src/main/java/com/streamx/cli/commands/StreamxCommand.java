@@ -1,5 +1,6 @@
 package com.streamx.cli.commands;
 
+import com.streamx.cli.commands.auth.AuthCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
@@ -16,6 +17,7 @@ import picocli.CommandLine;
     name = "streamx",
     header = "StreamX CLI. More info at https://streamx.com",
     subcommands = {
+        AuthCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,

@@ -604,4 +604,150 @@ public interface MessageProvider {
 
   @Message(id = 263, value = "(TAB for options)")
   String interactivePickerHint();
+
+  @Message(
+      id = 277,
+      value = "StreamX auth server URL is not configured.%n"
+          + "Set it with: streamx settings set %s <url>"
+  )
+  String authServerUrlNotConfigured(String key);
+
+  @Message(id = 278, value = "%s does not support the device authorization flow")
+  String authDeviceFlowUnsupported(String issuerUrl);
+
+  @Message(
+      id = 279,
+      value = "To finish signing in, open:%n  %s%nand enter the code:%n  %s%n%nWaiting..."
+  )
+  String authLoginInstructions(String verificationUri, String userCode);
+
+  @Message(id = 280, value = "Or open this link directly:%n  %s")
+  String authLoginDirectLink(String verificationUriComplete);
+
+  @Message(id = 281, value = "Logged in successfully")
+  String authLoginSuccess();
+
+  @Message(id = 282, value = "Login was denied")
+  String authLoginDenied();
+
+  @Message(id = 283, value = "Login timed out before it was confirmed. Run 'streamx auth login'"
+      + " again")
+  String authLoginExpired();
+
+  @Message(id = 284, value = "Login failed: %s")
+  String authLoginFailed(String error);
+
+  @Message(id = 285, value = "Login was interrupted")
+  String authLoginInterrupted();
+
+  @Message(id = 286, value = "Request to %s failed: %s")
+  String authRequestFailed(String url, String reason);
+
+  @Message(id = 287, value = "Request to %s failed with status %d")
+  String authRequestFailedWithStatus(String url, int statusCode);
+
+  @Message(id = 288, value = "Response from %s was not valid JSON")
+  String authResponseNotJson(String url);
+
+  @Message(id = 289, value = "Unable to save credentials to %s: %s")
+  String authCredentialsNotSaved(String path, String reason);
+
+  @Message(id = 290, value = "Unable to read credentials from %s: %s")
+  String authCredentialsUnreadable(String path, String reason);
+
+  @Message(id = 291, value = "Unable to delete credentials at %s: %s")
+  String authCredentialsNotDeleted(String path, String reason);
+
+  @Message(id = 292, value = "Logged out successfully")
+  String authLogoutSuccess();
+
+  @Message(id = 293, value = "Not logged in")
+  String authLogoutNotLoggedIn();
+
+  @Message(id = 294, value = "Unable to disable TLS verification: %s")
+  String authInsecureTlsFailed(String reason);
+
+  @Message(id = 353, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// auth server URL (http:// is allowed only for localhost)")
+  String authCleartextHttpBlocked(String url);
+
+  @Message(id = 295, value = "Your session has expired. Run 'streamx auth login' again")
+  String authSessionExpired();
+
+  @Message(id = 296, value = "Not logged in. Run 'streamx auth login' first")
+  String platformNotLoggedIn();
+
+  @Message(
+      id = 297,
+      value = "StreamX platform URL is not configured.%nSet it with: streamx settings set %s <url>"
+  )
+  String platformUrlNotConfigured(String key);
+
+  @Message(id = 298, value = "Not authorized. Run 'streamx auth login' again")
+  String platformUnauthorized();
+
+  @Message(id = 299, value = "You do not have permission to access %s")
+  String platformForbidden(String path);
+
+  @Message(id = 300, value = "%s was not found, or you do not have permission to access it")
+  String platformNotFoundOrForbidden(String path);
+
+  @Message(id = 301, value = "Request to %s failed: %s")
+  String platformRequestFailed(String url, String reason);
+
+  @Message(id = 302, value = "Request to %s failed with status %d")
+  String platformRequestFailedWithStatus(String url, int statusCode);
+
+  @Message(id = 303, value = "Request rejected (%d): %s")
+  String platformRequestRejected(int statusCode, String detail);
+
+  @Message(id = 304, value = "Response from %s was not valid JSON")
+  String platformResponseNotJson(String url);
+
+  @Message(id = 305, value = "Unable to disable TLS verification: %s")
+  String platformInsecureTlsFailed(String reason);
+
+  @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// platform URL (http:// is allowed only for localhost)")
+  String platformCleartextHttpBlocked(String url);
+
+  @Message(id = 309, value = "Stored access token is not a readable JWT")
+  String authTokenMalformed();
+
+  @Message(id = 319, value = "Identity provider returned a token response without an access token")
+  String authTokenResponseIncomplete();
+
+  @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
+  String authLoginOpeningBrowser();
+
+  @Message(id = 332, value = "No browser available; falling back to device code sign-in.")
+  String authBrowserFallbackToDevice();
+
+  @Message(
+      id = 333,
+      value = "The identity provider does not advertise an authorization endpoint. "
+          + "Retry with --no-browser to use the device flow."
+  )
+  String authCodeFlowUnsupported();
+
+  @Message(id = 334, value = "Could not start the local login listener: %s")
+  String authLoopbackFailed(String reason);
+
+  @Message(id = 335, value = "Signed in. You can close this tab and return to the terminal.")
+  String authLoopbackSuccess();
+
+  @Message(id = 336, value = "Sign-in failed. Return to the terminal and try again.")
+  String authLoopbackDenied();
+
+  @Message(id = 337, value = "Unable to generate a PKCE challenge: %s")
+  String authPkceFailed(String reason);
+
+  @Message(id = 338, value = "Configured issuer '%s' does not match discovery document issuer '%s'")
+  String authIssuerMismatch(String configured, String documentIssuer);
+
+  @Message(id = 339, value = "Token request rejected (%d): %s")
+  String authTokenRequestRejected(int statusCode, String detail);
+
+  @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
+  String authRevocationUnsupported();
 }
