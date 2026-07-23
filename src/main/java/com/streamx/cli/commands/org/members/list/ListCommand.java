@@ -21,9 +21,9 @@ import picocli.CommandLine;
 )
 public class ListCommand extends AbstractCommand<List<User>> {
 
-  @CommandLine.Parameters(
-      index = "0",
-      arity = "0..1",
+  @CommandLine.Option(
+      names = "--org",
+      paramLabel = "<orgId>",
       description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )

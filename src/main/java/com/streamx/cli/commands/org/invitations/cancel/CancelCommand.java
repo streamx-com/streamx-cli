@@ -17,17 +17,16 @@ import picocli.CommandLine;
 )
 public class CancelCommand extends AbstractSilentCommand {
 
-  @CommandLine.Parameters(
-      index = "0",
-      arity = "0..1",
+  @CommandLine.Option(
+      names = "--org",
+      paramLabel = "<orgId>",
       description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
-      index = "1",
-      arity = "0..1",
+      index = "0",
       description = "Invited email address",
       completionCandidates = InvitedEmailCompletionCandidates.class
   )
@@ -35,9 +34,7 @@ public class CancelCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    PlatformContext.OrgValue context = PlatformContext.orgAndValue(orgId, email, "email");
-    orgId = context.org();
-    email = context.value();
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       new OrganizationInvitationsApi(client).cancel(orgId, email);
     }

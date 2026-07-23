@@ -918,9 +918,6 @@ public interface MessageProvider {
       + "or run: streamx profile org use <orgId>")
   String noOrgContext();
 
-  @Message(id = 385, value = "Missing required argument: <%s>")
-  String missingRequiredArgument(String label);
-
   @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
       + "or run: streamx profile project use <projectId>")
   String noProjectContext();
@@ -955,4 +952,10 @@ public interface MessageProvider {
 
   @Message(id = 396, value = "Current project cleared")
   String projectUnset();
+
+  @Message(id = 397, value = "Current organization: %s")
+  String currentOrgHeader(String orgId);
+
+  @Message(id = 398, value = "Current project: %s")
+  String currentProjectHeader(String projectId);
 }

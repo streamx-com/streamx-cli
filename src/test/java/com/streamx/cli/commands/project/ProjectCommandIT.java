@@ -60,7 +60,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldListProjects() throws Exception {
-    ProcessResult result = exec("project", "list", ORG);
+    ProcessResult result = exec("project", "list", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -89,7 +89,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldListOnlyProjectIdsWhenQuiet() throws Exception {
-    ProcessResult result = exec("project", "list", ORG, "-q");
+    ProcessResult result = exec("project", "list", "--org", ORG, "-q");
 
     result.assertSuccess();
     assertThat(result.stdout()).isEqualTo("so-org-api-d3e4f\nso-org-web-a1b2c\n");
@@ -99,7 +99,7 @@ class ProjectCommandIT extends CliBaseIT {
   void shouldPrintNothingWhenQuietAndNoProjects() throws Exception {
     platform.returnNoProjects();
 
-    ProcessResult result = exec("project", "list", ORG, "-q");
+    ProcessResult result = exec("project", "list", "--org", ORG, "-q");
 
     result.assertSuccess();
     assertThat(result.stdout()).isEmpty();
@@ -107,7 +107,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldGetProject() throws Exception {
-    ProcessResult result = exec("project", "get", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "get", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -118,7 +118,8 @@ class ProjectCommandIT extends CliBaseIT {
   /** The id is server-derived, so create must report the id from the response, not the name. */
   @Test
   void shouldCreateProjectAndReportServerDerivedId() throws Exception {
-    ProcessResult result = exec("project", "create", ORG, "web", "--description", "Frontend");
+    ProcessResult result =
+        exec("project", "create", "web", "--org", ORG, "--description", "Frontend");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -130,7 +131,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldCreateProjectAsJson() throws Exception {
-    ProcessResult result = exec("project", "create", ORG, "web", "--output", "json");
+    ProcessResult result = exec("project", "create", "web", "--org", ORG, "--output", "json");
 
     result.assertSuccess();
     assertThat(result.stdout()).contains("\"id\" : \"so-web\"", "\"name\" : \"web\"");
@@ -140,7 +141,7 @@ class ProjectCommandIT extends CliBaseIT {
   @Test
   void shouldUpdateOnlyDescriptionKeepingCurrentName() throws Exception {
     ProcessResult result =
-        exec("project", "update", ORG, "so-org-web-a1b2c", "--description", "New desc");
+        exec("project", "update", "so-org-web-a1b2c", "--org", ORG, "--description", "New desc");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(
@@ -153,7 +154,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailUpdateWhenNothingGiven() throws Exception {
-    ProcessResult result = exec("project", "update", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "update", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.projectUpdateNothingToDo());
@@ -163,7 +164,7 @@ class ProjectCommandIT extends CliBaseIT {
   @Test
   void shouldDeleteProjectAfterTypedConfirmation() throws Exception {
     ProcessResult result =
-        execWithStdin("so-org-web-a1b2c\n", "project", "delete", ORG, "so-org-web-a1b2c");
+        execWithStdin("so-org-web-a1b2c\n", "project", "delete", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -173,7 +174,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldDeleteProjectWithForceWithoutPrompting() throws Exception {
-    ProcessResult result = exec("project", "delete", "-f", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "delete", "-f", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -184,7 +185,7 @@ class ProjectCommandIT extends CliBaseIT {
   void shouldCancelProjectDeletionWhenConfirmationDoesNotMatch() throws Exception {
     // Typing the ORG id instead of the project id must not confirm.
     ProcessResult result =
-        execWithStdin(ORG + "\n", "project", "delete", ORG, "so-org-web-a1b2c");
+        execWithStdin(ORG + "\n", "project", "delete", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.deleteConfirmMismatch("so-org-web-a1b2c"));
@@ -193,7 +194,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldShowProjectStatusWithComponents() throws Exception {
-    ProcessResult result = exec("project", "status", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "status", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -204,7 +205,7 @@ class ProjectCommandIT extends CliBaseIT {
 
   @Test
   void shouldListPendingChanges() throws Exception {
-    ProcessResult result = exec("project", "pending-changes", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "pending-changes", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(
@@ -216,7 +217,7 @@ class ProjectCommandIT extends CliBaseIT {
   void shouldReportNoPendingChanges() throws Exception {
     platform.failWith(200, "[]");
 
-    ProcessResult result = exec("project", "pending-changes", ORG, "so-org-web-a1b2c");
+    ProcessResult result = exec("project", "pending-changes", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
     assertThat(result.stdout()).contains(msg.projectPendingChangesEmpty());
@@ -228,7 +229,7 @@ class ProjectCommandIT extends CliBaseIT {
    */
   @Test
   void shouldEncodeProjectIdIntoASinglePathSegment() throws Exception {
-    exec("project", "delete", "-f", ORG, "so-x/status");
+    exec("project", "delete", "-f", "so-x/status", "--org", ORG);
 
     assertThat(platform.getRawRequests()).containsExactly(
         "DELETE /api/v1/organizations/" + ORG + "/projects/so-x%2Fstatus");
@@ -268,7 +269,7 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
-  void projectGetTreatsSingleArgumentAsProjectId() throws Exception {
+  void projectGetUsesPositionalProjectWithContextOrg() throws Exception {
     exec("profile", "org", "use", ORG).assertSuccess();
 
     ProcessResult result = exec("project", "get", "so-org-web-a1b2c");
@@ -276,6 +277,24 @@ class ProjectCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+  }
+
+  @Test
+  void projectListRejectsPositionalArgument() throws Exception {
+    ProcessResult result = exec("project", "list", ORG);
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("Unmatched argument");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void projectCreateRequiresNameArgument() throws Exception {
+    ProcessResult result = exec("project", "create", "--org", ORG);
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("<name>");
+    assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test

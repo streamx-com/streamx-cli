@@ -23,6 +23,8 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 
 public final class ZshCompletionGenerator {
 
+  private static final String ORG_FROM_WORDS = "\"${words[${words[(i)--org]}+1]}\"";
+
   private ZshCompletionGenerator() {
   }
 
@@ -223,17 +225,18 @@ public final class ZshCompletionGenerator {
       return "($(streamx __complete-org-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof ProjectIdCompletionCandidates) {
-      // The org id is the word already typed before the one being completed.
-      return "($(streamx __complete-project-ids \"${words[CURRENT-1]}\" 2>/dev/null))";
+      // The org id is the value of the --org option when typed; blank falls back to the
+      // current-org context inside the hidden command.
+      return "($(streamx __complete-project-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     if (completionCandidates instanceof ContextProjectIdCompletionCandidates) {
       return "($(streamx __complete-project-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof OrgMemberIdCompletionCandidates) {
-      return "($(streamx __complete-org-member-ids \"${words[CURRENT-1]}\" 2>/dev/null))";
+      return "($(streamx __complete-org-member-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     if (completionCandidates instanceof InvitedEmailCompletionCandidates) {
-      return "($(streamx __complete-invited-emails \"${words[CURRENT-1]}\" 2>/dev/null))";
+      return "($(streamx __complete-invited-emails " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {

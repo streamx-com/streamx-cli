@@ -19,16 +19,16 @@ import picocli.CommandLine;
 )
 public class UpdateCommand extends AbstractSilentCommand {
 
-  @CommandLine.Parameters(
-      index = "0",
-      arity = "0..1",
+  @CommandLine.Option(
+      names = "--org",
+      paramLabel = "<orgId>",
       description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
-      index = "1",
+      index = "0",
       arity = "0..1",
       description = "Project ID (defaults to the current project)",
       completionCandidates = ProjectIdCompletionCandidates.class

@@ -17,17 +17,16 @@ import picocli.CommandLine;
 )
 public class CreateCommand extends AbstractCommand<Project> {
 
-  @CommandLine.Parameters(
-      index = "0",
-      arity = "0..1",
+  @CommandLine.Option(
+      names = "--org",
+      paramLabel = "<orgId>",
       description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
-      index = "1",
-      arity = "0..1",
+      index = "0",
       description = "Project name"
   )
   public String name;
@@ -46,9 +45,7 @@ public class CreateCommand extends AbstractCommand<Project> {
 
   @Override
   public CommandResult<Project> runCommand() {
-    PlatformContext.OrgValue context = PlatformContext.orgAndValue(orgId, name, "name");
-    orgId = context.org();
-    name = context.value();
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).create(orgId, name, description));
     }

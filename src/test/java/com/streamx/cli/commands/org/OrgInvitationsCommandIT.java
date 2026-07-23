@@ -60,7 +60,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
 
   @Test
   void shouldListInvitations() throws Exception {
-    ProcessResult result = exec("org", "invitations", "list", ORG);
+    ProcessResult result = exec("org", "invitations", "list", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -80,7 +80,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
   @Test
   void shouldCreateInvitation() throws Exception {
     ProcessResult result =
-        exec("org", "invitations", "create", ORG, "new@streamx.com", "--role", "view");
+        exec("org", "invitations", "create", "new@streamx.com", "--org", ORG, "--role", "view");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -94,7 +94,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
   @Test
   void shouldAcceptInvitationWithTokenFromStdin() throws Exception {
     ProcessResult result =
-        execWithStdin("token-abc\n", "org", "invitations", "accept", ORG);
+        execWithStdin("token-abc\n", "org", "invitations", "accept", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -109,7 +109,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
     Files.writeString(tokenFile, "token-from-file\n");
 
     ProcessResult result = exec(
-        "org", "invitations", "accept", ORG, "--token-file", tokenFile.toString());
+        "org", "invitations", "accept", "--org", ORG, "--token-file", tokenFile.toString());
 
     result.assertSuccess();
     assertThat(platform.getRequestBodies().get(0)).contains("\"token\":\"token-from-file\"");
@@ -117,7 +117,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailWhenNoInvitationTokenSupplied() throws Exception {
-    ProcessResult result = execWithStdin("", "org", "invitations", "accept", ORG);
+    ProcessResult result = execWithStdin("", "org", "invitations", "accept", "--org", ORG);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.orgInvitationTokenRequired());
@@ -130,7 +130,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
     String email = "invited@streamx.com";
     String expected = Base64.getEncoder().encodeToString(email.getBytes(StandardCharsets.UTF_8));
 
-    ProcessResult result = exec("org", "invitations", "cancel", ORG, email);
+    ProcessResult result = exec("org", "invitations", "cancel", email, "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())

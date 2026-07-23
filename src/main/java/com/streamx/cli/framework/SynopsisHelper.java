@@ -3,9 +3,11 @@ package com.streamx.cli.framework;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.platform.PlatformContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -22,7 +24,8 @@ public final class SynopsisHelper {
 
   /**
    * Root help layout: drop the {@code Usage:} synopsis, show the active profile (name in bold)
-   * directly under the header, then a blank line before the command list.
+   * and, when set, the current organization and project directly under the header, then a blank
+   * line before the command list.
    */
   public static void applyRootUsageLayout(CommandLine commandLine) {
     UsageMessageSpec usage = commandLine.getCommandSpec().usageMessage();
@@ -32,7 +35,18 @@ public final class SynopsisHelper {
     keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS);
     usage.sectionKeys(keys);
 
-    usage.description(msg.currentProfileHeader("@|bold " + currentProfile() + "|@"), "");
+    List<String> lines = new ArrayList<>();
+    lines.add(msg.currentProfileHeader("@|bold " + currentProfile() + "|@"));
+    String org = quiet(PlatformContext::effectiveOrg);
+    if (org != null) {
+      lines.add(msg.currentOrgHeader("@|bold " + org + "|@"));
+    }
+    String project = quiet(PlatformContext::effectiveProject);
+    if (project != null) {
+      lines.add(msg.currentProjectHeader("@|bold " + project + "|@"));
+    }
+    lines.add("");
+    usage.description(lines.toArray(new String[0]));
   }
 
   private static String currentProfile() {
@@ -40,6 +54,14 @@ public final class SynopsisHelper {
       return StreamxHome.getActiveProfile();
     } catch (RuntimeException corruptOrUnreadable) {
       return StreamxHome.DEFAULT_PROFILE;
+    }
+  }
+
+  private static String quiet(Supplier<String> supplier) {
+    try {
+      return supplier.get();
+    } catch (RuntimeException corruptOrUnreadable) {
+      return null;
     }
   }
 

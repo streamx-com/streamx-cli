@@ -24,9 +24,6 @@ public final class PlatformContext {
   private PlatformContext() {
   }
 
-  public record OrgValue(String org, String value) {
-  }
-
   public record OrgProject(String org, String project) {
   }
 
@@ -65,28 +62,12 @@ public final class PlatformContext {
     return effective;
   }
 
-  public static OrgValue orgAndValue(String orgArg, String valueArg, String valueLabel) {
-    if (valueArg != null) {
-      return new OrgValue(requireOrg(orgArg), valueArg);
-    }
-    if (orgArg != null) {
-      return new OrgValue(requireOrg(null), orgArg);
-    }
-    throw new CliException(msg.missingRequiredArgument(valueLabel));
-  }
-
   public static OrgProject orgAndProject(String orgArg, String projectArg) {
-    if (projectArg != null) {
-      return new OrgProject(requireOrg(orgArg), projectArg);
-    }
-    if (orgArg != null) {
-      return new OrgProject(requireOrg(null), orgArg);
-    }
-    String project = effectiveProject();
+    String project = projectArg != null ? projectArg : effectiveProject();
     if (project == null) {
       throw new CliException(msg.noProjectContext());
     }
-    return new OrgProject(requireOrg(null), project);
+    return new OrgProject(requireOrg(orgArg), project);
   }
 
   public static String setCurrentOrg(String orgId) {

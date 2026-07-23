@@ -301,6 +301,42 @@ class ProfileCommandIT extends CliBaseIT {
   }
 
   @Test
+  void helpHeaderShowsOrgAndProjectContext() throws Exception {
+    ProcessResult bareHelp = exec("--help");
+    bareHelp.assertSuccess();
+    assertThat(bareHelp.stdout())
+        .contains("Current profile: default")
+        .doesNotContain("Current organization:")
+        .doesNotContain("Current project:");
+
+    exec("profile", "org", "use", "acme").assertSuccess();
+    exec("profile", "project", "use", "acme-shop").assertSuccess();
+
+    ProcessResult contextHelp = exec("--help");
+    contextHelp.assertSuccess();
+    String out = contextHelp.stdout();
+    assertThat(out)
+        .contains("Current organization: acme")
+        .contains("Current project: acme-shop");
+    assertThat(out.indexOf("Current profile:"))
+        .isLessThan(out.indexOf("Current organization:"));
+    assertThat(out.indexOf("Current organization:"))
+        .isLessThan(out.indexOf("Current project:"));
+    assertThat(out.indexOf("Current project:")).isLessThan(out.indexOf("Commands:"));
+
+    setEnv("STREAMX_ORG", "globex");
+    try {
+      ProcessResult envHelp = exec("--help");
+      envHelp.assertSuccess();
+      assertThat(envHelp.stdout())
+          .as("header reflects the STREAMX_ORG override")
+          .contains("Current organization: globex");
+    } finally {
+      clearEnv("STREAMX_ORG");
+    }
+  }
+
+  @Test
   void completeProfileNamesListsAllProfiles() throws Exception {
     exec("profile", "create", "prod").assertSuccess();
     exec("profile", "create", "staging").assertSuccess();

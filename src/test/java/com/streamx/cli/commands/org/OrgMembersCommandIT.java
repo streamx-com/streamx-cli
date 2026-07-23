@@ -58,7 +58,7 @@ class OrgMembersCommandIT extends CliBaseIT {
 
   @Test
   void shouldListMembersMarkingTheCaller() throws Exception {
-    ProcessResult result = exec("org", "members", "list", ORG);
+    ProcessResult result = exec("org", "members", "list", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -78,7 +78,7 @@ class OrgMembersCommandIT extends CliBaseIT {
 
   @Test
   void shouldListOnlyMemberIdsWhenQuiet() throws Exception {
-    ProcessResult result = exec("org", "members", "list", ORG, "-q");
+    ProcessResult result = exec("org", "members", "list", "--org", ORG, "-q");
 
     result.assertSuccess();
     assertThat(result.stdout())
@@ -88,7 +88,7 @@ class OrgMembersCommandIT extends CliBaseIT {
   @Test
   void shouldAddMemberByEmailWithRole() throws Exception {
     ProcessResult result =
-        exec("org", "members", "add", ORG, "existing@streamx.com", "--role", "edit");
+        exec("org", "members", "add", "existing@streamx.com", "--org", ORG, "--role", "edit");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -100,7 +100,7 @@ class OrgMembersCommandIT extends CliBaseIT {
 
   @Test
   void shouldRemoveActiveMember() throws Exception {
-    ProcessResult result = exec("org", "members", "remove", ORG, "active@streamx.com");
+    ProcessResult result = exec("org", "members", "remove", "active@streamx.com", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(
@@ -112,7 +112,7 @@ class OrgMembersCommandIT extends CliBaseIT {
   /** The server rejects removing a principal that is not an active member; say so up front. */
   @Test
   void shouldRefuseToRemovePendingInvitation() throws Exception {
-    ProcessResult result = exec("org", "members", "remove", ORG, "pending@streamx.com");
+    ProcessResult result = exec("org", "members", "remove", "pending@streamx.com", "--org", ORG);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains("invitations cancel");
@@ -123,7 +123,7 @@ class OrgMembersCommandIT extends CliBaseIT {
   @Test
   void shouldChangeRoleOfActiveMember() throws Exception {
     ProcessResult result =
-        exec("org", "members", "set-role", ORG, "active@streamx.com", "--role", "owner");
+        exec("org", "members", "set-role", "active@streamx.com", "--org", ORG, "--role", "owner");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(
@@ -137,7 +137,7 @@ class OrgMembersCommandIT extends CliBaseIT {
   @Test
   void shouldRefuseToChangeRoleOfPendingInvitation() throws Exception {
     ProcessResult result =
-        exec("org", "members", "set-role", ORG, "pending@streamx.com", "--role", "owner");
+        exec("org", "members", "set-role", "pending@streamx.com", "--org", ORG, "--role", "owner");
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains("without the invitation being accepted");
@@ -147,7 +147,7 @@ class OrgMembersCommandIT extends CliBaseIT {
 
   @Test
   void shouldRejectUnknownMember() throws Exception {
-    ProcessResult result = exec("org", "members", "remove", ORG, "nobody@streamx.com");
+    ProcessResult result = exec("org", "members", "remove", "nobody@streamx.com", "--org", ORG);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.orgMemberNotFound("nobody@streamx.com", ORG));
@@ -155,7 +155,7 @@ class OrgMembersCommandIT extends CliBaseIT {
 
   @Test
   void shouldRequireRoleWhenAddingMember() throws Exception {
-    ProcessResult result = exec("org", "members", "add", ORG, "someone");
+    ProcessResult result = exec("org", "members", "add", "someone", "--org", ORG);
 
     result.assertExitCode(2);
     assertThat(platform.getRequests()).isEmpty();

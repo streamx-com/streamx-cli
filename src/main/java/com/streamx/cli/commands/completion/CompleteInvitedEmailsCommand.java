@@ -5,6 +5,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.Invitation;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -23,11 +24,14 @@ public class CompleteInvitedEmailsCommand extends AbstractCommand<List<String>> 
   public CommandResult<List<String>> runCommand() {
     // Shell completion must stay silent and fast on ANY failure - an empty list simply
     // completes nothing.
-    if (orgId == null || orgId.isBlank() || orgId.startsWith("-")) {
+    String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
+        ? PlatformContext.effectiveOrg()
+        : orgId;
+    if (org == null) {
       return new CommandResult<>(List.of());
     }
     try (PlatformApiClient client = PlatformApiClient.completionClient()) {
-      return new CommandResult<>(new OrganizationInvitationsApi(client).list(orgId).stream()
+      return new CommandResult<>(new OrganizationInvitationsApi(client).list(org).stream()
           .map(Invitation::email)
           .filter(Objects::nonNull)
           .sorted()

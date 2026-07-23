@@ -20,17 +20,16 @@ import picocli.CommandLine;
 )
 public class SetRoleCommand extends AbstractSilentCommand {
 
-  @CommandLine.Parameters(
-      index = "0",
-      arity = "0..1",
+  @CommandLine.Option(
+      names = "--org",
+      paramLabel = "<orgId>",
       description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
-      index = "1",
-      arity = "0..1",
+      index = "0",
       description = "ID of an ACTIVE member, as shown by 'streamx org members list'",
       completionCandidates = OrgMemberIdCompletionCandidates.class
   )
@@ -46,9 +45,7 @@ public class SetRoleCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    PlatformContext.OrgValue context = PlatformContext.orgAndValue(orgId, userId, "userId");
-    orgId = context.org();
-    userId = context.value();
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       OrganizationUsersApi users = new OrganizationUsersApi(client);
 

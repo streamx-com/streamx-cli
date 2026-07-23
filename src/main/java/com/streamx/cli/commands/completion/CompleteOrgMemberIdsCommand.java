@@ -4,6 +4,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrganizationUsersApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.User;
 import java.util.List;
 import java.util.Objects;
@@ -23,11 +24,14 @@ public class CompleteOrgMemberIdsCommand extends AbstractCommand<List<String>> {
   public CommandResult<List<String>> runCommand() {
     // Shell completion must stay silent and fast on ANY failure - an empty list simply
     // completes nothing.
-    if (orgId == null || orgId.isBlank() || orgId.startsWith("-")) {
+    String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
+        ? PlatformContext.effectiveOrg()
+        : orgId;
+    if (org == null) {
       return new CommandResult<>(List.of());
     }
     try (PlatformApiClient client = PlatformApiClient.completionClient()) {
-      return new CommandResult<>(new OrganizationUsersApi(client).list(orgId).stream()
+      return new CommandResult<>(new OrganizationUsersApi(client).list(org).stream()
           .filter(User::isActive)
           .map(User::id)
           .filter(Objects::nonNull)

@@ -58,7 +58,7 @@ class OrgClustersCommandIT extends CliBaseIT {
   /** processing and edge arrive as separate arrays; the CLI flattens them with a TYPE column. */
   @Test
   void shouldListProcessingAndEdgeClustersTogether() throws Exception {
-    ProcessResult result = exec("org", "clusters", "list", ORG);
+    ProcessResult result = exec("org", "clusters", "list", "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -70,7 +70,7 @@ class OrgClustersCommandIT extends CliBaseIT {
 
   @Test
   void shouldListOnlyClusterIdsWhenQuiet() throws Exception {
-    ProcessResult result = exec("org", "clusters", "list", ORG, "-q");
+    ProcessResult result = exec("org", "clusters", "list", "--org", ORG, "-q");
 
     result.assertSuccess();
     assertThat(result.stdout()).isEqualTo("processing-eu-central\nedge-us-east\n");

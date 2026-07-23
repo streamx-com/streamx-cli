@@ -59,10 +59,16 @@ class CompletionCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(result.stdout())
         .contains("$(streamx __complete-org-ids 2>/dev/null)")
-        // The org-scoped completers receive the org id already typed before the cursor.
-        .contains("$(streamx __complete-project-ids \"${words[CURRENT-1]}\" 2>/dev/null)")
-        .contains("$(streamx __complete-org-member-ids \"${words[CURRENT-1]}\" 2>/dev/null)")
-        .contains("$(streamx __complete-invited-emails \"${words[CURRENT-1]}\" 2>/dev/null)");
+        // The --org option value itself completes org ids.
+        .contains("]:<orgId>:($(streamx __complete-org-ids 2>/dev/null))")
+        // The org-scoped completers read the --org value typed anywhere on the line;
+        // blank falls back to the current-org context inside the hidden command.
+        .contains(
+            "$(streamx __complete-project-ids \"${words[${words[(i)--org]}+1]}\" 2>/dev/null)")
+        .contains(
+            "$(streamx __complete-org-member-ids \"${words[${words[(i)--org]}+1]}\" 2>/dev/null)")
+        .contains(
+            "$(streamx __complete-invited-emails \"${words[${words[(i)--org]}+1]}\" 2>/dev/null)");
   }
 
   @Test
