@@ -23,9 +23,9 @@ public final class EventTemplateCatalog {
 
   public static final String SOURCE_SETTINGS = "settings";
 
-  public static final String SOURCE_CUSTOM = "event-templates/custom";
+  public static final String SOURCE_CUSTOM = "custom";
 
-  public static final String SOURCE_DEFAULT = "event-templates/default";
+  public static final String SOURCE_DEFAULT = "default";
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -80,15 +80,15 @@ public final class EventTemplateCatalog {
       if (value == null || value.isBlank()) {
         continue;
       }
-      result.put(id, resolveRelativeToHome(value));
+      result.put(id, resolveRelativeToProfileDir(value));
     }
     return result;
   }
 
-  public static Path resolveRelativeToHome(String pathAsString) {
+  public static Path resolveRelativeToProfileDir(String pathAsString) {
     Path path = Paths.get(pathAsString);
     if (!path.isAbsolute()) {
-      path = StreamxHome.getStreamxHome().resolve(path);
+      path = StreamxHome.getProfileDir().resolve(path);
     }
     return path.toAbsolutePath();
   }

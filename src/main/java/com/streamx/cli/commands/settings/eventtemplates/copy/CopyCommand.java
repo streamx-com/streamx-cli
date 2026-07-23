@@ -19,10 +19,10 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "copy",
     header = "Copy an existing event template under a new ID",
-    description = "Copies the resolved content of <sourceId> into "
-        + "<streamxHome>/event-templates/custom/<destId>.json. Works with templates from any "
+    description = "Copies the resolved content of <sourceId> into the profile's "
+        + "event-templates/<destId>.json. Works with templates from any "
         + "source (default / custom / registered in settings). "
-        + "The copy always lands in the custom folder.",
+        + "The copy always lands in the profile's event-templates folder.",
     footer = {
         "",
         "Examples:",

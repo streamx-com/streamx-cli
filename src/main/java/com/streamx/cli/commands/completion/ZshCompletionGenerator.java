@@ -5,6 +5,7 @@ import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.config.ProfileNameCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -209,6 +210,9 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof SettingsKeyCompletionCandidates) {
       return "($(streamx __complete-settings-keys 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ProfileNameCompletionCandidates) {
+      return "($(streamx __complete-profile-names 2>/dev/null))";
     }
     if (type != null && type.isEnum()) {
       Object[] constants = type.getEnumConstants();

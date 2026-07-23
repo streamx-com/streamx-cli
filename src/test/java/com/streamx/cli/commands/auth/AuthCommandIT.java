@@ -23,7 +23,7 @@ class AuthCommandIT extends CliBaseIT {
   private StubOidcServer oidcServer;
 
   private Path getCredentialsPath() {
-    return streamxHome.resolve("config/credentials.json");
+    return streamxHome.resolve("profiles/default/config/credentials.json");
   }
 
   private void writeAuthConfig(String serverUrl) throws IOException {

@@ -48,12 +48,13 @@ class ListCommandIT extends CliBaseIT {
 
     ProcessResult result = exec("settings", "list");
 
-    String expectedOutput = msg.listSettingsHeader() + "\n" + """
-        another.key   = another.value
-        empty.value   =
-        spaced.value  = value with spaces
-        special.chars = value=with:special@chars!
-        test.key      = test.value
+    String expectedOutput = """
+        KEY            VALUE
+        another.key    another.value
+        empty.value    -
+        spaced.value   value with spaces
+        special.chars  value=with:special@chars!
+        test.key       test.value
         """.strip();
 
     assertThat(result.stdout().strip()).isEqualTo(expectedOutput);

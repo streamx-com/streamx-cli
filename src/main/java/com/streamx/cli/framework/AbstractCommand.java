@@ -134,13 +134,33 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     }
   }
 
-  public void populateStreamxHome() {
-    if (helpOptions.streamxHome != null) {
-      StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
-    }
-    StreamxHome.applySettingsToSystemProperties();
+  /**
+   * Whether this command operates on the active profile's state (settings, credentials,
+   * event templates). Profile-management commands return false so they keep working when the
+   * selected profile does not exist and the user needs to repair the selection.
+   */
+  public boolean needsProfile() {
+    return true;
+  }
 
-    StreamxHome.populate();
+  public void populateStreamxHome(List<CommandLine> parsedChain) {
+    // Reset first: these per-invocation statics would otherwise leak between in-JVM executions.
+    StreamxHome.clearStreamxHomeCliArg();
+    StreamxHome.clearProfileCliArg();
+    // -H/--profile may sit at any level of the invocation (streamx --profile x sub cmd);
+    // collect across the chain, last occurrence wins.
+    for (CommandLine commandLine : parsedChain) {
+      if (commandLine.getCommand() instanceof AbstractCommand<?> command) {
+        if (command.helpOptions.streamxHome != null) {
+          StreamxHome.setStreamxHomeCliArg(command.helpOptions.streamxHome);
+        }
+        if (command.helpOptions.profile != null) {
+          StreamxHome.setProfileCliArg(command.helpOptions.profile);
+        }
+      }
+    }
+
+    StreamxHome.populate(needsProfile());
   }
 
   public int execute() {

@@ -2,12 +2,14 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.StreamxHome;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 public final class SynopsisHelper {
 
@@ -16,6 +18,29 @@ public final class SynopsisHelper {
 
   public static void applyCustomSynopses(CommandLine commandLine) {
     applyRecursively(commandLine);
+  }
+
+  /**
+   * Root help layout: drop the {@code Usage:} synopsis, show the active profile (name in bold)
+   * directly under the header, then a blank line before the command list.
+   */
+  public static void applyRootUsageLayout(CommandLine commandLine) {
+    UsageMessageSpec usage = commandLine.getCommandSpec().usageMessage();
+
+    List<String> keys = new ArrayList<>(usage.sectionKeys());
+    keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS_HEADING);
+    keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS);
+    usage.sectionKeys(keys);
+
+    usage.description(msg.currentProfileHeader("@|bold " + currentProfile() + "|@"), "");
+  }
+
+  private static String currentProfile() {
+    try {
+      return StreamxHome.getActiveProfile();
+    } catch (RuntimeException corruptOrUnreadable) {
+      return StreamxHome.DEFAULT_PROFILE;
+    }
   }
 
   private static void applyRecursively(CommandLine commandLine) {

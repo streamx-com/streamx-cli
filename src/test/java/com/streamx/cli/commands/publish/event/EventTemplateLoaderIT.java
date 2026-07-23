@@ -34,6 +34,13 @@ public class EventTemplateLoaderIT extends CliBaseIT {
   private static final String DEFAULT_TEMPLATE_TYPE = "page.published";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
+  /** Relative registration paths resolve against the active (default) profile's dir. */
+  private static Path profileDir() throws Exception {
+    Path dir = streamxHome.resolve("profiles/default");
+    Files.createDirectories(dir);
+    return dir;
+  }
+
   private static String createTemplateContent() {
     return """
         {
@@ -82,7 +89,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    Path templateFile = streamxHome.resolve("relative-test-template.json");
+    Path templateFile = profileDir().resolve("relative-test-template.json");
     Files.writeString(templateFile, createTemplateContent());
 
     try {
@@ -111,7 +118,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    Path templateSubDir = streamxHome.resolve("templates");
+    Path templateSubDir = profileDir().resolve("templates");
     Files.createDirectories(templateSubDir);
     Path templateFile = templateSubDir.resolve("sub-template.json");
     Files.writeString(templateFile, createTemplateContent());
@@ -188,7 +195,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    Path templateFile = streamxHome.resolve("override-page-published.json");
+    Path templateFile = profileDir().resolve("override-page-published.json");
     Files.writeString(templateFile, createTemplateContent());
 
     try {
@@ -257,7 +264,8 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     );
 
     result.assertExitCode(1);
-    Path expectedPath = streamxHome.resolve("non-existent-template.json").toAbsolutePath();
+    Path expectedPath =
+        streamxHome.resolve("profiles/default/non-existent-template.json").toAbsolutePath();
     assertThat(result.stderr()).contains(msg.eventTemplateFileMissing(expectedPath.toString()));
   }
 
@@ -285,7 +293,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    Path templateDir = streamxHome.resolve("template-dir");
+    Path templateDir = profileDir().resolve("template-dir");
     Files.createDirectories(templateDir);
 
     try {

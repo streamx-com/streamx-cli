@@ -9,6 +9,12 @@ public class AbstractCommandGroup extends AbstractCommand<Void> {
     return new CommandResult<>(null);
   }
 
+  /** Groups only print usage; that must work even when the selected profile is broken. */
+  @Override
+  public boolean needsProfile() {
+    return false;
+  }
+
   @Override
   public String getTextOutput(CommandResult<Void> result) {
     return "";

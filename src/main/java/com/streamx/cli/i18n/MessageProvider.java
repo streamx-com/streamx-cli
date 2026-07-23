@@ -144,12 +144,6 @@ public interface MessageProvider {
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
 
-  @Message(id = 139, value = """
-      StreamX settings properties:
-      =================================
-      """)
-  String listSettingsHeader();
-
   @Message(id = 140, value = "No StreamX settings properties found")
   String listSettingsNoPropertiesFound();
 
@@ -413,12 +407,6 @@ public interface MessageProvider {
 
   @Message(id = 213, value = "No event templates found.")
   String eventTemplatesNoTemplatesFound();
-
-  @Message(id = 214, value = """
-      Event templates:
-      ================
-      """)
-  String eventTemplatesListHeader();
 
   @Message(id = 215, value = "Failed to list event templates from %s: %s")
   String failedToListEventTemplates(String path, String reason);
@@ -750,4 +738,89 @@ public interface MessageProvider {
 
   @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
   String authRevocationUnsupported();
+
+  @Message(id = 355,
+      value = "Invalid profile name '%s'. Use 1-32 lowercase letters, digits or dashes")
+  String profileNameInvalid(String name);
+
+  @Message(id = 356,
+      value = "Profile '%1$s' does not exist. Create it with: streamx profile create %1$s")
+  String profileNotFound(String name);
+
+  @Message(id = 357, value = "Profile '%s' already exists")
+  String profileAlreadyExists(String name);
+
+  @Message(id = 358, value = "Profile '%s' created")
+  String profileCreated(String name);
+
+  @Message(id = 359, value = "Switched to profile '%s'")
+  String profileSwitched(String name);
+
+  @Message(id = 360, value = "Profile '%s' deleted")
+  String profileDeleted(String name);
+
+  @Message(id = 361, value = "The profile's stored login was removed locally but NOT revoked.%n"
+      + "Next time run 'streamx auth logout' in the profile before deleting it.")
+  String profileDeletedLoginNote();
+
+  @Message(id = 362,
+      value = "Profile '%s' is set as the current profile. Switch to another profile first")
+  String profileCannotDeleteCurrent(String name);
+
+  @Message(id = 363, value = "Profile '%s' is active. Switch to another profile first")
+  String profileCannotDeleteActive(String name);
+
+  @Message(id = 364, value = "Current profile: %s")
+  String currentProfileHeader(String name);
+
+  @Message(id = 365, value = "Could not create profile '%s': %s")
+  String profileCreateFailed(String name, String reason);
+
+  @Message(id = 366, value = "Could not switch profile: %s")
+  String profileSwitchFailed(String reason);
+
+  @Message(id = 367, value = "Could not delete profile '%s': %s")
+  String profileDeleteFailed(String name, String reason);
+
+  @Message(id = 368, value = "Invalid profile name '%1$s' in %2$s. "
+      + "Fix or delete that file, or pass --profile to override")
+  String profileInvalidPointer(String name, String pointerFile);
+
+  @Message(id = 369, value = "Profile '%s' does not exist")
+  String profileDoesNotExist(String name);
+
+  @Message(id = 370, value = "Auth server URL")
+  String profileConfigurePromptAuthUrl();
+
+  @Message(id = 371, value = "Platform API URL")
+  String profileConfigurePromptPlatformUrl();
+
+  @Message(id = 372,
+      value = "Ingestion URL (per-project on the cloud platform; leave empty to skip)")
+  String profileConfigurePromptIngestionUrl();
+
+  @Message(id = 373,
+      value = "Verify TLS certificates for %s (answer no for self-signed dev certs)?")
+  String profileConfigurePromptVerifyTls(String target);
+
+  @Message(id = 374, value = "A value for '%s' is required")
+  String profileConfigureValueRequired(String key);
+
+  @Message(id = 375, value = "Invalid URL '%s'. Use http:// or https://")
+  String profileConfigureInvalidUrl(String value);
+
+  @Message(id = 376, value = "Invalid answer '%s'")
+  String profileConfigureInvalidAnswer(String value);
+
+  @Message(id = 377, value = "Profile '%s' configured")
+  String profileConfigureSaved(String name);
+
+  @Message(id = 378, value = "Log in now?")
+  String profileConfigurePromptLogin();
+
+  @Message(id = 379, value = "Login method")
+  String profileConfigurePromptLoginMethod();
+
+  @Message(id = 380, value = "Run 'streamx profile configure' to set its endpoints")
+  String profileCreateConfigureHint();
 }

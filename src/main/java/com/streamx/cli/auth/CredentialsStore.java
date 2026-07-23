@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class CredentialsStore {
-  private static final String CREDENTIALS_FILE = "config/credentials.json";
+  private static final String CREDENTIALS_FILE = "credentials.json";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String ACCESS_TOKEN = "access_token";
@@ -31,7 +31,7 @@ public class CredentialsStore {
   private static final String INSECURE = "insecure";
 
   public static Path getCredentialsPath() {
-    return StreamxHome.getStreamxHome().resolve(CREDENTIALS_FILE);
+    return StreamxHome.getConfigDir().resolve(CREDENTIALS_FILE);
   }
 
   public static boolean exists() {

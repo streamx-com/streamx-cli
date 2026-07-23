@@ -1,5 +1,7 @@
 package com.streamx.cli.commands.settings.eventtemplates.register;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.configFile;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.profileFile;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
@@ -19,7 +21,7 @@ class RegisterCommandIT extends CliBaseIT {
   void shouldWriteSettingsEntry(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Path templateFile = home.resolve("custom.json");
+    Path templateFile = profileFile(home, "custom.json");
     Files.writeString(templateFile, "{}");
 
     ProcessResult result = exec(
@@ -31,7 +33,7 @@ class RegisterCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    Path config = home.resolve("config/application.properties");
+    Path config = configFile(home);
     assertThat(config).isRegularFile();
     Properties props = new Properties();
     try (InputStream is = Files.newInputStream(config)) {

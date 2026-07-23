@@ -1,5 +1,8 @@
 package com.streamx.cli.commands.settings.eventtemplates.unregister;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.configFile;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.defaultTemplatesDir;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.profileFile;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
@@ -19,7 +22,7 @@ class UnregisterCommandIT extends CliBaseIT {
   void shouldRemoveSettingsEntryByName(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Files.writeString(home.resolve("custom.json"), "{}");
+    Files.writeString(profileFile(home, "custom.json"), "{}");
 
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
@@ -43,8 +46,8 @@ class UnregisterCommandIT extends CliBaseIT {
   void shouldRemoveSettingsEntryViaPrompt(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Files.writeString(home.resolve("a.json"), "{}");
-    Files.writeString(home.resolve("b.json"), "{}");
+    Files.writeString(profileFile(home, "a.json"), "{}");
+    Files.writeString(profileFile(home, "b.json"), "{}");
 
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
@@ -72,7 +75,7 @@ class UnregisterCommandIT extends CliBaseIT {
   void shouldRefuseUnknownName(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Files.writeString(home.resolve("a.json"), "{}");
+    Files.writeString(profileFile(home, "a.json"), "{}");
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
         "real.one", "a.json").assertSuccess();
@@ -104,13 +107,13 @@ class UnregisterCommandIT extends CliBaseIT {
   void shouldNotTouchDefaultsFolder(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Files.writeString(home.resolve("a.json"), "{}");
+    Files.writeString(profileFile(home, "a.json"), "{}");
 
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
         "my.alias", "a.json").assertSuccess();
 
-    Path defaultPagePublished = home.resolve("event-templates/default/page.published.json");
+    Path defaultPagePublished = defaultTemplatesDir(home).resolve("page.published.json");
     assertThat(defaultPagePublished).isRegularFile();
 
     exec("settings", "event-templates", "unregister",
@@ -121,7 +124,7 @@ class UnregisterCommandIT extends CliBaseIT {
   }
 
   private static Properties readConfig(Path home) throws Exception {
-    Path config = home.resolve("config/application.properties");
+    Path config = configFile(home);
     Properties props = new Properties();
     try (InputStream is = Files.newInputStream(config)) {
       props.load(is);

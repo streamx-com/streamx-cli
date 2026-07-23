@@ -17,10 +17,10 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "reset-default-templates",
-    header = "Delete and repopulate the <streamxHome>/event-templates/default folder",
-    description = "Wipes the bundled default templates from <streamxHome>/event-templates/default "
-        + "and restores them from the files embedded in the CLI jar. User-created templates in "
-        + "<streamxHome>/event-templates/custom and registered templates in settings are not "
+    header = "Delete and repopulate the <streamxHome>/default-event-templates folder",
+    description = "Wipes the bundled default templates from <streamxHome>/default-event-templates "
+        + "(shared by all profiles) and restores them from the files embedded in the CLI jar. "
+        + "The profiles' own event templates and registered templates in settings are not "
         + "touched.",
     footer = {
         "",

@@ -2,6 +2,7 @@ package com.streamx.cli.commands.settings.eventtemplates.resetdefaulttemplates;
 
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.JSON;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.YAML;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -180,7 +181,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
   @Test
   void shouldNotTouchUserEventTemplatesFolder(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve("event-templates/custom");
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path userFile = userDir.resolve("my.custom.json");
     Files.writeString(userFile, "{\"type\":\"user\"}");

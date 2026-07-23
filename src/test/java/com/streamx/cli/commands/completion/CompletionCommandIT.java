@@ -37,6 +37,14 @@ class CompletionCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldEmitDynamicProfileNameCompletion() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains("$(streamx __complete-profile-names 2>/dev/null)");
+  }
+
+  @Test
   void shouldHideInternalCompleteTemplateIdsCommandFromZshSubcommands() throws Exception {
     ProcessResult result = exec("completion", "zsh");
     result.assertSuccess();

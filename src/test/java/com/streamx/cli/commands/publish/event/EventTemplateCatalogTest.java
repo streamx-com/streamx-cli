@@ -44,6 +44,7 @@ class EventTemplateCatalogTest {
   @BeforeEach
   void redirectStreamxHome() {
     StreamxHome.setStreamxHomeCliArg(home.toString());
+    StreamxHome.clearProfileCliArg();
   }
 
   @AfterEach
@@ -100,7 +101,7 @@ class EventTemplateCatalogTest {
     seedDefault("page.published", SAMPLE_DEFAULT);
     seedUser("page.published", SAMPLE_USER);
 
-    Path registered = home.resolve("registered.json");
+    Path registered = home.resolve("profiles/default/registered.json");
     Files.writeString(registered, SAMPLE_REGISTERED);
     seedSettings("page.published", "registered.json");
 
@@ -124,7 +125,8 @@ class EventTemplateCatalogTest {
 
   @Test
   void listSettingsRegistrationsSkipsBlankAndNonPrefixedKeys() throws Exception {
-    Path some = home.resolve("some.json");
+    Path some = home.resolve("profiles/default/some.json");
+    Files.createDirectories(some.getParent());
     Files.writeString(some, SAMPLE_REGISTERED);
     Properties props = new Properties();
     props.setProperty("eventtemplate.real", "some.json");
@@ -138,16 +140,17 @@ class EventTemplateCatalogTest {
   }
 
   @Test
-  void resolveRelativeToHomeAbsolutizesAgainstStreamxHome() {
-    Path resolved = EventTemplateCatalog.resolveRelativeToHome("nested/file.json");
+  void resolveRelativeToProfileDirAbsolutizesAgainstProfileDir() {
+    Path resolved = EventTemplateCatalog.resolveRelativeToProfileDir("nested/file.json");
     assertThat(resolved).isAbsolute();
-    assertThat(resolved).isEqualTo(home.resolve("nested/file.json").toAbsolutePath());
+    assertThat(resolved)
+        .isEqualTo(home.resolve("profiles/default/nested/file.json").toAbsolutePath());
   }
 
   @Test
-  void resolveRelativeToHomeKeepsAbsolutePathsUntouched() {
+  void resolveRelativeToProfileDirKeepsAbsolutePathsUntouched() {
     Path absolute = home.resolve("abs.json").toAbsolutePath();
-    Path resolved = EventTemplateCatalog.resolveRelativeToHome(absolute.toString());
+    Path resolved = EventTemplateCatalog.resolveRelativeToProfileDir(absolute.toString());
     assertThat(resolved).isEqualTo(absolute);
   }
 
@@ -166,7 +169,7 @@ class EventTemplateCatalogTest {
   }
 
   private void seedUser(String id, String body) throws Exception {
-    Path dir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path dir = home.resolve("profiles/default/event-templates");
     Files.createDirectories(dir);
     Files.writeString(dir.resolve(id + UserEventTemplates.EXTENSION), body);
   }
@@ -178,7 +181,7 @@ class EventTemplateCatalogTest {
   }
 
   private void writeConfig(Properties props) throws Exception {
-    Path config = home.resolve("config/application.properties");
+    Path config = home.resolve("profiles/default/config/application.properties");
     Files.createDirectories(config.getParent());
     try (OutputStream out = Files.newOutputStream(config)) {
       props.store(out, null);

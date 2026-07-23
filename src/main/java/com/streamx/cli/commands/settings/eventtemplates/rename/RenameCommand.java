@@ -27,7 +27,7 @@ import picocli.CommandLine;
     name = "rename",
     header = "Rename an event template",
     description = {
-        "For user-created templates: renames the file in <streamxHome>/event-templates/custom/.",
+        "For user-created templates: renames the file in the profile's event-templates/ folder.",
         "For registered templates: rewrites the settings entry under the new ID "
             + "(the underlying file is not moved).",
         "Default templates cannot be renamed - use `copy` to create a clone under a new ID."

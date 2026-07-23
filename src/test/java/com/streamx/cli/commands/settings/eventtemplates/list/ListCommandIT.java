@@ -4,12 +4,11 @@ import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTes
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.YAML;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.findById;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
-import static com.streamx.cli.i18n.MessageProvider.msg;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -53,7 +52,7 @@ class ListCommandIT extends CliBaseIT {
   @Test
   void shouldShowUserTemplateFromEventTemplatesFolder(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("my.custom.json"), sampleTemplate("com.example.custom.v1"));
 
@@ -76,7 +75,7 @@ class ListCommandIT extends CliBaseIT {
     exec("settings", "event-templates", "list",
         "--streamx-home", home.toString()).assertSuccess();
 
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(
         userDir.resolve("page.published.json"),
@@ -109,13 +108,13 @@ class ListCommandIT extends CliBaseIT {
     exec("settings", "event-templates", "list",
         "--streamx-home", home.toString()).assertSuccess();
 
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(
         userDir.resolve("page.published.json"),
         sampleTemplate("com.example.user.page.v1"));
 
-    Path settingsFile = home.resolve("page-from-settings.json");
+    Path settingsFile = home.resolve("profiles/default/page-from-settings.json");
     Files.writeString(settingsFile, sampleTemplate("com.example.settings.page.v1"));
 
     exec("settings", "event-templates", "register",
@@ -142,7 +141,6 @@ class ListCommandIT extends CliBaseIT {
     ProcessResult result = exec("settings", "event-templates", "list",
         "--streamx-home", home.toString());
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.eventTemplatesListHeader().strip());
     assertThat(result.stdout()).contains("TEMPLATE ID");
     assertThat(result.stdout()).contains("page.published");
   }

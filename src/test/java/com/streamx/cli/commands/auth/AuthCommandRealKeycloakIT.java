@@ -36,7 +36,7 @@ class AuthCommandRealKeycloakIT extends CliBaseIT {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private Path getCredentialsPath() {
-    return streamxHome.resolve("config/credentials.json");
+    return streamxHome.resolve("profiles/default/config/credentials.json");
   }
 
   @BeforeEach
