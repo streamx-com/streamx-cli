@@ -123,8 +123,6 @@ public class StubProjectServer implements AutoCloseable {
     if (path.endsWith("/repository/ssh-key/generate-key-pair")) {
       respond(exchange, 200,
           "{\"privateKey\":\"GENERATED-PRIVATE\",\"publicKey\":\"ssh-ed25519 GENERATED-PUBLIC\"}");
-    } else if (path.endsWith("/repository/branches")) {
-      respond(exchange, 200, "[\"main\",\"develop\"]");
     } else if (path.endsWith("/repository/ssh-key/exists")) {
       respond(exchange, 200, String.valueOf(sshKeyExists));
     } else if (path.endsWith("/repository/ssh-key/public-key")) {

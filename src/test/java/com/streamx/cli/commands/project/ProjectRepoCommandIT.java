@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Properties;
@@ -134,14 +135,6 @@ class ProjectRepoCommandIT extends CliBaseIT {
   }
 
   @Test
-  void branchesListsRemoteBranches() throws Exception {
-    ProcessResult result = repo("branches");
-
-    result.assertSuccess();
-    assertThat(result.stdout().strip().lines()).containsExactly("main", "develop");
-  }
-
-  @Test
   void sshKeySetCreatesWhenAbsent() throws Exception {
     Path keyFile = streamxHome.resolve("deploy-key");
     Files.writeString(keyFile, "KEY BYTES");
@@ -203,14 +196,36 @@ class ProjectRepoCommandIT extends CliBaseIT {
   }
 
   @Test
-  void sshKeyGenerateReturnsBothKeys() throws Exception {
-    ProcessResult result = exec("project", "repo", "ssh-key", "generate", "--org", ORG);
+  void sshKeyGenerateWritesKeyPairFilesWithoutPrintingKeys() throws Exception {
+    Path keyFile = streamxHome.resolve("generated-key");
+
+    ProcessResult result = exec(
+        "project", "repo", "ssh-key", "generate", keyFile.toString(), "--org", ORG);
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(
         "POST /api/v1/organizations/" + ORG + "/projects/repository/ssh-key/generate-key-pair");
+    Path publicKeyFile = streamxHome.resolve("generated-key.pub");
+    assertThat(keyFile).content().isEqualTo("GENERATED-PRIVATE\n");
+    assertThat(publicKeyFile).content().isEqualTo("ssh-ed25519 GENERATED-PUBLIC\n");
+    assertThat(Files.getPosixFilePermissions(keyFile))
+        .isEqualTo(PosixFilePermissions.fromString("rw-------"));
     assertThat(result.stdout())
-        .contains("GENERATED-PRIVATE")
-        .contains("ssh-ed25519 GENERATED-PUBLIC");
+        .contains(msg.projectSshKeyPairWritten(keyFile.toString(), publicKeyFile.toString()))
+        .doesNotContain("GENERATED-PRIVATE");
+  }
+
+  @Test
+  void sshKeyGenerateRefusesToOverwriteExistingFile() throws Exception {
+    Path keyFile = streamxHome.resolve("existing-key");
+    Files.writeString(keyFile, "old");
+
+    ProcessResult result = exec(
+        "project", "repo", "ssh-key", "generate", keyFile.toString(), "--org", ORG);
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.projectSshKeyFileExists(keyFile.toString()));
+    assertThat(platform.getRequests()).isEmpty();
+    assertThat(keyFile).content().isEqualTo("old");
   }
 }

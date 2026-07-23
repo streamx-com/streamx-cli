@@ -1,8 +1,5 @@
 package com.streamx.cli.platform;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,14 +28,6 @@ public class ProjectRepositoryApi {
 
   public void disconnect(String orgId, String projectId) {
     client.delete(repositoryPath(orgId, projectId));
-  }
-
-  public List<String> branches(String orgId, String projectId) {
-    List<String> branches = new ArrayList<>();
-    for (JsonNode node : client.get(repositoryPath(orgId, projectId) + "/branches")) {
-      branches.add(node.asText());
-    }
-    return branches;
   }
 
   public boolean sshKeyExists(String orgId, String projectId) {

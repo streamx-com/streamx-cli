@@ -1,6 +1,5 @@
 package com.streamx.cli.commands.project.repo;
 
-import com.streamx.cli.commands.project.repo.branches.BranchesCommand;
 import com.streamx.cli.commands.project.repo.get.GetCommand;
 import com.streamx.cli.commands.project.repo.remove.RemoveCommand;
 import com.streamx.cli.commands.project.repo.set.SetCommand;
@@ -15,7 +14,6 @@ import picocli.CommandLine;
         GetCommand.class,
         SetCommand.class,
         RemoveCommand.class,
-        BranchesCommand.class,
         SshKeyCommand.class
     }
 )
