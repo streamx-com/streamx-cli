@@ -36,6 +36,8 @@ assemble:
 
 distributions:
   streamx:
+    # TEMPORARY(native): disabled while native image does not build; remove this line to restore.
+    active: NEVER
     type: BINARY
     executable:
       name: streamx
@@ -92,9 +94,10 @@ packagers:
     formulaName: streamx
     multiPlatform: true
 
-files:
-  artifacts:
-    - path: artifacts/streamx-linux-x86_64
-    - path: artifacts/streamx-linux-aarch64
-    - path: artifacts/streamx-macos-aarch64
-    - path: artifacts/streamx-macos-x86_64
+# TEMPORARY(native): restore when native image builds again.
+# files:
+#   artifacts:
+#     - path: artifacts/streamx-linux-x86_64
+#     - path: artifacts/streamx-linux-aarch64
+#     - path: artifacts/streamx-macos-aarch64
+#     - path: artifacts/streamx-macos-x86_64
