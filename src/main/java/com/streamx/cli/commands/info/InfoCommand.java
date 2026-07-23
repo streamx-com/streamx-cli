@@ -66,7 +66,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
   @CommandLine.Option(
       names = "--check",
-      description = "Exit with code 1 if any configured endpoint is not healthy"
+      description = "Exit with code 1 unless every configured endpoint probes healthy (UP)"
   )
   public boolean check;
 
@@ -113,9 +113,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
     InfoResult result =
         new InfoResult(cli, profile, settings, login, connectivity, warnings);
     CommandResult<InfoResult> commandResult = new CommandResult<>(result);
-    if (check && connectivity.stream().anyMatch(p ->
-        DOWN.equals(p.status()) || TLS_ERROR.equals(p.status())
-            || AUTH_REJECTED.equals(p.status()))) {
+    if (check && connectivity.stream().anyMatch(p -> !UP.equals(p.status()))) {
       commandResult.setExitCodeOverride(1);
     }
     return commandResult;
@@ -305,12 +303,23 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
     if (UP.equals(health.status()) || TLS_ERROR.equals(health.status())) {
       return health;
     }
-    // Environments may block /q/*; any HTTP answer from the API still proves the app is up.
     String apiUrl = baseUrl + "/api/v1/organizations";
     HttpProbe fallback = get(apiUrl, insecure, null);
-    if (fallback.status > 0) {
+    boolean alive = fallback.status >= 200 && fallback.status < 400
+        || fallback.status == 401 || fallback.status == 403;
+    if (alive) {
       return new Probe("platform", apiUrl, UP, fallback.latencyMs,
           "health endpoint unavailable; API answered HTTP " + fallback.status);
+    }
+    if (fallback.status == 404) {
+      return new Probe("platform", apiUrl, DOWN, fallback.latencyMs,
+          "answers HTTP 404 - whatever is at this URL is not the StreamX platform API; "
+              + "check streamx.platform.url");
+    }
+    if (fallback.status > 0) {
+      return new Probe("platform", apiUrl, DOWN, fallback.latencyMs,
+          "HTTP " + fallback.status + " - the endpoint is reachable but the platform "
+              + "is not serving");
     }
     return health;
   }

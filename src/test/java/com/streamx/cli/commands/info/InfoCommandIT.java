@@ -69,7 +69,8 @@ class InfoCommandIT extends CliBaseIT {
         .contains("streamx.auth.server-url")
         .contains("profile")
         .contains("discovery document served")
-        .contains("auth");
+        // The stub answers HTTP but 404s the API routes: reachable yet not the platform.
+        .contains("not the StreamX platform API");
 
     ProcessResult json = exec("info", "-o", "json");
     json.assertSuccess();
@@ -77,6 +78,18 @@ class InfoCommandIT extends CliBaseIT {
     assertThat(root.path("cli").path("version").asText()).isNotEmpty();
     assertThat(root.path("connectivity").isArray()).isTrue();
     assertThat(root.path("connectivity").toString()).contains("\"UP\"");
+  }
+
+  @Test
+  void checkFlagFailsWhenPlatformAnswersButIsNotThePlatform() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    exec("settings", "set", "streamx.platform.url", oidcServer.getServerUrl())
+        .assertSuccess();
+
+    ProcessResult result = exec("info", "--check");
+
+    result.assertExitCode(1);
+    assertThat(result.stdout()).contains("HTTP 404").contains("DOWN");
   }
 
   @Test
