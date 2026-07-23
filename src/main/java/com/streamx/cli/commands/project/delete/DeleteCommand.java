@@ -7,6 +7,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.DeleteConfirmation;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
 import picocli.CommandLine;
@@ -21,14 +22,16 @@ public class DeleteCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
       index = "1",
-      description = "Project ID",
+      arity = "0..1",
+      description = "Project ID (defaults to the current project)",
       completionCandidates = ProjectIdCompletionCandidates.class
   )
   public String projectId;
@@ -41,6 +44,9 @@ public class DeleteCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
+    orgId = context.org();
+    projectId = context.project();
     DeleteConfirmation.require(force, projectId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       new ProjectsApi(client).delete(orgId, projectId);

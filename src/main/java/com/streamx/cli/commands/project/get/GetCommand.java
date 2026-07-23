@@ -4,6 +4,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
@@ -17,14 +18,16 @@ public class GetCommand extends AbstractCommand<Project> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
       index = "1",
-      description = "Project ID",
+      arity = "0..1",
+      description = "Project ID (defaults to the current project)",
       completionCandidates = ProjectIdCompletionCandidates.class
   )
   public String projectId;
@@ -50,6 +53,9 @@ public class GetCommand extends AbstractCommand<Project> {
 
   @Override
   public CommandResult<Project> runCommand() {
+    PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
+    orgId = context.org();
+    projectId = context.project();
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).get(orgId, projectId));
     }

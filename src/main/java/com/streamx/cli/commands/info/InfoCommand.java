@@ -15,6 +15,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.platform.PlatformConfig;
+import com.streamx.cli.platform.PlatformContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -98,7 +99,11 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
         StreamxHome.getActiveProfileSource(),
         exists,
         active == null ? null : StreamxHome.getConfigDirOf(active)
-            .resolve("application.properties").toString());
+            .resolve("application.properties").toString(),
+        quiet(PlatformContext::effectiveOrg),
+        quiet(PlatformContext::effectiveOrgSource),
+        quiet(PlatformContext::effectiveProject),
+        quiet(PlatformContext::effectiveProjectSource));
     if (active != null && !exists) {
       warnings.add("Profile '" + active + "' does not exist yet");
     }
@@ -455,6 +460,14 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
     return "JVM (" + vm + " " + version + ")";
   }
 
+  private static String quiet(java.util.function.Supplier<String> supplier) {
+    try {
+      return supplier.get();
+    } catch (RuntimeException brokenProfile) {
+      return null;
+    }
+  }
+
   private String cliVersion() {
     try {
       String[] version = new com.streamx.cli.util.VersionProvider().getVersion();
@@ -495,6 +508,12 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
         + "  (" + info.profile().source() + ")");
     row(sb, "exists", info.profile().exists() ? "yes" : "no");
     row(sb, "settings file", valueOrDash(info.profile().settingsFile()));
+    row(sb, "current org", valueOrDash(info.profile().currentOrg())
+        + (info.profile().currentOrgSource() == null
+            ? "" : "  (" + info.profile().currentOrgSource() + ")"));
+    row(sb, "current project", valueOrDash(info.profile().currentProject())
+        + (info.profile().currentProjectSource() == null
+            ? "" : "  (" + info.profile().currentProjectSource() + ")"));
 
     sb.append("\nSettings\n");
     sb.append(TextTable.render(
@@ -534,7 +553,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
   }
 
   private static void row(StringBuilder sb, String key, String value) {
-    sb.append("  ").append(String.format("%-14s", key)).append(' ')
+    sb.append("  ").append(String.format("%-16s", key)).append(' ')
         .append(value == null ? "-" : value).append('\n');
   }
 

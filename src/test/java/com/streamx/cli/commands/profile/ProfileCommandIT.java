@@ -1,9 +1,11 @@
 package com.streamx.cli.commands.profile;
 
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.auth.StubOidcServer;
+import com.streamx.cli.commands.org.StubPlatformServer;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
@@ -357,4 +359,80 @@ class ProfileCommandIT extends CliBaseIT {
       });
     }
   }
+
+  @Test
+  void configureAsksOrgAndProjectAfterLogin() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    try (StubPlatformServer platform = new StubPlatformServer()) {
+      String stdin = String.join("\n",
+          oidcServer.getServerUrl(),
+          "n",
+          platform.getUrl(),
+          "n",
+          "",
+          "y",
+          "device-code",
+          "acme",
+          "so-acme-shop-a1b2c") + "\n";
+
+      ProcessResult result = execWithStdin(stdin, "profile", "configure");
+
+      result.assertSuccess();
+      assertThat(result.stdout())
+          .contains(msg.orgUseSet("acme"))
+          .contains(msg.projectUseSet("so-acme-shop-a1b2c"));
+      assertThat(streamxHome.resolve("profiles/default/current-org")).content()
+          .isEqualToIgnoringNewLines("acme");
+      assertThat(streamxHome.resolve("profiles/default/current-project")).content()
+          .isEqualToIgnoringNewLines("so-acme-shop-a1b2c");
+      assertThat(platform.getRequests())
+          .contains("GET /api/v1/organizations", "GET /api/v1/organizations/acme/projects");
+    }
+  }
+
+  @Test
+  void configureSkipsContextWhenPlatformUnreachable() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    String stdin = String.join("\n",
+        oidcServer.getServerUrl(),
+        "n",
+        "https://127.0.0.1:9",        // unreachable platform
+        "n",
+        "",
+        "y",
+        "device-code") + "\n";
+
+    ProcessResult result = execWithStdin(stdin, "profile", "configure");
+
+    result.assertSuccess();
+    assertThat(result.stderr()).contains("Skipping organization/project selection");
+    assertThat(streamxHome.resolve("profiles/default/current-org")).doesNotExist();
+  }
+
+  @Test
+  void configureRefreshesUrlsBeforeLoginOnReconfigure() throws Exception {
+    exec("settings", "set", "streamx.platform.url", "https://127.0.0.1:9").assertSuccess();
+
+    oidcServer = new StubOidcServer("streamx", 0);
+    try (StubPlatformServer platform = new StubPlatformServer()) {
+      String stdin = String.join("\n",
+          oidcServer.getServerUrl(),
+          "n",
+          platform.getUrl(),
+          "n",
+          "",
+          "y",
+          "device-code",
+          "acme",
+          "") + "\n";                  // skip project
+
+      ProcessResult result = execWithStdin(stdin, "profile", "configure");
+
+      result.assertSuccess();
+      assertThat(result.stderr()).doesNotContain("Skipping organization/project selection");
+      assertThat(streamxHome.resolve("profiles/default/current-org")).content()
+          .isEqualToIgnoringNewLines("acme");
+    }
+  }
+
 }

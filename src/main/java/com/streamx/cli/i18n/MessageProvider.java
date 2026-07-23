@@ -913,4 +913,46 @@ public interface MessageProvider {
   @Message(id = 383,
       value = "Deletion needs confirmation. Re-run with --force in non-interactive environments")
   String deleteConfirmRequired();
+
+  @Message(id = 384, value = "No organization given. Pass <orgId>, set STREAMX_ORG, "
+      + "or run: streamx profile org use <orgId>")
+  String noOrgContext();
+
+  @Message(id = 385, value = "Missing required argument: <%s>")
+  String missingRequiredArgument(String label);
+
+  @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
+      + "or run: streamx profile project use <projectId>")
+  String noProjectContext();
+
+  @Message(id = 387, value = "Current organization set to '%s'")
+  String orgUseSet(String orgId);
+
+  @Message(id = 388, value = "No current organization set. Run: streamx profile org use <orgId>")
+  String noCurrentOrg();
+
+  @Message(id = 389, value = "Current project set to '%s'")
+  String projectUseSet(String projectId);
+
+  @Message(id = 390, value = "No current project set. Run: streamx profile project use <projectId>")
+  String noCurrentProject();
+
+  @Message(id = 391,
+      value = "Cleared current project '%s' (it belonged to the previous organization)")
+  String orgUseClearedProject(String projectId);
+
+  @Message(id = 392, value = "Current organization (Enter to skip)")
+  String profileConfigurePromptOrg();
+
+  @Message(id = 393, value = "Current project (Enter to skip)")
+  String profileConfigurePromptProject();
+
+  @Message(id = 394, value = "Skipping organization/project selection: %s")
+  String profileConfigureContextSkipped(String reason);
+
+  @Message(id = 395, value = "Current organization cleared")
+  String orgUnset();
+
+  @Message(id = 396, value = "Current project cleared")
+  String projectUnset();
 }

@@ -7,6 +7,7 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
@@ -20,14 +21,16 @@ public class UpdateCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
       index = "1",
-      description = "Project ID",
+      arity = "0..1",
+      description = "Project ID (defaults to the current project)",
       completionCandidates = ProjectIdCompletionCandidates.class
   )
   public String projectId;
@@ -40,6 +43,9 @@ public class UpdateCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
+    orgId = context.org();
+    projectId = context.project();
     if (name == null && description == null) {
       throw new CliException(msg.projectUpdateNothingToDo());
     }

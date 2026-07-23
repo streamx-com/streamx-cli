@@ -9,6 +9,7 @@ import com.streamx.cli.platform.Cluster;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationClustersApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,8 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
@@ -62,6 +64,7 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
 
   @Override
   public CommandResult<List<Cluster>> runCommand() {
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new OrganizationClustersApi(client).list(orgId));
     }

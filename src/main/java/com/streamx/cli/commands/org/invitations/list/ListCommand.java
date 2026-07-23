@@ -9,6 +9,7 @@ import com.streamx.cli.platform.Invitation;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,8 @@ public class ListCommand extends AbstractCommand<List<Invitation>> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
@@ -59,6 +61,7 @@ public class ListCommand extends AbstractCommand<List<Invitation>> {
 
   @Override
   public CommandResult<List<Invitation>> runCommand() {
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new OrganizationInvitationsApi(client).list(orgId));
     }

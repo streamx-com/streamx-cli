@@ -7,6 +7,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Roles;
 import picocli.CommandLine;
 
@@ -21,12 +22,17 @@ public class AddCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
-  @CommandLine.Parameters(index = "1", description = "Email of an existing account")
+  @CommandLine.Parameters(
+      index = "1",
+      arity = "0..1",
+      description = "Email of an existing account"
+  )
   public String email;
 
   @CommandLine.Option(
@@ -39,6 +45,9 @@ public class AddCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    PlatformContext.OrgValue context = PlatformContext.orgAndValue(orgId, email, "email");
+    orgId = context.org();
+    email = context.value();
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       new OrganizationUsersApi(client).add(orgId, email, role);
     }

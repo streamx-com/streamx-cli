@@ -55,6 +55,8 @@ class OrgCommandIT extends CliBaseIT {
       platform.close();
     }
     Files.deleteIfExists(getCredentialsPath());
+    Files.deleteIfExists(streamxHome.resolve("profiles/default/current-org"));
+    Files.deleteIfExists(streamxHome.resolve("profiles/default/current-project"));
   }
 
   @Test
@@ -242,4 +244,106 @@ class OrgCommandIT extends CliBaseIT {
     assertThat(result.stderr()).isNotEmpty();
     assertThat(platform.getRequests()).isEmpty();
   }
+
+  @Test
+  void orgUseCurrentLifecycle() throws Exception {
+    ProcessResult use = exec("profile", "org", "use", "acme");
+    use.assertSuccess();
+    assertThat(use.stdout()).contains(msg.orgUseSet("acme"));
+    assertThat(streamxHome.resolve("profiles/default/current-org")).content()
+        .isEqualToIgnoringNewLines("acme");
+
+    ProcessResult current = exec("profile", "org", "current");
+    current.assertSuccess();
+    assertThat(current.stdout().strip()).isEqualTo("acme");
+  }
+
+  @Test
+  void orgCurrentFailsWhenUnset() throws Exception {
+    ProcessResult result = exec("profile", "org", "current");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.noCurrentOrg());
+  }
+
+  @Test
+  void orgGetFallsBackToCurrentOrg() throws Exception {
+    exec("profile", "org", "use", "acme").assertSuccess();
+
+    ProcessResult result = exec("org", "get");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests()).containsExactly("GET /api/v1/organizations/acme");
+  }
+
+  @Test
+  void orgGetFailsWithoutAnyOrgContext() throws Exception {
+    ProcessResult result = exec("org", "get");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.noOrgContext());
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void envVarOverridesCurrentOrgFile() throws Exception {
+    exec("profile", "org", "use", "acme").assertSuccess();
+    setEnv("STREAMX_ORG", "globex");
+    try {
+      ProcessResult current = exec("profile", "org", "current");
+      current.assertSuccess();
+      assertThat(current.stdout().strip()).isEqualTo("globex");
+
+      ProcessResult get = exec("org", "get");
+      get.assertSuccess();
+      assertThat(platform.getRequests()).containsExactly("GET /api/v1/organizations/globex");
+    } finally {
+      clearEnv("STREAMX_ORG");
+    }
+  }
+
+  @Test
+  void membersAddShiftsSingleArgumentToEmail() throws Exception {
+    exec("profile", "org", "use", "acme").assertSuccess();
+
+    ProcessResult result = exec("org", "members", "add", "alice@example.com", "-r", "edit");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("POST /api/v1/organizations/acme/users");
+  }
+
+  @Test
+  void orgUseSwitchClearsCurrentProject() throws Exception {
+    exec("profile", "org", "use", "acme").assertSuccess();
+    exec("profile", "project", "use", "my-proj").assertSuccess();
+
+    ProcessResult switched = exec("profile", "org", "use", "globex");
+
+    switched.assertSuccess();
+    assertThat(switched.stderr()).contains(msg.orgUseClearedProject("my-proj"));
+    assertThat(streamxHome.resolve("profiles/default/current-project")).doesNotExist();
+    assertThat(exec("profile", "project", "current").exitCode()).isEqualTo(1);
+  }
+
+  @Test
+  void unsetOrgClearsOrgAndProject() throws Exception {
+    exec("profile", "org", "use", "acme").assertSuccess();
+    exec("profile", "project", "use", "my-proj").assertSuccess();
+
+    ProcessResult result = exec("profile", "org", "unset");
+
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains(msg.orgUnset())
+        .contains(msg.projectUnset());
+    assertThat(streamxHome.resolve("profiles/default/current-org")).doesNotExist();
+    assertThat(streamxHome.resolve("profiles/default/current-project")).doesNotExist();
+    assertThat(exec("profile", "org", "current").exitCode()).isEqualTo(1);
+
+    ProcessResult again = exec("profile", "org", "unset");
+    again.assertSuccess();
+    assertThat(again.stdout()).contains(msg.orgUnset()).doesNotContain(msg.projectUnset());
+  }
+
 }

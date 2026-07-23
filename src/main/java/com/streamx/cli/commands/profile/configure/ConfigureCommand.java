@@ -11,7 +11,13 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.InteractivePicker;
 import com.streamx.cli.framework.InteractivePicker.Session;
 import com.streamx.cli.ingestion.IngestionClientConfig;
+import com.streamx.cli.platform.Organization;
+import com.streamx.cli.platform.OrganizationsApi;
+import com.streamx.cli.platform.PlatformApiClient;
 import com.streamx.cli.platform.PlatformConfig;
+import com.streamx.cli.platform.PlatformContext;
+import com.streamx.cli.platform.Project;
+import com.streamx.cli.platform.ProjectsApi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import org.eclipse.microprofile.config.ConfigProvider;
 import picocli.CommandLine;
@@ -55,7 +62,6 @@ public class ConfigureCommand extends AbstractSilentCommand {
           PlatformConfig.STREAMX_PLATFORM_URL, DEFAULT_PLATFORM_URL_KEY, false);
       configureInsecure(session, settings, PlatformConfig.STREAMX_PLATFORM_INSECURE, "platform");
 
-      // No build-time default: ingestion URLs are per-project (see application.properties).
       boolean ingestionSet = configureUrl(session, settings,
           msg.profileConfigurePromptIngestionUrl(),
           IngestionClientConfig.STREAMX_INGESTION_URL, null, true);
@@ -65,6 +71,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
       }
 
       storeSettings(settings);
+      StreamxHome.applySettingsToSystemProperties();
       System.out.println(msg.profileConfigureSaved(StreamxHome.getActiveProfile()));
 
       login = promptYesNo(session, msg.profileConfigurePromptLogin(), true);
@@ -78,16 +85,50 @@ public class ConfigureCommand extends AbstractSilentCommand {
           throw new CliException(msg.profileConfigureInvalidAnswer(method));
         }
         device = method != null && METHOD_DEVICE.equalsIgnoreCase(method.strip());
+
+        LoginCommand loginCommand = new LoginCommand();
+        loginCommand.noBrowser = device;
+        loginCommand.runCommand();
+
+        askOrgAndProject(session);
       }
     }
-
-    if (login) {
-      // The wizard's prompt reader is closed; login re-reads config from the file just saved.
-      LoginCommand loginCommand = new LoginCommand();
-      loginCommand.noBrowser = device;
-      return loginCommand.runCommand();
-    }
     return new CommandResult<>(null);
+  }
+
+  private void askOrgAndProject(Session session) {
+    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+      List<String> orgIds = new OrganizationsApi(client).list().stream()
+          .map(Organization::id)
+          .filter(Objects::nonNull)
+          .toList();
+
+      String org = session.pick(msg.profileConfigurePromptOrg(), orgIds);
+      if (org == null || org.isBlank()) {
+        return;
+      }
+      org = org.strip();
+      String clearedProject = PlatformContext.setCurrentOrg(org);
+      if (clearedProject != null) {
+        System.err.println(msg.orgUseClearedProject(clearedProject));
+      }
+      System.out.println(msg.orgUseSet(org));
+
+      List<String> projectIds = new ProjectsApi(client).list(org).stream()
+          .map(Project::id)
+          .filter(Objects::nonNull)
+          .toList();
+
+      String project = session.pick(msg.profileConfigurePromptProject(), projectIds);
+      if (project == null || project.isBlank()) {
+        return;
+      }
+      PlatformContext.setCurrentProject(project.strip());
+      System.out.println(msg.projectUseSet(project.strip()));
+    } catch (RuntimeException fetchFailed) {
+      System.err.println(
+          msg.profileConfigureContextSkipped(String.valueOf(fetchFailed.getMessage())));
+    }
   }
 
   /**

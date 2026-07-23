@@ -6,6 +6,7 @@ import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ProfileNameCompletionCandidates;
+import com.streamx.cli.platform.ContextProjectIdCompletionCandidates;
 import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
@@ -224,6 +225,9 @@ public final class ZshCompletionGenerator {
     if (completionCandidates instanceof ProjectIdCompletionCandidates) {
       // The org id is the word already typed before the one being completed.
       return "($(streamx __complete-project-ids \"${words[CURRENT-1]}\" 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ContextProjectIdCompletionCandidates) {
+      return "($(streamx __complete-project-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof OrgMemberIdCompletionCandidates) {
       return "($(streamx __complete-org-member-ids \"${words[CURRENT-1]}\" 2>/dev/null))";

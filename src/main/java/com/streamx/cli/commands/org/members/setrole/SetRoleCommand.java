@@ -9,6 +9,7 @@ import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Roles;
 import com.streamx.cli.platform.User;
 import picocli.CommandLine;
@@ -21,13 +22,15 @@ public class SetRoleCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
 
   @CommandLine.Parameters(
       index = "1",
+      arity = "0..1",
       description = "ID of an ACTIVE member, as shown by 'streamx org members list'",
       completionCandidates = OrgMemberIdCompletionCandidates.class
   )
@@ -43,6 +46,9 @@ public class SetRoleCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    PlatformContext.OrgValue context = PlatformContext.orgAndValue(orgId, userId, "userId");
+    orgId = context.org();
+    userId = context.value();
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       OrganizationUsersApi users = new OrganizationUsersApi(client);
 

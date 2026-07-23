@@ -18,7 +18,15 @@ public record InfoResult(
   }
 
   @RegisterForReflection
-  public record Profile(String active, String source, boolean exists, String settingsFile) {
+  public record Profile(
+      String active,
+      String source,
+      boolean exists,
+      String settingsFile,
+      String currentOrg,
+      String currentOrgSource,
+      String currentProject,
+      String currentProjectSource) {
   }
 
   @RegisterForReflection

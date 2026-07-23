@@ -6,6 +6,7 @@ import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.Organization;
 import com.streamx.cli.platform.OrganizationsApi;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -15,7 +16,8 @@ import picocli.CommandLine;
 public class GetCommand extends AbstractCommand<Organization> {
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
@@ -43,6 +45,7 @@ public class GetCommand extends AbstractCommand<Organization> {
 
   @Override
   public CommandResult<Organization> runCommand() {
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new OrganizationsApi(client).get(orgId));
     }

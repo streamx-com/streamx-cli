@@ -139,6 +139,55 @@ public class StreamxHome {
     return getStreamxHome().resolve(CURRENT_PROFILE_FILE);
   }
 
+  public static Path getCurrentOrgFile() {
+    return getProfileDir().resolve("current-org");
+  }
+
+  public static Path getCurrentProjectFile() {
+    return getProfileDir().resolve("current-project");
+  }
+
+  public static String readCurrentOrg() {
+    return readPointerFile(getCurrentOrgFile());
+  }
+
+  public static String readCurrentProject() {
+    return readPointerFile(getCurrentProjectFile());
+  }
+
+  public static void writeCurrentOrg(String orgId) throws IOException {
+    writePointerFile(getCurrentOrgFile(), orgId);
+  }
+
+  public static void writeCurrentProject(String projectId) throws IOException {
+    writePointerFile(getCurrentProjectFile(), projectId);
+  }
+
+  public static void clearCurrentOrg() throws IOException {
+    Files.deleteIfExists(getCurrentOrgFile());
+  }
+
+  public static void clearCurrentProject() throws IOException {
+    Files.deleteIfExists(getCurrentProjectFile());
+  }
+
+  private static String readPointerFile(Path pointer) {
+    if (!Files.isRegularFile(pointer)) {
+      return null;
+    }
+    try {
+      String stored = Files.readString(pointer).trim();
+      return stored.isEmpty() ? null : stored;
+    } catch (IOException expected) {
+      return null;
+    }
+  }
+
+  private static void writePointerFile(Path pointer, String value) throws IOException {
+    Files.createDirectories(pointer.getParent());
+    Files.writeString(pointer, value + System.lineSeparator());
+  }
+
   public static Path getProfilesDir() {
     return getStreamxHome().resolve(PROFILES_DIR);
   }

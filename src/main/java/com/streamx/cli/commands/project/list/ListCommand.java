@@ -7,6 +7,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectsApi;
 import java.util.Arrays;
@@ -23,7 +24,8 @@ public class ListCommand extends AbstractCommand<List<Project>> {
 
   @CommandLine.Parameters(
       index = "0",
-      description = "Organization ID",
+      arity = "0..1",
+      description = "Organization ID (defaults to the current organization)",
       completionCandidates = OrgIdCompletionCandidates.class
   )
   public String orgId;
@@ -59,6 +61,7 @@ public class ListCommand extends AbstractCommand<List<Project>> {
 
   @Override
   public CommandResult<List<Project>> runCommand() {
+    orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).list(orgId));
     }

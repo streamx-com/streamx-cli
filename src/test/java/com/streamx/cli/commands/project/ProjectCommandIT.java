@@ -54,6 +54,8 @@ class ProjectCommandIT extends CliBaseIT {
       platform.close();
     }
     Files.deleteIfExists(getCredentialsPath());
+    Files.deleteIfExists(streamxHome.resolve("profiles/default/current-org"));
+    Files.deleteIfExists(streamxHome.resolve("profiles/default/current-project"));
   }
 
   @Test
@@ -231,4 +233,110 @@ class ProjectCommandIT extends CliBaseIT {
     assertThat(platform.getRawRequests()).containsExactly(
         "DELETE /api/v1/organizations/" + ORG + "/projects/so-x%2Fstatus");
   }
+
+  @Test
+  void projectUseRequiresCurrentOrg() throws Exception {
+    ProcessResult result = exec("profile", "project", "use", "so-org-web-a1b2c");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.noCurrentOrg());
+  }
+
+  @Test
+  void projectUseCurrentLifecycle() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+
+    ProcessResult use = exec("profile", "project", "use", "so-org-web-a1b2c");
+    use.assertSuccess();
+    assertThat(use.stdout()).contains(msg.projectUseSet("so-org-web-a1b2c"));
+
+    ProcessResult current = exec("profile", "project", "current");
+    current.assertSuccess();
+    assertThat(current.stdout().strip()).isEqualTo("so-org-web-a1b2c");
+  }
+
+  @Test
+  void projectGetFallsBackToFullContext() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+    exec("profile", "project", "use", "so-org-web-a1b2c").assertSuccess();
+
+    ProcessResult result = exec("project", "get");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+  }
+
+  @Test
+  void projectGetTreatsSingleArgumentAsProjectId() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+
+    ProcessResult result = exec("project", "get", "so-org-web-a1b2c");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+  }
+
+  @Test
+  void projectListFallsBackToCurrentOrg() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+
+    ProcessResult result = exec("project", "list");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects");
+  }
+
+  @Test
+  void projectGetFailsWithoutProjectContext() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+
+    ProcessResult result = exec("project", "get");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.noProjectContext());
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void envVarOverridesCurrentProjectFile() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+    exec("profile", "project", "use", "so-org-web-a1b2c").assertSuccess();
+    setEnv("STREAMX_PROJECT", "so-org-api-d3e4f");
+    try {
+      ProcessResult current = exec("profile", "project", "current");
+      current.assertSuccess();
+      assertThat(current.stdout().strip()).isEqualTo("so-org-api-d3e4f");
+    } finally {
+      clearEnv("STREAMX_PROJECT");
+    }
+  }
+
+  @Test
+  void completeProjectIdsFallsBackToCurrentOrg() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+
+    ProcessResult result = exec("__complete-project-ids");
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip().lines())
+        .containsExactly("so-org-api-d3e4f", "so-org-web-a1b2c");
+  }
+
+  @Test
+  void unsetProjectKeepsOrg() throws Exception {
+    exec("profile", "org", "use", ORG).assertSuccess();
+    exec("profile", "project", "use", "so-org-web-a1b2c").assertSuccess();
+
+    ProcessResult result = exec("profile", "project", "unset");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains(msg.projectUnset());
+    assertThat(streamxHome.resolve("profiles/default/current-project")).doesNotExist();
+    assertThat(exec("profile", "org", "current").stdout().strip()).isEqualTo(ORG);
+    assertThat(exec("profile", "project", "current").exitCode()).isEqualTo(1);
+  }
+
 }

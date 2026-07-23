@@ -51,6 +51,8 @@ public class StubPlatformServer implements AutoCloseable {
       handleInvitations(exchange);
     } else if (path.endsWith("/clusters")) {
       handleClusters(exchange);
+    } else if (path.endsWith("/projects")) {
+      handleProjects(exchange);
     } else {
       handleOrganizations(exchange);
     }
@@ -100,6 +102,20 @@ public class StubPlatformServer implements AutoCloseable {
     } else {
       respond(exchange, 204, "");
     }
+  }
+
+  private void handleProjects(HttpExchange exchange) throws IOException {
+    record(exchange, exchange.getRequestMethod(), exchange.getRequestURI().getPath());
+    if (forcedStatus != 0) {
+      respond(exchange, forcedStatus, forcedBody);
+      return;
+    }
+    respond(exchange, 200, """
+        [
+          {"id":"so-acme-shop-a1b2c","name":"shop","state":"Ready"},
+          {"id":"so-acme-site-d3e4f","name":"site","state":"Ready"}
+        ]
+        """);
   }
 
   private void handleClusters(HttpExchange exchange) throws IOException {
