@@ -20,6 +20,8 @@ public class StubProjectServer implements AutoCloseable {
   private volatile int forcedStatus;
   private volatile String forcedBody = "";
   private volatile boolean empty;
+  private volatile boolean repositoryConnected = true;
+  private volatile boolean sshKeyExists;
 
   public StubProjectServer() throws IOException {
     this.server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -52,6 +54,14 @@ public class StubProjectServer implements AutoCloseable {
     this.empty = true;
   }
 
+  public void returnNoRepository() {
+    this.repositoryConnected = false;
+  }
+
+  public void sshKeyExists(boolean exists) {
+    this.sshKeyExists = exists;
+  }
+
   private void route(HttpExchange exchange) throws IOException {
     String method = exchange.getRequestMethod();
     String path = exchange.getRequestURI().getPath();
@@ -65,7 +75,9 @@ public class StubProjectServer implements AutoCloseable {
       return;
     }
 
-    if (path.endsWith("/status")) {
+    if (path.contains("/repository")) {
+      handleRepository(exchange, method, path);
+    } else if (path.endsWith("/status")) {
       respond(exchange, 200, """
           {"state":"Pending","statuses":[
             {"state":"Ready","reason":"Deployed","message":"web is running"},
@@ -103,6 +115,75 @@ public class StubProjectServer implements AutoCloseable {
           """.formatted(
           project("so-org-web-a1b2c", "web", "Frontend", "Ready"),
           project("so-org-api-d3e4f", "api", "Backend", "Pending")));
+    }
+  }
+
+  private void handleRepository(HttpExchange exchange, String method, String path)
+      throws IOException {
+    if (path.endsWith("/repository/ssh-key/generate-key-pair")) {
+      respond(exchange, 200,
+          "{\"privateKey\":\"GENERATED-PRIVATE\",\"publicKey\":\"ssh-ed25519 GENERATED-PUBLIC\"}");
+    } else if (path.endsWith("/repository/branches")) {
+      respond(exchange, 200, "[\"main\",\"develop\"]");
+    } else if (path.endsWith("/repository/ssh-key/exists")) {
+      respond(exchange, 200, String.valueOf(sshKeyExists));
+    } else if (path.endsWith("/repository/ssh-key/public-key")) {
+      if (sshKeyExists) {
+        respond(exchange, 200, "{\"publicKey\":\"ssh-ed25519 STORED-PUBLIC\"}");
+      } else {
+        respond(exchange, 404, "{\"errorCode\":\"NOT_FOUND\",\"message\":\"no key\"}");
+      }
+    } else if (path.endsWith("/repository/ssh-key")) {
+      switch (method) {
+        case "POST", "PATCH" -> {
+          sshKeyExists = true;
+          respond(exchange, 200, "{}");
+        }
+        case "DELETE" -> {
+          if (sshKeyExists) {
+            sshKeyExists = false;
+            respond(exchange, 204, "");
+          } else {
+            respond(exchange, 404, "{\"errorCode\":\"NOT_FOUND\",\"message\":\"no key\"}");
+          }
+        }
+        default -> respond(exchange, 405, "");
+      }
+    } else {
+      switch (method) {
+        case "GET" -> {
+          if (repositoryConnected) {
+            respond(exchange, 200, """
+                {"name":"web","uri":"git@github.com:acme/web.git","branch":"main",
+                 "commitId":"abc1234","lastSynced":1784800000,
+                 "projectRepositoryStatus":{"ready":true,"errorMessages":[]},
+                 "sshKeyProvided":%s}
+                """.formatted(sshKeyExists));
+          } else {
+            respond(exchange, 404, "{\"errorCode\":\"NOT_FOUND\",\"message\":\"no repository\"}");
+          }
+        }
+        case "POST" -> {
+          repositoryConnected = true;
+          respond(exchange, 201, "");
+        }
+        case "PATCH" -> {
+          if (repositoryConnected) {
+            respond(exchange, 200, "{}");
+          } else {
+            respond(exchange, 404, "{\"errorCode\":\"NOT_FOUND\",\"message\":\"no repository\"}");
+          }
+        }
+        case "DELETE" -> {
+          if (repositoryConnected) {
+            repositoryConnected = false;
+            respond(exchange, 204, "");
+          } else {
+            respond(exchange, 404, "{\"errorCode\":\"NOT_FOUND\",\"message\":\"no repository\"}");
+          }
+        }
+        default -> respond(exchange, 405, "");
+      }
     }
   }
 
