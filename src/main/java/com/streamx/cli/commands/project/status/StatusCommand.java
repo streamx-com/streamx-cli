@@ -3,7 +3,9 @@ package com.streamx.cli.commands.project.status;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectStatus;
 import com.streamx.cli.platform.ProjectsApi;
 import java.util.Arrays;
@@ -16,10 +18,18 @@ import picocli.CommandLine;
 )
 public class StatusCommand extends AbstractCommand<ProjectStatus> {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
-  @CommandLine.Parameters(index = "1", description = "Project ID")
+  @CommandLine.Parameters(
+      index = "1",
+      description = "Project ID",
+      completionCandidates = ProjectIdCompletionCandidates.class
+  )
   public String projectId;
 
   @Override

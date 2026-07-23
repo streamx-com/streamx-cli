@@ -36,15 +36,19 @@ public class PlatformApiClient implements AutoCloseable {
   private final CloseableHttpClient httpClient;
 
   public PlatformApiClient(String baseUrl, boolean insecure) {
+    this(baseUrl, insecure, TIMEOUT_MILLIS);
+  }
+
+  public PlatformApiClient(String baseUrl, boolean insecure, int timeoutMillis) {
     if (Urls.isCleartextRemote(baseUrl)) {
       throw new CliException(msg.platformCleartextHttpBlocked(baseUrl));
     }
     this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
 
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectTimeout(TIMEOUT_MILLIS)
-        .setConnectionRequestTimeout(TIMEOUT_MILLIS)
-        .setSocketTimeout(TIMEOUT_MILLIS)
+        .setConnectTimeout(timeoutMillis)
+        .setConnectionRequestTimeout(timeoutMillis)
+        .setSocketTimeout(timeoutMillis)
         .build();
     HttpClientBuilder builder = HttpClients.custom()
         .setDefaultRequestConfig(requestConfig)
@@ -71,6 +75,19 @@ public class PlatformApiClient implements AutoCloseable {
         .orElseThrow(() -> new CliException(
             msg.platformUrlNotConfigured(PlatformConfig.STREAMX_PLATFORM_URL)));
     return new PlatformApiClient(url, config.insecure());
+  }
+
+  /**
+   * Client for the hidden {@code __complete-*} commands: a short timeout so an unreachable
+   * platform cannot freeze the user's shell on TAB.
+   */
+  public static PlatformApiClient completionClient() {
+    PlatformConfig config = PlatformConfig.load();
+    String url = config.url()
+        .filter(value -> !value.isBlank())
+        .orElseThrow(() -> new CliException(
+            msg.platformUrlNotConfigured(PlatformConfig.STREAMX_PLATFORM_URL)));
+    return new PlatformApiClient(url, config.insecure(), 3_000);
   }
 
   public JsonNode get(String path) {

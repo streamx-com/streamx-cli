@@ -5,6 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
 import com.streamx.cli.platform.PlatformApiClient;
 import java.io.IOException;
@@ -27,7 +28,11 @@ import picocli.CommandLine;
 )
 public class AcceptCommand extends AbstractSilentCommand {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
   @CommandLine.Option(

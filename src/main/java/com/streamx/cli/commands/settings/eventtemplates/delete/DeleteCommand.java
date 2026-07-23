@@ -27,7 +27,7 @@ import picocli.CommandLine;
         "",
         "Examples:",
         "  streamx settings event-templates delete my.custom",
-        "  streamx settings event-templates delete my.custom --yes",
+        "  streamx settings event-templates delete my.custom --force",
         "  streamx settings event-templates delete   # picks interactively"
     }
 )
@@ -42,10 +42,10 @@ public class DeleteCommand extends AbstractCommand<DeleteCommandResult> {
   public String templateId;
 
   @CommandLine.Option(
-      names = {"-y", "--yes"},
+      names = {"-f", "--force"},
       description = "Skip the confirmation prompt"
   )
-  public boolean yes;
+  public boolean force;
 
   @Override
   public CommandResult<DeleteCommandResult> runCommand() {
@@ -60,7 +60,7 @@ public class DeleteCommand extends AbstractCommand<DeleteCommandResult> {
         break;
     }
 
-    if (!yes) {
+    if (!force) {
       String answer = InteractivePicker.pick(
           msg.eventTemplateDeleteConfirm(found.id(), found.path()), null);
       if (answer == null || !isYes(answer)) {

@@ -6,6 +6,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.Cluster;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationClustersApi;
 import com.streamx.cli.platform.PlatformApiClient;
 import java.util.Arrays;
@@ -20,7 +21,11 @@ import picocli.CommandLine;
 )
 public class ListCommand extends AbstractCommand<List<Cluster>> {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
   @CommandLine.Option(

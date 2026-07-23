@@ -70,6 +70,14 @@ class OrgInvitationsCommandIT extends CliBaseIT {
   }
 
   @Test
+  void completeInvitedEmailsListsPendingInvitations() throws Exception {
+    ProcessResult result = exec("__complete-invited-emails", ORG);
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip().lines()).containsExactly("invited@streamx.com");
+  }
+
+  @Test
   void shouldCreateInvitation() throws Exception {
     ProcessResult result =
         exec("org", "invitations", "create", ORG, "new@streamx.com", "--role", "view");

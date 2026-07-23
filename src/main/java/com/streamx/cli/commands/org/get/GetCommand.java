@@ -2,6 +2,7 @@ package com.streamx.cli.commands.org.get;
 
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.Organization;
 import com.streamx.cli.platform.OrganizationsApi;
 import com.streamx.cli.platform.PlatformApiClient;
@@ -12,7 +13,11 @@ import picocli.CommandLine;
     header = "Display an organization"
 )
 public class GetCommand extends AbstractCommand<Organization> {
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
   @Override

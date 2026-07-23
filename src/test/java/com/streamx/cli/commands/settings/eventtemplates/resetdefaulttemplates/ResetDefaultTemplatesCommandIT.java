@@ -105,7 +105,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
     ProcessResult result = exec(
         "settings", "event-templates", "reset-default-templates",
         "--streamx-home", home.toString(),
-        "--yes"
+        "--force"
     );
 
     result.assertSuccess();
@@ -122,7 +122,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
     ProcessResult result = exec(
         "settings", "event-templates", "reset-default-templates",
         "--streamx-home", home.toString(),
-        "--yes"
+        "--force"
     );
 
     result.assertSuccess();
@@ -139,7 +139,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
     ProcessResult result = exec(
         "settings", "event-templates", "reset-default-templates",
         "--streamx-home", home.toString(),
-        "--yes",
+        "--force",
         "--output", "json"
     );
 
@@ -168,7 +168,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
     ProcessResult result = exec(
         "settings", "event-templates", "reset-default-templates",
         "--streamx-home", home.toString(),
-        "--yes",
+        "--force",
         "--output", "yaml"
     );
 
@@ -189,7 +189,7 @@ class ResetDefaultTemplatesCommandIT extends CliBaseIT {
     ProcessResult result = exec(
         "settings", "event-templates", "reset-default-templates",
         "--streamx-home", home.toString(),
-        "--yes"
+        "--force"
     );
 
     result.assertSuccess();

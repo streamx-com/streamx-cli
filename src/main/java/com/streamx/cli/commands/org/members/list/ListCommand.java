@@ -5,6 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
 import com.streamx.cli.platform.PlatformApiClient;
 import com.streamx.cli.platform.User;
@@ -19,7 +20,11 @@ import picocli.CommandLine;
 )
 public class ListCommand extends AbstractCommand<List<User>> {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
   @CommandLine.Option(

@@ -75,6 +75,24 @@ class OrgCommandIT extends CliBaseIT {
   }
 
   @Test
+  void completeOrgIdsListsIdsOnePerLine() throws Exception {
+    ProcessResult result = exec("__complete-org-ids");
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip().lines()).containsExactly("acme", "globex");
+  }
+
+  @Test
+  void completeOrgIdsIsSilentWhenNotLoggedIn() throws Exception {
+    Files.deleteIfExists(getCredentialsPath());
+
+    ProcessResult result = exec("__complete-org-ids");
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip()).isEmpty();
+  }
+
+  @Test
   void shouldListOnlyOrganizationIdsWhenQuiet() throws Exception {
     ProcessResult result = exec("org", "list", "--quiet");
 
@@ -119,12 +137,38 @@ class OrgCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldDeleteOrganization() throws Exception {
-    ProcessResult result = exec("org", "delete", "acme");
+  void shouldDeleteOrganizationAfterTypedConfirmation() throws Exception {
+    ProcessResult result = execWithStdin("acme\n", "org", "delete", "acme");
 
     result.assertSuccess();
     assertThat(platform.getDeletedIds()).containsExactly("acme");
     assertThat(result.stdout()).contains(msg.orgDeleted("acme"));
+  }
+
+  @Test
+  void shouldDeleteOrganizationWithForceWithoutPrompting() throws Exception {
+    ProcessResult result = exec("org", "delete", "-f", "acme");
+
+    result.assertSuccess();
+    assertThat(platform.getDeletedIds()).containsExactly("acme");
+  }
+
+  @Test
+  void shouldCancelDeletionWhenConfirmationDoesNotMatch() throws Exception {
+    ProcessResult result = execWithStdin("wrong-id\n", "org", "delete", "acme");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.deleteConfirmMismatch("acme"));
+    assertThat(platform.getDeletedIds()).isEmpty();
+  }
+
+  @Test
+  void shouldRequireForceWhenNoInputIsAvailable() throws Exception {
+    ProcessResult result = exec("org", "delete", "acme");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains("--force");
+    assertThat(platform.getDeletedIds()).isEmpty();
   }
 
   @Test
@@ -157,7 +201,7 @@ class OrgCommandIT extends CliBaseIT {
    */
   @Test
   void shouldEncodeOrganizationIdIntoASinglePathSegment() throws Exception {
-    exec("org", "delete", "so-x/users/alice@example.com");
+    exec("org", "delete", "-f", "so-x/users/alice@example.com");
 
     assertThat(platform.getRawRequests()).containsExactly(
         "DELETE /api/v1/organizations/so-x%2Fusers%2Falice%40example.com");

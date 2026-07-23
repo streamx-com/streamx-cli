@@ -69,6 +69,23 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
+  void completeProjectIdsListsIdsOfTheGivenOrg() throws Exception {
+    ProcessResult result = exec("__complete-project-ids", ORG);
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip().lines())
+        .containsExactly("so-org-api-d3e4f", "so-org-web-a1b2c");
+  }
+
+  @Test
+  void completeProjectIdsIsSilentWithoutOrgArgument() throws Exception {
+    ProcessResult result = exec("__complete-project-ids");
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip()).isEmpty();
+  }
+
+  @Test
   void shouldListOnlyProjectIdsWhenQuiet() throws Exception {
     ProcessResult result = exec("project", "list", ORG, "-q");
 
@@ -142,13 +159,34 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldDeleteProject() throws Exception {
-    ProcessResult result = exec("project", "delete", ORG, "so-org-web-a1b2c");
+  void shouldDeleteProjectAfterTypedConfirmation() throws Exception {
+    ProcessResult result =
+        execWithStdin("so-org-web-a1b2c\n", "project", "delete", ORG, "so-org-web-a1b2c");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("DELETE /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
     assertThat(result.stdout()).contains(msg.projectDeleted("so-org-web-a1b2c"));
+  }
+
+  @Test
+  void shouldDeleteProjectWithForceWithoutPrompting() throws Exception {
+    ProcessResult result = exec("project", "delete", "-f", ORG, "so-org-web-a1b2c");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("DELETE /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+  }
+
+  @Test
+  void shouldCancelProjectDeletionWhenConfirmationDoesNotMatch() throws Exception {
+    // Typing the ORG id instead of the project id must not confirm.
+    ProcessResult result =
+        execWithStdin(ORG + "\n", "project", "delete", ORG, "so-org-web-a1b2c");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.deleteConfirmMismatch("so-org-web-a1b2c"));
+    assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test
@@ -188,7 +226,7 @@ class ProjectCommandIT extends CliBaseIT {
    */
   @Test
   void shouldEncodeProjectIdIntoASinglePathSegment() throws Exception {
-    exec("project", "delete", ORG, "so-x/status");
+    exec("project", "delete", "-f", ORG, "so-x/status");
 
     assertThat(platform.getRawRequests()).containsExactly(
         "DELETE /api/v1/organizations/" + ORG + "/projects/so-x%2Fstatus");

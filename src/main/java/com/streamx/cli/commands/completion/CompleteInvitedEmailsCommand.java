@@ -1,0 +1,44 @@
+package com.streamx.cli.commands.completion;
+
+import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.Invitation;
+import com.streamx.cli.platform.OrganizationInvitationsApi;
+import com.streamx.cli.platform.PlatformApiClient;
+import java.util.List;
+import java.util.Objects;
+import picocli.CommandLine;
+
+@CommandLine.Command(
+    name = "__complete-invited-emails",
+    hidden = true,
+    header = "Internal: list invited email addresses of an organization for shell completion"
+)
+public class CompleteInvitedEmailsCommand extends AbstractCommand<List<String>> {
+
+  @CommandLine.Parameters(index = "0", arity = "0..1", description = "Organization ID")
+  public String orgId;
+
+  @Override
+  public CommandResult<List<String>> runCommand() {
+    // Shell completion must stay silent and fast on ANY failure - an empty list simply
+    // completes nothing.
+    if (orgId == null || orgId.isBlank() || orgId.startsWith("-")) {
+      return new CommandResult<>(List.of());
+    }
+    try (PlatformApiClient client = PlatformApiClient.completionClient()) {
+      return new CommandResult<>(new OrganizationInvitationsApi(client).list(orgId).stream()
+          .map(Invitation::email)
+          .filter(Objects::nonNull)
+          .sorted()
+          .toList());
+    } catch (RuntimeException anyFailure) {
+      return new CommandResult<>(List.of());
+    }
+  }
+
+  @Override
+  public String getTextOutput(CommandResult<List<String>> result) {
+    return String.join("\n", result.getData());
+  }
+}

@@ -68,6 +68,15 @@ class OrgMembersCommandIT extends CliBaseIT {
   }
 
   @Test
+  void completeOrgMemberIdsListsOnlyActiveMembers() throws Exception {
+    ProcessResult result = exec("__complete-org-member-ids", ORG);
+
+    result.assertSuccess();
+    assertThat(result.stdout().strip().lines())
+        .containsExactly("active@streamx.com", "user1@streamx.com");
+  }
+
+  @Test
   void shouldListOnlyMemberIdsWhenQuiet() throws Exception {
     ProcessResult result = exec("org", "members", "list", ORG, "-q");
 

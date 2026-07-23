@@ -5,6 +5,8 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
+import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
 import com.streamx.cli.platform.PlatformApiClient;
 import com.streamx.cli.platform.User;
@@ -16,12 +18,17 @@ import picocli.CommandLine;
 )
 public class RemoveCommand extends AbstractSilentCommand {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
   @CommandLine.Parameters(
       index = "1",
-      description = "ID of an ACTIVE member, as shown by 'streamx org members list'"
+      description = "ID of an ACTIVE member, as shown by 'streamx org members list'",
+      completionCandidates = OrgMemberIdCompletionCandidates.class
   )
   public String userId;
 

@@ -903,4 +903,14 @@ public interface MessageProvider {
 
   @Message(id = 380, value = "Run 'streamx profile configure' to set its endpoints")
   String profileCreateConfigureHint();
+
+  @Message(id = 381, value = "This permanently deletes '%s'. Type the ID to confirm")
+  String deleteConfirmPrompt(String id);
+
+  @Message(id = 382, value = "Deletion cancelled: the entered value did not match '%s'")
+  String deleteConfirmMismatch(String id);
+
+  @Message(id = 383,
+      value = "Deletion needs confirmation. Re-run with --force in non-interactive environments")
+  String deleteConfirmRequired();
 }

@@ -1,8 +1,12 @@
 package com.streamx.cli.commands;
 
 import com.streamx.cli.commands.auth.AuthCommand;
+import com.streamx.cli.commands.completion.CompleteInvitedEmailsCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
+import com.streamx.cli.commands.completion.CompleteOrgIdsCommand;
+import com.streamx.cli.commands.completion.CompleteOrgMemberIdsCommand;
 import com.streamx.cli.commands.completion.CompleteProfileNamesCommand;
+import com.streamx.cli.commands.completion.CompleteProjectIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
@@ -36,7 +40,11 @@ import picocli.CommandLine;
         CompleteNonDefaultTemplateIdsCommand.class,
         CompleteSettingsKeysCommand.class,
         CompleteSettingsSetKeysCommand.class,
-        CompleteProfileNamesCommand.class
+        CompleteProfileNamesCommand.class,
+        CompleteOrgIdsCommand.class,
+        CompleteProjectIdsCommand.class,
+        CompleteOrgMemberIdsCommand.class,
+        CompleteInvitedEmailsCommand.class
     }
 )
 public class StreamxCommand extends AbstractCommandGroup {

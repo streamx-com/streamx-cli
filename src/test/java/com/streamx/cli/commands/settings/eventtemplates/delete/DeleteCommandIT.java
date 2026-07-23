@@ -32,7 +32,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.thing",
-        "--yes",
+        "--force",
         "-o", "json"
     );
 
@@ -55,7 +55,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.thing",
-        "--yes"
+        "--force"
     );
 
     result.assertSuccess();
@@ -112,7 +112,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "page.published",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();
@@ -136,7 +136,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.alias",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();
@@ -153,7 +153,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "definitely.does.not.exist",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();

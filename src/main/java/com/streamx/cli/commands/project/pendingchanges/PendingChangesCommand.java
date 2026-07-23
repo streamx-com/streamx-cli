@@ -4,8 +4,10 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PendingChange;
 import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
 import java.util.List;
 import picocli.CommandLine;
@@ -16,10 +18,18 @@ import picocli.CommandLine;
 )
 public class PendingChangesCommand extends AbstractCommand<List<PendingChange>> {
 
-  @CommandLine.Parameters(index = "0", description = "Organization ID")
+  @CommandLine.Parameters(
+      index = "0",
+      description = "Organization ID",
+      completionCandidates = OrgIdCompletionCandidates.class
+  )
   public String orgId;
 
-  @CommandLine.Parameters(index = "1", description = "Project ID")
+  @CommandLine.Parameters(
+      index = "1",
+      description = "Project ID",
+      completionCandidates = ProjectIdCompletionCandidates.class
+  )
   public String projectId;
 
   @Override
