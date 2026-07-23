@@ -958,4 +958,22 @@ public interface MessageProvider {
 
   @Message(id = 398, value = "Current project: %s")
   String currentProjectHeader(String projectId);
+
+  @Message(id = 399, value = "Project '%s' now runs on: %s")
+  String projectClustersSet(String projectId, String clusterIds);
+
+  @Message(id = 400, value = "Cluster '%s' enabled for project '%s'")
+  String projectClusterEnabled(String clusterId, String projectId);
+
+  @Message(id = 401, value = "Cluster '%s' disabled for project '%s'")
+  String projectClusterDisabled(String clusterId, String projectId);
+
+  @Message(id = 402, value = "Cluster '%s' is already enabled for project '%s'")
+  String projectClusterAlreadyEnabled(String clusterId, String projectId);
+
+  @Message(id = 403, value = "Cluster '%s' is already disabled for project '%s'")
+  String projectClusterAlreadyDisabled(String clusterId, String projectId);
+
+  @Message(id = 404, value = "Unknown cluster '%s'. Available clusters: %s")
+  String projectClusterUnknown(String clusterId, String available);
 }

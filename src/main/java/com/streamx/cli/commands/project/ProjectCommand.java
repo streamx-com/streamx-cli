@@ -1,5 +1,6 @@
 package com.streamx.cli.commands.project;
 
+import com.streamx.cli.commands.project.clusters.ClustersCommand;
 import com.streamx.cli.commands.project.create.CreateCommand;
 import com.streamx.cli.commands.project.delete.DeleteCommand;
 import com.streamx.cli.commands.project.get.GetCommand;
@@ -14,6 +15,7 @@ import picocli.CommandLine;
     name = "project",
     header = "Manage StreamX projects",
     subcommands = {
+        ClustersCommand.class,
         CreateCommand.class,
         DeleteCommand.class,
         GetCommand.class,

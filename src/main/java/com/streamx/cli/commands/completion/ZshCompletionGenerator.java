@@ -6,6 +6,7 @@ import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ProfileNameCompletionCandidates;
+import com.streamx.cli.platform.ClusterIdCompletionCandidates;
 import com.streamx.cli.platform.ContextProjectIdCompletionCandidates;
 import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
@@ -225,8 +226,6 @@ public final class ZshCompletionGenerator {
       return "($(streamx __complete-org-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof ProjectIdCompletionCandidates) {
-      // The org id is the value of the --org option when typed; blank falls back to the
-      // current-org context inside the hidden command.
       return "($(streamx __complete-project-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     if (completionCandidates instanceof ContextProjectIdCompletionCandidates) {
@@ -237,6 +236,9 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof InvitedEmailCompletionCandidates) {
       return "($(streamx __complete-invited-emails " + ORG_FROM_WORDS + " 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ClusterIdCompletionCandidates) {
+      return "($(streamx __complete-cluster-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {

@@ -76,6 +76,8 @@ public class StubProjectServer implements AutoCloseable {
       respond(exchange, 200, """
           [{"message":"web will be created","details":["image: nginx","replicas: 2"]}]
           """);
+    } else if (path.endsWith("/clusters")) {
+      handleClusters(exchange, method);
     } else if (path.endsWith("/projects")) {
       handleCollection(exchange, method, body);
     } else {
@@ -102,6 +104,25 @@ public class StubProjectServer implements AutoCloseable {
           project("so-org-web-a1b2c", "web", "Frontend", "Ready"),
           project("so-org-api-d3e4f", "api", "Backend", "Pending")));
     }
+  }
+
+  private void handleClusters(HttpExchange exchange, String method) throws IOException {
+    if ("PATCH".equals(method)) {
+      respond(exchange, 200, "{}");
+      return;
+    }
+    respond(exchange, 200, """
+        {
+          "processing": [
+            {"id":"processing-eu-central","enabled":true,"name":"EU Central",
+             "location":{"latitude":50.1,"longitude":8.6}}
+          ],
+          "edge": [
+            {"id":"edge-us-east","enabled":false,"name":"US East",
+             "location":{"latitude":40.7,"longitude":-74.0}}
+          ]
+        }
+        """);
   }
 
   private void handleItem(HttpExchange exchange, String method, String body) throws IOException {
