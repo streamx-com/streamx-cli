@@ -976,4 +976,7 @@ public interface MessageProvider {
 
   @Message(id = 404, value = "Unknown cluster '%s'. Available clusters: %s")
   String projectClusterUnknown(String clusterId, String available);
+
+  @Message(id = 405, value = "Could not read SSH private key file '%s': %s")
+  String projectSshKeyFileUnreadable(String path, String reason);
 }

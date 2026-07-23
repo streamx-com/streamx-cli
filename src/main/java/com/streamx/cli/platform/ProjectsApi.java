@@ -29,12 +29,31 @@ public class ProjectsApi {
     return Project.fromJson(client.get(projectPath(orgId, projectId)));
   }
 
+  /** Optional repository settings of {@link #create}, mirroring the spec's RepositorySettings. */
+  public record RepositorySettings(String uri, String branch, String sshPrivateKeyBase64) {
+  }
+
   /**
    * The id is server-derived from the name and returned in the 201 body; it is never computed
-   * client-side.
+   * client-side. Repository and clusters are optional; the endpoint is transactional and rolls
+   * everything back if any part fails.
    */
-  public Project create(String orgId, String name, String description) {
-    return Project.fromJson(client.postJson(projectsPath(orgId), request(name, description)));
+  public Project create(String orgId, String name, String description,
+      RepositorySettings repository, List<String> clusters) {
+    Map<String, Object> body = new HashMap<>(request(name, description));
+    if (repository != null) {
+      Map<String, String> repo = new HashMap<>();
+      repo.put("uri", repository.uri());
+      repo.put("branch", repository.branch());
+      if (repository.sshPrivateKeyBase64() != null) {
+        repo.put("sshPrivateKeyBase64", repository.sshPrivateKeyBase64());
+      }
+      body.put("repository", repo);
+    }
+    if (clusters != null && !clusters.isEmpty()) {
+      body.put("clusters", clusters);
+    }
+    return Project.fromJson(client.postJson(projectsPath(orgId), body));
   }
 
   public Project update(String orgId, String projectId, String name, String description) {

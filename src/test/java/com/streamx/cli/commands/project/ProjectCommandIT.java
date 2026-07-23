@@ -130,6 +130,55 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldCreateProjectWithRepositoryAndClusters() throws Exception {
+    Path keyFile = streamxHome.resolve("test-deploy-key");
+    Files.writeString(keyFile, "PRIVATE KEY BYTES");
+    String expectedKey = java.util.Base64.getEncoder()
+        .encodeToString("PRIVATE KEY BYTES".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+    ProcessResult result = exec("project", "create", "web", "--org", ORG,
+        "--description", "Frontend",
+        "--repository-uri", "git@github.com:acme/web.git",
+        "--repository-branch", "main",
+        "--ssh-private-key", keyFile.toString(),
+        "--cluster", "eu-central", "--cluster", "us-east");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("POST /api/v1/organizations/" + ORG + "/projects");
+    assertThat(platform.getRequestBodies().get(0))
+        .contains("\"name\":\"web\"")
+        .contains("\"description\":\"Frontend\"")
+        .contains("\"uri\":\"git@github.com:acme/web.git\"")
+        .contains("\"branch\":\"main\"")
+        .contains("\"sshPrivateKeyBase64\":\"" + expectedKey + "\"")
+        .contains("\"clusters\":[\"eu-central\",\"us-east\"]");
+  }
+
+  /** The server requires branch whenever a repository is connected; the CLI enforces it early. */
+  @Test
+  void shouldRequireBranchWhenRepositoryUriIsGiven() throws Exception {
+    ProcessResult result = exec("project", "create", "web", "--org", ORG,
+        "--repository-uri", "git@github.com:acme/web.git");
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("--repository-branch");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void shouldFailWhenSshKeyFileIsUnreadable() throws Exception {
+    ProcessResult result = exec("project", "create", "web", "--org", ORG,
+        "--repository-uri", "git@github.com:acme/web.git",
+        "--repository-branch", "main",
+        "--ssh-private-key", streamxHome.resolve("nope-key").toString());
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains("Could not read SSH private key file");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
   void shouldCreateProjectAsJson() throws Exception {
     ProcessResult result = exec("project", "create", "web", "--org", ORG, "--output", "json");
 
