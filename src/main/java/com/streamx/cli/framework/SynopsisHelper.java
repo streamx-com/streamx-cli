@@ -23,9 +23,9 @@ public final class SynopsisHelper {
   }
 
   /**
-   * Root help layout: drop the {@code Usage:} synopsis, show the active profile (name in bold)
-   * and, when set, the current organization and project directly under the header, then a blank
-   * line before the command list.
+   * Root help layout: drop the {@code Usage:} synopsis, show the active profile and the current
+   * organization and project (values in bold, {@code -} when unset) directly under the header,
+   * then a blank line before the command list.
    */
   public static void applyRootUsageLayout(CommandLine commandLine) {
     UsageMessageSpec usage = commandLine.getCommandSpec().usageMessage();
@@ -35,18 +35,11 @@ public final class SynopsisHelper {
     keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS);
     usage.sectionKeys(keys);
 
-    List<String> lines = new ArrayList<>();
-    lines.add(msg.currentProfileHeader("@|bold " + currentProfile() + "|@"));
-    String org = quiet(PlatformContext::effectiveOrg);
-    if (org != null) {
-      lines.add(msg.currentOrgHeader("@|bold " + org + "|@"));
-    }
-    String project = quiet(PlatformContext::effectiveProject);
-    if (project != null) {
-      lines.add(msg.currentProjectHeader("@|bold " + project + "|@"));
-    }
-    lines.add("");
-    usage.description(lines.toArray(new String[0]));
+    usage.description(
+        msg.currentProfileHeader("@|bold " + currentProfile() + "|@"),
+        msg.currentOrgHeader(boldOrDash(quiet(PlatformContext::effectiveOrg))),
+        msg.currentProjectHeader(boldOrDash(quiet(PlatformContext::effectiveProject))),
+        "");
   }
 
   private static String currentProfile() {
@@ -55,6 +48,10 @@ public final class SynopsisHelper {
     } catch (RuntimeException corruptOrUnreadable) {
       return StreamxHome.DEFAULT_PROFILE;
     }
+  }
+
+  private static String boldOrDash(String value) {
+    return value == null ? "-" : "@|bold " + value + "|@";
   }
 
   private static String quiet(Supplier<String> supplier) {

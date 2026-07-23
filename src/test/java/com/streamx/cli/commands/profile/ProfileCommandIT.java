@@ -306,8 +306,8 @@ class ProfileCommandIT extends CliBaseIT {
     bareHelp.assertSuccess();
     assertThat(bareHelp.stdout())
         .contains("Current profile: default")
-        .doesNotContain("Current organization:")
-        .doesNotContain("Current project:");
+        .contains("Current organization: -")
+        .contains("Current project: -");
 
     exec("profile", "org", "use", "acme").assertSuccess();
     exec("profile", "project", "use", "acme-shop").assertSuccess();
