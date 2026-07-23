@@ -10,7 +10,9 @@ import com.streamx.cli.commands.completion.CompleteTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.info.InfoCommand;
 import com.streamx.cli.commands.local.LocalCommand;
+import com.streamx.cli.commands.org.OrgCommand;
 import com.streamx.cli.commands.profile.ProfileCommand;
+import com.streamx.cli.commands.project.ProjectCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
@@ -22,6 +24,8 @@ import picocli.CommandLine;
     subcommands = {
         AuthCommand.class,
         ProfileCommand.class,
+        OrgCommand.class,
+        ProjectCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,

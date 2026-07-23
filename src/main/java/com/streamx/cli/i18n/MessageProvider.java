@@ -739,6 +739,86 @@ public interface MessageProvider {
   @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
   String authRevocationUnsupported();
 
+
+  @Message(id = 306, value = "No organizations found")
+  String orgListEmpty();
+
+  @Message(id = 307, value = "Organization '%s' created")
+  String orgCreated(String name);
+
+  @Message(id = 308, value = "Organization '%s' deleted")
+  String orgDeleted(String orgId);
+
+  @Message(id = 310, value = "No members found")
+  String orgMembersListEmpty();
+
+  @Message(id = 311, value = "Member '%s' added with role '%s'")
+  String orgMemberAdded(String name, String role);
+
+  @Message(id = 312, value = "Member '%s' removed")
+  String orgMemberRemoved(String userId);
+
+  @Message(id = 313, value = "Role of '%s' changed to '%s'")
+  String orgMemberRoleChanged(String userId, String role);
+
+  @Message(id = 314, value = "No invitations found")
+  String orgInvitationsListEmpty();
+
+  @Message(id = 315, value = "Invitation sent to '%s' with role '%s'")
+  String orgInvitationCreated(String email, String role);
+
+  @Message(id = 316, value = "Invitation accepted")
+  String orgInvitationAccepted();
+
+  @Message(id = 317, value = "Invitation for '%s' cancelled")
+  String orgInvitationCancelled(String email);
+
+  @Message(id = 318, value = "No clusters found")
+  String orgClustersListEmpty();
+
+  @Message(id = 320, value = "Paste the invitation token")
+  String orgInvitationTokenPrompt();
+
+  @Message(id = 321, value = "Invitation token is required")
+  String orgInvitationTokenRequired();
+
+  @Message(id = 322, value = "'%s' is not a member of organization '%s'")
+  String orgMemberNotFound(String userId, String orgId);
+
+  @Message(
+      id = 323,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Cancel it with: streamx org invitations cancel %s %s"
+  )
+  String orgMemberNotActiveForRemoval(String userId, String status, String orgId, String email);
+
+  @Message(
+      id = 324,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Changing its role would grant membership without the invitation being accepted.%n"
+          + "Wait for the invitation to be accepted, or add the account directly with:%n"
+          + "  streamx org members add %s %s --role <role>"
+  )
+  String orgMemberNotActiveForRoleChange(String userId, String status, String orgId, String email);
+
+  @Message(id = 325, value = "No projects found")
+  String projectListEmpty();
+
+  @Message(id = 326, value = "Project '%s' created (id: %s)")
+  String projectCreated(String name, String id);
+
+  @Message(id = 327, value = "Project '%s' updated")
+  String projectUpdated(String projectId);
+
+  @Message(id = 328, value = "Project '%s' deleted")
+  String projectDeleted(String projectId);
+
+  @Message(id = 329, value = "At least one of --name or --description must be given")
+  String projectUpdateNothingToDo();
+
+  @Message(id = 330, value = "No pending changes")
+  String projectPendingChangesEmpty();
+
   @Message(id = 355,
       value = "Invalid profile name '%s'. Use 1-32 lowercase letters, digits or dashes")
   String profileNameInvalid(String name);
