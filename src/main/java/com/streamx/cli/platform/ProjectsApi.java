@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** {@code /api/v1/organizations/{orgId}/projects} — mirrors the Projects Resource in the spec. */
 public class ProjectsApi {
@@ -27,6 +28,26 @@ public class ProjectsApi {
 
   public Project get(String orgId, String projectId) {
     return Project.fromJson(client.get(projectPath(orgId, projectId)));
+  }
+
+  public ProjectView getDetailed(String orgId, String projectId) {
+    return detailed(orgId, get(orgId, projectId));
+  }
+
+  public ProjectView detailed(String orgId, Project project) {
+    List<String> clusters = new OrganizationClustersApi(client)
+        .listForProject(orgId, project.id()).stream()
+        .filter(Cluster::enabled)
+        .map(Cluster::id)
+        .filter(Objects::nonNull)
+        .toList();
+    RepositoryView repository = null;
+    try {
+      repository = RepositoryView.from(new ProjectRepositoryApi(client).get(orgId, project.id()));
+    } catch (PlatformApiClient.NotFoundException notConnected) {
+      repository = null;
+    }
+    return ProjectView.of(project, clusters, repository);
   }
 
   /** Optional repository settings of {@link #create}, mirroring the spec's RepositorySettings. */

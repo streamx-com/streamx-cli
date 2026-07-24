@@ -22,6 +22,7 @@ public class StubProjectServer implements AutoCloseable {
   private volatile boolean empty;
   private volatile boolean repositoryConnected = true;
   private volatile boolean sshKeyExists;
+  private volatile boolean noClusters;
 
   public StubProjectServer() throws IOException {
     this.server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -52,6 +53,10 @@ public class StubProjectServer implements AutoCloseable {
 
   public void returnNoProjects() {
     this.empty = true;
+  }
+
+  public void returnNoClusters() {
+    this.noClusters = true;
   }
 
   public void returnNoRepository() {
@@ -188,6 +193,10 @@ public class StubProjectServer implements AutoCloseable {
   private void handleClusters(HttpExchange exchange, String method) throws IOException {
     if ("PATCH".equals(method)) {
       respond(exchange, 200, "{}");
+      return;
+    }
+    if (noClusters) {
+      respond(exchange, 200, "{\"processing\":[],\"edge\":[]}");
       return;
     }
     respond(exchange, 200, """

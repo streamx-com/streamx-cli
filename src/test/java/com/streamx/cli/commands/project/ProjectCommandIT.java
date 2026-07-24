@@ -68,6 +68,36 @@ class ProjectCommandIT extends CliBaseIT {
     assertThat(result.stdout()).contains("ID", "NAME", "STATE", "DESCRIPTION");
     assertThat(result.stdout()).contains("so-org-web-a1b2c", "web", "Ready");
     assertThat(result.stdout()).contains("so-org-api-d3e4f", "api", "Pending");
+    assertThat(result.stdout()).doesNotContain("CLUSTERS", "REPOSITORY", "SSH KEY");
+  }
+
+  @Test
+  void shouldListProjectsWideWithClustersAndRepository() throws Exception {
+    ProcessResult result = exec("project", "list", "--org", ORG, "--wide");
+
+    result.assertSuccess();
+    String api = "/api/v1/organizations/" + ORG + "/projects/so-org-api-d3e4f";
+    String web = "/api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c";
+    assertThat(platform.getRequests()).containsExactly(
+        "GET /api/v1/organizations/" + ORG + "/projects",
+        "GET " + api + "/clusters", "GET " + api + "/repository",
+        "GET " + web + "/clusters", "GET " + web + "/repository");
+    assertThat(result.stdout())
+        .contains("CLUSTERS", "REPOSITORY", "SSH KEY")
+        .contains("processing-eu-central")
+        .contains("git@github.com:acme/web.git")
+        .contains("not specified");
+  }
+
+  @Test
+  void wideListShowsDashesWhenNoClustersOrRepository() throws Exception {
+    platform.returnNoClusters();
+    platform.returnNoRepository();
+
+    ProcessResult result = exec("project", "list", "--org", ORG, "--wide");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("CLUSTERS", "REPOSITORY", "SSH KEY");
   }
 
   @Test
@@ -106,13 +136,42 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldGetProject() throws Exception {
+  void shouldGetProjectWithClustersAndRepository() throws Exception {
     ProcessResult result = exec("project", "get", "so-org-web-a1b2c", "--org", ORG);
 
     result.assertSuccess();
+    String base = "/api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c";
     assertThat(platform.getRequests())
-        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
-    assertThat(result.stdout()).contains("id          = so-org-web-a1b2c");
+        .containsExactly("GET " + base, "GET " + base + "/clusters", "GET " + base + "/repository");
+    assertThat(result.stdout())
+        .contains("id          = so-org-web-a1b2c")
+        .contains("clusters    = processing-eu-central")
+        .contains("repository  = git@github.com:acme/web.git")
+        .contains("branch      = main")
+        .contains("ssh key     = not specified");
+  }
+
+  @Test
+  void shouldGetProjectShowingSshKeySpecifiedWhenPresent() throws Exception {
+    platform.sshKeyExists(true);
+
+    ProcessResult result = exec("project", "get", "so-org-web-a1b2c", "--org", ORG);
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("ssh key     = specified");
+  }
+
+  @Test
+  void shouldGetProjectShowingNotConnectedWhenNoRepository() throws Exception {
+    platform.returnNoRepository();
+
+    ProcessResult result = exec("project", "get", "so-org-web-a1b2c", "--org", ORG);
+
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains("repository  = not connected")
+        .contains("branch      = -")
+        .contains("ssh key     = not specified");
   }
 
   /** The id is server-derived, so create must report the id from the response, not the name. */
@@ -314,7 +373,7 @@ class ProjectCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests())
-        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+        .first().isEqualTo("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
   }
 
   @Test
@@ -325,7 +384,7 @@ class ProjectCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests())
-        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
+        .first().isEqualTo("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
   }
 
   @Test

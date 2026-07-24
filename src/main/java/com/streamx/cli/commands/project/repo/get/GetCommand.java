@@ -35,7 +35,7 @@ public class GetCommand extends AbstractCommand<ProjectRepository> {
             orDash(repository.branch()),
             orDash(repository.commitId()),
             repository.ready() == null ? "-" : repository.ready(),
-            repository.sshKeyProvided() ? "provided" : "-",
+            repository.sshKeyProvided() ? msg.sshKeySpecified() : msg.sshKeyNotSpecified(),
             repository.errorMessages().isEmpty() ? ""
                 : "\nerrors    = " + String.join("; ", repository.errorMessages()));
   }

@@ -1012,4 +1012,13 @@ public interface MessageProvider {
 
   @Message(id = 415, value = "Could not write '%s': %s")
   String projectSshKeyFileWriteFailed(String path, String reason);
+
+  @Message(id = 416, value = "specified")
+  String sshKeySpecified();
+
+  @Message(id = 417, value = "not specified")
+  String sshKeyNotSpecified();
+
+  @Message(id = 418, value = "not connected")
+  String repositoryNotConnected();
 }

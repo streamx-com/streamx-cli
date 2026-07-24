@@ -8,8 +8,9 @@ import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.PlatformApiClient;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.Project;
+import com.streamx.cli.platform.ProjectView;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.RepositoryView;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +21,7 @@ import picocli.CommandLine;
     name = "list",
     header = "List projects in an organization"
 )
-public class ListCommand extends AbstractCommand<List<Project>> {
+public class ListCommand extends AbstractCommand<List<ProjectView>> {
 
   @CommandLine.Option(
       names = "--org",
@@ -36,19 +37,36 @@ public class ListCommand extends AbstractCommand<List<Project>> {
   )
   public boolean quiet;
 
+  @CommandLine.Option(
+      names = "--wide",
+      description = "Also show each project's clusters and repository "
+          + "(one extra request per project)"
+  )
+  public boolean wide;
+
   @Override
-  public String getTextOutput(CommandResult<List<Project>> result) {
-    List<Project> projects = result.getData();
+  public String getTextOutput(CommandResult<List<ProjectView>> result) {
+    List<ProjectView> projects = result.getData();
 
     if (quiet) {
       return projects.stream()
-          .map(Project::id)
+          .map(ProjectView::id)
           .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 
     if (projects.isEmpty()) {
       return msg.projectListEmpty();
+    }
+
+    if (wide) {
+      return TextTable.render(
+          List.of("ID", "NAME", "STATE", "DESCRIPTION", "CLUSTERS", "REPOSITORY", "SSH KEY"),
+          projects.stream()
+              .map(project -> Arrays.asList(
+                  project.id(), project.name(), project.state(), project.description(),
+                  clustersCell(project), repositoryCell(project), sshKeyCell(project)))
+              .toList());
     }
 
     return TextTable.render(
@@ -59,11 +77,37 @@ public class ListCommand extends AbstractCommand<List<Project>> {
             .toList());
   }
 
+  private static String clustersCell(ProjectView project) {
+    return project.clusters() == null || project.clusters().isEmpty()
+        ? "-" : String.join(", ", project.clusters());
+  }
+
+  private static String repositoryCell(ProjectView project) {
+    RepositoryView repository = project.repository();
+    return repository == null || repository.uri() == null ? "-" : repository.uri();
+  }
+
+  private static String sshKeyCell(ProjectView project) {
+    RepositoryView repository = project.repository();
+    if (repository == null) {
+      return "-";
+    }
+    return repository.sshKeyProvided() ? msg.sshKeySpecified() : msg.sshKeyNotSpecified();
+  }
+
   @Override
-  public CommandResult<List<Project>> runCommand() {
+  public CommandResult<List<ProjectView>> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
     try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
-      return new CommandResult<>(new ProjectsApi(client).list(orgId));
+      ProjectsApi api = new ProjectsApi(client);
+      if (wide) {
+        return new CommandResult<>(api.list(orgId).stream()
+            .map(project -> api.detailed(orgId, project))
+            .toList());
+      }
+      return new CommandResult<>(api.list(orgId).stream()
+          .map(ProjectView::basic)
+          .toList());
     }
   }
 }
