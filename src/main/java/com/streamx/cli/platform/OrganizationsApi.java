@@ -1,43 +1,36 @@
 package com.streamx.cli.platform;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
+import com.streamx.cli.platform.generated.api.OrganizationsResourceApi;
+import com.streamx.cli.platform.generated.model.Name;
+import com.streamx.cli.platform.generated.model.Organization;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class OrganizationsApi {
-  private static final String ORGANIZATIONS_PATH = "/api/v1/organizations";
 
-  private final PlatformApiClient client;
+  private final PlatformClients clients;
+  private final OrganizationsResourceApi api;
 
-  public OrganizationsApi(PlatformApiClient client) {
-    this.client = client;
+  public OrganizationsApi(PlatformClients clients) {
+    this.clients = clients;
+    this.api = clients.api(OrganizationsResourceApi.class);
   }
 
   public List<Organization> list() {
-    List<Organization> organizations = new ArrayList<>();
-    for (JsonNode node : client.get(ORGANIZATIONS_PATH)) {
-      organizations.add(Organization.fromJson(node));
-    }
-    organizations.sort(
-        Comparator.comparing(Organization::id, Comparator.nullsLast(String::compareTo)));
-    return organizations;
+    return clients.callList(() -> api.listOrganizations(null, null), Organization.class).stream()
+        .sorted(Comparator.comparing(Organization::getId, Comparator.nullsLast(String::compareTo)))
+        .toList();
   }
 
   public Organization get(String orgId) {
-    return Organization.fromJson(client.get(organizationPath(orgId)));
+    return clients.call(() -> api.getOrganization(orgId, null, null), Organization.class);
   }
 
   public void create(String name) {
-    client.postJson(ORGANIZATIONS_PATH, Map.of("name", name));
+    clients.call(() -> api.createOrganization(new Name().name(name), null, null));
   }
 
   public void delete(String orgId) {
-    client.delete(organizationPath(orgId));
-  }
-
-  private static String organizationPath(String orgId) {
-    return ORGANIZATIONS_PATH + "/" + PathSegments.encode(orgId);
+    clients.call(() -> api.deleteOrganization(orgId, null, null));
   }
 }

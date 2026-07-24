@@ -8,10 +8,10 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Roles;
-import com.streamx.cli.platform.User;
+import com.streamx.cli.platform.generated.model.User;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -46,17 +46,15 @@ public class SetRoleCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       OrganizationUsersApi users = new OrganizationUsersApi(client);
 
-      // The server implements the role change as remove-then-add, so applying it to a pending
-      // invitation listed by 'members list' would grant membership without the invitation ever
-      // being accepted. Refuse rather than do that silently.
       User member = users.find(orgId, userId)
           .orElseThrow(() -> new CliException(msg.orgMemberNotFound(userId, orgId)));
-      if (!member.isActive()) {
+      if (member.getStatus() != User.StatusEnum.ACTIVE) {
+        String status = member.getStatus() == null ? "" : member.getStatus().value();
         throw new CliException(
-            msg.orgMemberNotActiveForRoleChange(userId, member.status(), orgId, userId));
+            msg.orgMemberNotActiveForRoleChange(userId, status, orgId, userId));
       }
 
       users.editRole(orgId, userId, role);

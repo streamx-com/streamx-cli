@@ -8,9 +8,9 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.User;
+import com.streamx.cli.platform.generated.model.User;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -37,16 +37,15 @@ public class RemoveCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       OrganizationUsersApi users = new OrganizationUsersApi(client);
 
-      // 'members list' also reports pending invitations, and the server rejects removing one.
-      // Checked here so the answer names the actual problem instead of surfacing a bare 404.
       User member = users.find(orgId, userId)
           .orElseThrow(() -> new CliException(msg.orgMemberNotFound(userId, orgId)));
-      if (!member.isActive()) {
+      if (member.getStatus() != User.StatusEnum.ACTIVE) {
+        String status = member.getStatus() == null ? "" : member.getStatus().value();
         throw new CliException(
-            msg.orgMemberNotActiveForRemoval(userId, member.status(), orgId, userId));
+            msg.orgMemberNotActiveForRemoval(userId, status, orgId, userId));
       }
 
       users.remove(orgId, userId);

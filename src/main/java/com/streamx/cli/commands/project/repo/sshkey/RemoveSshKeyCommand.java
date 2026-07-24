@@ -6,7 +6,7 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectRepositoryApi;
 import picocli.CommandLine;
@@ -24,9 +24,9 @@ public class RemoveSshKeyCommand extends AbstractSilentCommand {
   public CommandResult<Void> runCommand() {
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new ProjectRepositoryApi(client).removeSshKey(context.org(), context.project());
-    } catch (PlatformApiClient.NotFoundException e) {
+    } catch (PlatformClients.NotFoundException e) {
       throw new CliException(msg.projectSshKeyMissing(context.project()), e);
     }
     System.out.println(msg.projectSshKeyRemoved(context.project()));

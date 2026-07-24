@@ -6,7 +6,7 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectRepositoryApi;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class SetSshKeyCommand extends AbstractSilentCommand {
     String keyBase64 = readKeyBase64();
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectRepositoryApi api = new ProjectRepositoryApi(client);
       boolean create = !api.sshKeyExists(context.org(), context.project());
       api.setSshKey(context.org(), context.project(), keyBase64, create);

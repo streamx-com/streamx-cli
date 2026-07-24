@@ -4,11 +4,11 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
-import com.streamx.cli.platform.ProjectStatus;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.generated.model.ProjectStatus;
 import java.util.Arrays;
 import java.util.List;
 import picocli.CommandLine;
@@ -38,14 +38,16 @@ public class StatusCommand extends AbstractCommand<ProjectStatus> {
   @Override
   public String getTextOutput(CommandResult<ProjectStatus> result) {
     ProjectStatus status = result.getData();
-    StringBuilder output = new StringBuilder("state = " + orDash(status.state()));
+    StringBuilder output = new StringBuilder("state = "
+        + orDash(status.getState() == null ? null : status.getState().value()));
 
-    if (!status.statuses().isEmpty()) {
+    if (status.getStatuses() != null && !status.getStatuses().isEmpty()) {
       output.append("\n\n").append(TextTable.render(
           List.of("STATE", "REASON", "MESSAGE"),
-          status.statuses().stream()
+          status.getStatuses().stream()
               .map(component -> Arrays.asList(
-                  component.state(), component.reason(), component.message()))
+                  component.getState() == null ? null : component.getState().value(),
+                  component.getReason(), component.getMessage()))
               .toList()));
     }
     return output.toString();
@@ -60,7 +62,7 @@ public class StatusCommand extends AbstractCommand<ProjectStatus> {
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
     orgId = context.org();
     projectId = context.project();
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).status(orgId, projectId));
     }
   }

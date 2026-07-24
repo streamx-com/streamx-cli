@@ -5,11 +5,11 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PendingChange;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.generated.model.PendingChange;
 import java.util.List;
 import picocli.CommandLine;
 
@@ -47,8 +47,9 @@ public class PendingChangesCommand extends AbstractCommand<List<PendingChange>> 
       if (!output.isEmpty()) {
         output.append("\n");
       }
-      output.append("- ").append(change.message());
-      for (String detail : change.details()) {
+      output.append("- ").append(change.getMessage());
+      List<String> details = change.getDetails() == null ? List.of() : change.getDetails();
+      for (String detail : details) {
         output.append("\n    ").append(detail);
       }
     }
@@ -60,7 +61,7 @@ public class PendingChangesCommand extends AbstractCommand<List<PendingChange>> 
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
     orgId = context.org();
     projectId = context.project();
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).pendingChanges(orgId, projectId));
     }
   }

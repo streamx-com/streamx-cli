@@ -674,12 +674,6 @@ public interface MessageProvider {
   @Message(id = 298, value = "Not authorized. Run 'streamx auth login' again")
   String platformUnauthorized();
 
-  @Message(id = 299, value = "You do not have permission to access %s")
-  String platformForbidden(String path);
-
-  @Message(id = 300, value = "%s was not found, or you do not have permission to access it")
-  String platformNotFoundOrForbidden(String path);
-
   @Message(id = 301, value = "Request to %s failed: %s")
   String platformRequestFailed(String url, String reason);
 
@@ -688,12 +682,6 @@ public interface MessageProvider {
 
   @Message(id = 303, value = "Request rejected (%d): %s")
   String platformRequestRejected(int statusCode, String detail);
-
-  @Message(id = 304, value = "Response from %s was not valid JSON")
-  String platformResponseNotJson(String url);
-
-  @Message(id = 305, value = "Unable to disable TLS verification: %s")
-  String platformInsecureTlsFailed(String reason);
 
   @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
       + "Use an https:// platform URL (http:// is allowed only for localhost)")
@@ -1021,4 +1009,10 @@ public interface MessageProvider {
 
   @Message(id = 418, value = "not connected")
   String repositoryNotConnected();
+
+  @Message(id = 419, value = "Not found, or you do not have access to it")
+  String platformNotFound();
+
+  @Message(id = 420, value = "You do not have permission to perform this action")
+  String platformAccessDenied();
 }

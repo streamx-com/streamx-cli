@@ -5,7 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectView;
@@ -70,7 +70,7 @@ public class GetCommand extends AbstractCommand<ProjectView> {
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
     orgId = context.org();
     projectId = context.project();
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client).getDetailed(orgId, projectId));
     }
   }

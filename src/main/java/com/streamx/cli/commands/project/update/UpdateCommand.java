@@ -6,11 +6,11 @@ import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.generated.model.Project;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -50,14 +50,12 @@ public class UpdateCommand extends AbstractSilentCommand {
       throw new CliException(msg.projectUpdateNothingToDo());
     }
 
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectsApi projects = new ProjectsApi(client);
 
-      // The API replaces both name and description, and name is required, so an unspecified field
-      // is filled from the current project to keep this a genuine partial update.
       Project current = projects.get(orgId, projectId);
-      String newName = name != null ? name : current.name();
-      String newDescription = description != null ? description : current.description();
+      String newName = name != null ? name : current.getName();
+      String newDescription = description != null ? description : current.getDescription();
 
       projects.update(orgId, projectId, newName, newDescription);
     }

@@ -5,7 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrganizationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -18,7 +18,7 @@ public class CreateCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationsApi(client).create(name);
     }
     System.out.println(msg.orgCreated(name));

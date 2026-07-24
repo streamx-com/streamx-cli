@@ -7,7 +7,7 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,7 @@ public class AcceptCommand extends AbstractSilentCommand {
     orgId = PlatformContext.requireOrg(orgId);
     String token = readToken();
 
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationInvitationsApi(client).accept(orgId, token);
     }
     System.out.println(msg.orgInvitationAccepted());

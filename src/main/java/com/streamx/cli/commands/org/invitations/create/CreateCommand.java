@@ -6,7 +6,7 @@ import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Roles;
 import picocli.CommandLine;
@@ -42,7 +42,7 @@ public class CreateCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationInvitationsApi(client).create(orgId, email, role);
     }
     System.out.println(msg.orgInvitationCreated(email, role));

@@ -5,11 +5,11 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
-import com.streamx.cli.platform.Invitation;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
+import com.streamx.cli.platform.generated.model.Invitation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +42,7 @@ public class ListCommand extends AbstractCommand<List<Invitation>> {
 
     if (quiet) {
       return invitations.stream()
-          .map(Invitation::email)
+          .map(Invitation::getEmail)
           .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
@@ -55,14 +55,16 @@ public class ListCommand extends AbstractCommand<List<Invitation>> {
         List.of("EMAIL", "ROLE", "STATUS"),
         invitations.stream()
             .map(invitation -> Arrays.asList(
-                invitation.email(), invitation.role(), invitation.status()))
+                invitation.getEmail(),
+                invitation.getRole() == null ? null : invitation.getRole().getName(),
+                invitation.getStatus() == null ? null : invitation.getStatus().value()))
             .toList());
   }
 
   @Override
   public CommandResult<List<Invitation>> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new OrganizationInvitationsApi(client).list(orgId));
     }
   }

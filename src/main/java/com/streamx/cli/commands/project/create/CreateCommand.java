@@ -7,11 +7,11 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.ClusterIdCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectsApi;
 import com.streamx.cli.platform.ProjectsApi.RepositorySettings;
+import com.streamx.cli.platform.generated.model.Project;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,7 +87,7 @@ public class CreateCommand extends AbstractCommand<Project> {
   @Override
   public String getTextOutput(CommandResult<Project> result) {
     Project project = result.getData();
-    return msg.projectCreated(name, project.id());
+    return msg.projectCreated(name, project.getId());
   }
 
   @Override
@@ -95,7 +95,7 @@ public class CreateCommand extends AbstractCommand<Project> {
     orgId = PlatformContext.requireOrg(orgId);
     RepositorySettings repositorySettings = repository == null ? null
         : new RepositorySettings(repository.uri, repository.branch, readKeyBase64());
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProjectsApi(client)
           .create(orgId, name, description, repositorySettings, clusters));
     }

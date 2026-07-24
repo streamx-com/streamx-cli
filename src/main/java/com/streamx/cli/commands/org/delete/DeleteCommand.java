@@ -7,7 +7,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.DeleteConfirmation;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import picocli.CommandLine;
 
@@ -36,7 +36,7 @@ public class DeleteCommand extends AbstractSilentCommand {
   public CommandResult<Void> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
     DeleteConfirmation.require(force, orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationsApi(client).delete(orgId);
     }
     System.out.println(msg.orgDeleted(orgId));

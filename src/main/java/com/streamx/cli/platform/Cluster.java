@@ -1,6 +1,7 @@
 package com.streamx.cli.platform;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.streamx.cli.platform.generated.model.ClusterLocation;
+import com.streamx.cli.platform.generated.model.ClustersProcessingInner;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -13,15 +14,14 @@ public record Cluster(
     Double longitude
 ) {
 
-  public static Cluster fromJson(JsonNode node, String type) {
-    JsonNode location = node.path("location");
+  public static Cluster from(ClustersProcessingInner node, String type) {
+    ClusterLocation location = node.getLocation();
     return new Cluster(
-        node.path("id").asText(null),
+        node.getId(),
         type,
-        node.path("name").asText(null),
-        node.path("enabled").asBoolean(false),
-        location.hasNonNull("latitude") ? location.path("latitude").asDouble() : null,
-        location.hasNonNull("longitude") ? location.path("longitude").asDouble() : null
-    );
+        node.getName(),
+        Boolean.TRUE.equals(node.getEnabled()),
+        location == null ? null : location.getLatitude(),
+        location == null ? null : location.getLongitude());
   }
 }

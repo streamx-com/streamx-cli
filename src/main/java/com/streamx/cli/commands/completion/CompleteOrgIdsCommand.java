@@ -2,9 +2,9 @@ package com.streamx.cli.commands.completion;
 
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.Organization;
 import com.streamx.cli.platform.OrganizationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
+import com.streamx.cli.platform.generated.model.Organization;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -18,11 +18,9 @@ public class CompleteOrgIdsCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    // Shell completion must stay silent and fast on ANY failure (not logged in, platform
-    // unreachable, expired session) - an empty list simply completes nothing.
-    try (PlatformApiClient client = PlatformApiClient.completionClient()) {
+    try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationsApi(client).list().stream()
-          .map(Organization::id)
+          .map(Organization::getId)
           .filter(Objects::nonNull)
           .toList());
     } catch (RuntimeException anyFailure) {

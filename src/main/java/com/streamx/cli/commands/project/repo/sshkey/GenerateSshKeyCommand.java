@@ -6,10 +6,10 @@ import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectRepositoryApi;
-import com.streamx.cli.platform.SshKeyPair;
+import com.streamx.cli.platform.generated.model.PrivatePublicKeyPair;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,12 +49,12 @@ public class GenerateSshKeyCommand extends AbstractSilentCommand {
     requireAbsent(keyFile);
     requireAbsent(publicKeyFile);
 
-    SshKeyPair pair;
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    PrivatePublicKeyPair pair;
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       pair = new ProjectRepositoryApi(client).generateKeyPair(orgId);
     }
-    writePrivateKey(keyFile, pair.privateKey());
-    writePublicKey(publicKeyFile, pair.publicKey());
+    writePrivateKey(keyFile, pair.getPrivateKey());
+    writePublicKey(publicKeyFile, pair.getPublicKey());
     System.out.println(
         msg.projectSshKeyPairWritten(keyFile.toString(), publicKeyFile.toString()));
     return new CommandResult<>(null);

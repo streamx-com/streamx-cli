@@ -7,7 +7,7 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import picocli.CommandLine;
 
@@ -35,7 +35,7 @@ public class CancelCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationInvitationsApi(client).cancel(orgId, email);
     }
     System.out.println(msg.orgInvitationCancelled(email));

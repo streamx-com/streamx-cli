@@ -6,7 +6,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectView;
 import com.streamx.cli.platform.ProjectsApi;
@@ -98,7 +98,7 @@ public class ListCommand extends AbstractCommand<List<ProjectView>> {
   @Override
   public CommandResult<List<ProjectView>> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectsApi api = new ProjectsApi(client);
       if (wide) {
         return new CommandResult<>(api.list(orgId).stream()

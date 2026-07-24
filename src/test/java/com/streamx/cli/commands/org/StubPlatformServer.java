@@ -19,6 +19,9 @@ public class StubPlatformServer implements AutoCloseable {
   private volatile int forcedStatus;
   private volatile String forcedBody = "";
   private volatile boolean empty;
+  private volatile int failFirstStatus;
+  private final java.util.concurrent.atomic.AtomicBoolean firstFailConsumed =
+      new java.util.concurrent.atomic.AtomicBoolean();
 
   private final List<String> requestBodies = new ArrayList<>();
 
@@ -171,6 +174,10 @@ public class StubPlatformServer implements AutoCloseable {
     this.forcedBody = body;
   }
 
+  public void failFirstRequestWith(int status) {
+    this.failFirstStatus = status;
+  }
+
   public void returnNoOrganizations() {
     this.empty = true;
   }
@@ -182,6 +189,11 @@ public class StubPlatformServer implements AutoCloseable {
     rawRequests.add(method + " " + exchange.getRequestURI().getRawPath());
     authorizationHeaders.add(
         String.valueOf(exchange.getRequestHeaders().getFirst("Authorization")));
+
+    if (failFirstStatus != 0 && firstFailConsumed.compareAndSet(false, true)) {
+      respond(exchange, failFirstStatus, "");
+      return;
+    }
 
     if (forcedStatus != 0) {
       respond(exchange, forcedStatus, forcedBody);

@@ -8,7 +8,7 @@ import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.Cluster;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationClustersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +65,7 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
   @Override
   public CommandResult<List<Cluster>> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new OrganizationClustersApi(client).list(orgId));
     }
   }

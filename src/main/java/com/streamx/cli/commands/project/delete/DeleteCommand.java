@@ -6,7 +6,7 @@ import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.DeleteConfirmation;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectsApi;
@@ -48,7 +48,7 @@ public class DeleteCommand extends AbstractSilentCommand {
     orgId = context.org();
     projectId = context.project();
     DeleteConfirmation.require(force, projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       new ProjectsApi(client).delete(orgId, projectId);
     }
     System.out.println(msg.projectDeleted(projectId));

@@ -3,10 +3,10 @@ package com.streamx.cli.commands.org.get;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.Organization;
 import com.streamx.cli.platform.OrganizationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
+import com.streamx.cli.platform.generated.model.Organization;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -32,11 +32,11 @@ public class GetCommand extends AbstractCommand<Organization> {
         projectsNumber = %s
         state          = %s"""
         .formatted(
-            orDash(organization.id()),
-            orDash(organization.name()),
-            orDash(organization.role()),
-            orDash(organization.projectsNumber()),
-            orDash(organization.state()));
+            orDash(organization.getId()),
+            orDash(organization.getName()),
+            orDash(organization.getRole() == null ? null : organization.getRole().getName()),
+            orDash(organization.getProjectsNumber()),
+            orDash(organization.getState()));
   }
 
   private static String orDash(String value) {
@@ -46,7 +46,7 @@ public class GetCommand extends AbstractCommand<Organization> {
   @Override
   public CommandResult<Organization> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new OrganizationsApi(client).get(orgId));
     }
   }

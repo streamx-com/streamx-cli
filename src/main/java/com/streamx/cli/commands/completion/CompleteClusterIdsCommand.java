@@ -4,7 +4,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.Cluster;
 import com.streamx.cli.platform.OrganizationClustersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +28,7 @@ public class CompleteClusterIdsCommand extends AbstractCommand<List<String>> {
     if (org == null) {
       return new CommandResult<>(List.of());
     }
-    try (PlatformApiClient client = PlatformApiClient.completionClient()) {
+    try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationClustersApi(client).list(org).stream()
           .map(Cluster::id)
           .filter(Objects::nonNull)

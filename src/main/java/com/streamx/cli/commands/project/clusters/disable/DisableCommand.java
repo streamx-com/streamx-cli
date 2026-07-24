@@ -9,7 +9,7 @@ import com.streamx.cli.platform.Cluster;
 import com.streamx.cli.platform.ClusterIdCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationClustersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import java.util.List;
@@ -49,7 +49,7 @@ public class DisableCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       OrganizationClustersApi clusters = new OrganizationClustersApi(client);
       List<Cluster> current = clusters.listForProject(context.org(), context.project());
 

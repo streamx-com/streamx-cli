@@ -7,9 +7,9 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationUsersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.User;
+import com.streamx.cli.platform.generated.model.User;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public class ListCommand extends AbstractCommand<List<User>> {
 
     if (quiet) {
       return users.stream()
-          .map(User::id)
+          .map(User::getId)
           .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
@@ -54,18 +54,18 @@ public class ListCommand extends AbstractCommand<List<User>> {
         List.of("ID", "DISPLAY NAME", "ROLE", "STATUS", ""),
         users.stream()
             .map(user -> java.util.Arrays.asList(
-                user.id(),
-                user.displayName(),
-                user.role(),
-                user.status(),
-                user.isCaller() ? "(you)" : ""))
+                user.getId(),
+                user.getDisplayName(),
+                user.getRole() == null ? null : user.getRole().getName(),
+                user.getStatus() == null ? null : user.getStatus().value(),
+                Boolean.TRUE.equals(user.getIsCaller()) ? "(you)" : ""))
             .toList());
   }
 
   @Override
   public CommandResult<List<User>> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new OrganizationUsersApi(client).list(orgId));
     }
   }

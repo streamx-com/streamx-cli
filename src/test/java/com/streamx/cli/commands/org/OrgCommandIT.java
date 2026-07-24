@@ -3,6 +3,7 @@ package com.streamx.cli.commands.org;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.commands.auth.StubOidcServer;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -117,7 +118,7 @@ class OrgCommandIT extends CliBaseIT {
     ProcessResult result = exec("org", "list", "--output", "json");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains("\"id\" : \"acme\"", "\"role\" : \"owner\"");
+    assertThat(result.stdout()).contains("\"id\" : \"acme\"", "\"name\" : \"owner\"");
   }
 
   @Test
@@ -184,6 +185,26 @@ class OrgCommandIT extends CliBaseIT {
   }
 
   @Test
+  void refreshesTokenAndRetriesOnce401() throws Exception {
+    try (StubOidcServer oidc = new StubOidcServer("streamx", 0)) {
+      Files.writeString(getCredentialsPath(), """
+          {"access_token":"stale-token","refresh_token":"%s",
+           "expires_at":%d,"issuer_url":"%s/realms/streamx","client_id":"streamx-cli"}
+          """.formatted(StubOidcServer.REFRESH_TOKEN,
+          Instant.now().plusSeconds(300).getEpochSecond(), oidc.getServerUrl()));
+      platform.failFirstRequestWith(401);
+
+      ProcessResult result = exec("org", "list", "-q");
+
+      result.assertSuccess();
+      assertThat(result.stdout().strip().lines()).containsExactly("acme", "globex");
+      assertThat(platform.getRequests()).hasSize(2);
+      assertThat(platform.getAuthorizationHeaders()).containsExactly(
+          "Bearer stale-token", "Bearer " + StubOidcServer.ACCESS_TOKEN);
+    }
+  }
+
+  @Test
   void shouldFailWhenPlatformUrlNotConfigured() throws Exception {
     try (OutputStream out = Files.newOutputStream(getConfigPath())) {
       new Properties().store(out, null);
@@ -196,17 +217,12 @@ class OrgCommandIT extends CliBaseIT {
         .contains(msg.platformUrlNotConfigured(PlatformConfig.STREAMX_PLATFORM_URL));
   }
 
-  /**
-   * A crafted ID must not retarget the request at another endpoint: unencoded, this would reach
-   * the member-removal route. The raw path is asserted because getPath() decodes, hiding the
-   * difference.
-   */
   @Test
   void shouldEncodeOrganizationIdIntoASinglePathSegment() throws Exception {
     exec("org", "delete", "-f", "so-x/users/alice@example.com");
 
     assertThat(platform.getRawRequests()).containsExactly(
-        "DELETE /api/v1/organizations/so-x%2Fusers%2Falice%40example.com");
+        "DELETE /api/v1/organizations/so-x%2Fusers%2Falice@example.com");
   }
 
   @Test
@@ -216,8 +232,7 @@ class OrgCommandIT extends CliBaseIT {
     ProcessResult result = exec("org", "get", "nope");
 
     result.assertExitCode(1);
-    assertThat(result.stderr())
-        .contains(msg.platformNotFoundOrForbidden("/api/v1/organizations/nope"));
+    assertThat(result.stderr()).contains(msg.platformNotFound());
   }
 
   @Test

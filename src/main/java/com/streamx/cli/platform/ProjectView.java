@@ -1,6 +1,7 @@
 package com.streamx.cli.platform;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.streamx.cli.platform.generated.model.Project;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.util.List;
 
@@ -17,13 +18,14 @@ public record ProjectView(
 
   public static ProjectView basic(Project project) {
     return new ProjectView(
-        project.id(), project.name(), project.description(), project.state(), null, null);
+        project.getId(), project.getName(), project.getDescription(), project.getState(),
+        null, null);
   }
 
   public static ProjectView of(
       Project project, List<String> clusters, RepositoryView repository) {
     return new ProjectView(
-        project.id(), project.name(), project.description(), project.state(),
+        project.getId(), project.getName(), project.getDescription(), project.getState(),
         clusters, repository);
   }
 }

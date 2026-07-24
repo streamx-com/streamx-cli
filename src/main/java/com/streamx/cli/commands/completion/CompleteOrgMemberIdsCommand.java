@@ -3,9 +3,9 @@ package com.streamx.cli.commands.completion;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrganizationUsersApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.User;
+import com.streamx.cli.platform.generated.model.User;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -22,18 +22,16 @@ public class CompleteOrgMemberIdsCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    // Shell completion must stay silent and fast on ANY failure - an empty list simply
-    // completes nothing.
     String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
         ? PlatformContext.effectiveOrg()
         : orgId;
     if (org == null) {
       return new CommandResult<>(List.of());
     }
-    try (PlatformApiClient client = PlatformApiClient.completionClient()) {
+    try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationUsersApi(client).list(org).stream()
-          .filter(User::isActive)
-          .map(User::id)
+          .filter(user -> user.getStatus() == User.StatusEnum.ACTIVE)
+          .map(User::getId)
           .filter(Objects::nonNull)
           .sorted()
           .toList());

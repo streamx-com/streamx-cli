@@ -6,10 +6,11 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.ProjectRepository;
 import com.streamx.cli.platform.ProjectRepositoryApi;
+import com.streamx.cli.platform.generated.model.ProjectRepository;
+import java.util.List;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -24,6 +25,10 @@ public class GetCommand extends AbstractCommand<ProjectRepository> {
   @Override
   public String getTextOutput(CommandResult<ProjectRepository> result) {
     ProjectRepository repository = result.getData();
+    var status = repository.getProjectRepositoryStatus();
+    Boolean ready = status == null ? null : status.getReady();
+    List<String> errors = status == null || status.getErrorMessages() == null
+        ? List.of() : status.getErrorMessages();
     return """
         uri       = %s
         branch    = %s
@@ -31,13 +36,13 @@ public class GetCommand extends AbstractCommand<ProjectRepository> {
         ready     = %s
         ssh key   = %s%s"""
         .formatted(
-            orDash(repository.uri()),
-            orDash(repository.branch()),
-            orDash(repository.commitId()),
-            repository.ready() == null ? "-" : repository.ready(),
-            repository.sshKeyProvided() ? msg.sshKeySpecified() : msg.sshKeyNotSpecified(),
-            repository.errorMessages().isEmpty() ? ""
-                : "\nerrors    = " + String.join("; ", repository.errorMessages()));
+            orDash(repository.getUri()),
+            orDash(repository.getBranch()),
+            orDash(repository.getCommitId()),
+            ready == null ? "-" : ready,
+            Boolean.TRUE.equals(repository.getSshKeyProvided())
+                ? msg.sshKeySpecified() : msg.sshKeyNotSpecified(),
+            errors.isEmpty() ? "" : "\nerrors    = " + String.join("; ", errors));
   }
 
   private static String orDash(String value) {
@@ -48,10 +53,10 @@ public class GetCommand extends AbstractCommand<ProjectRepository> {
   public CommandResult<ProjectRepository> runCommand() {
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProjectRepositoryApi(client)
           .get(context.org(), context.project()));
-    } catch (PlatformApiClient.NotFoundException e) {
+    } catch (PlatformClients.NotFoundException e) {
       throw new CliException(msg.projectRepoNotConnected(context.project()), e);
     }
   }

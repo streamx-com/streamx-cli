@@ -1,71 +1,74 @@
 package com.streamx.cli.platform;
 
-import java.util.Map;
+import com.streamx.cli.platform.generated.api.ProjectRepositoryResourceApi;
+import com.streamx.cli.platform.generated.api.ProjectRepositorySshKeyResourceApi;
+import com.streamx.cli.platform.generated.api.ProjectsResourceApi;
+import com.streamx.cli.platform.generated.model.CreateProjectRepositoryRequest;
+import com.streamx.cli.platform.generated.model.PrivateKeyRequest;
+import com.streamx.cli.platform.generated.model.PrivatePublicKeyPair;
+import com.streamx.cli.platform.generated.model.ProjectRepository;
+import com.streamx.cli.platform.generated.model.PublicKey;
 
-/**
- * {@code /api/v1/organizations/{orgId}/projects/{projectId}/repository} and its ssh-key
- * sub-resource - mirrors the Project Repository Resources in the spec.
- */
 public class ProjectRepositoryApi {
 
-  private final PlatformApiClient client;
+  private final PlatformClients clients;
+  private final ProjectRepositoryResourceApi api;
+  private final ProjectRepositorySshKeyResourceApi sshKeyApi;
 
-  public ProjectRepositoryApi(PlatformApiClient client) {
-    this.client = client;
+  public ProjectRepositoryApi(PlatformClients clients) {
+    this.clients = clients;
+    this.api = clients.api(ProjectRepositoryResourceApi.class);
+    this.sshKeyApi = clients.api(ProjectRepositorySshKeyResourceApi.class);
   }
 
   public ProjectRepository get(String orgId, String projectId) {
-    return ProjectRepository.fromJson(client.get(repositoryPath(orgId, projectId)));
+    return clients.call(
+        () -> api.getProjectRepository(orgId, projectId, null, null), ProjectRepository.class);
   }
 
   public void connect(String orgId, String projectId, String uri, String branch) {
-    client.postJson(repositoryPath(orgId, projectId), Map.of("uri", uri, "branch", branch));
+    clients.call(() -> api.createProjectRepository(orgId, projectId,
+        new CreateProjectRepositoryRequest().uri(uri).branch(branch), null, null));
   }
 
   public void update(String orgId, String projectId, String uri, String branch) {
-    client.patchJson(repositoryPath(orgId, projectId), Map.of("uri", uri, "branch", branch));
+    clients.call(() -> api.updateProjectRepository(orgId, projectId,
+        new CreateProjectRepositoryRequest().uri(uri).branch(branch), null, null));
   }
 
   public void disconnect(String orgId, String projectId) {
-    client.delete(repositoryPath(orgId, projectId));
+    clients.call(() -> api.deleteProjectRepository(orgId, projectId, null, null));
   }
 
   public boolean sshKeyExists(String orgId, String projectId) {
-    return client.get(sshKeyPath(orgId, projectId) + "/exists").asBoolean(false);
+    return Boolean.TRUE.equals(clients.call(
+        () -> sshKeyApi.hasProjectRepositorySshKey(orgId, projectId, null, null), Boolean.class));
   }
 
-  /** POST creates the first key; PATCH replaces an existing one. */
   public void setSshKey(String orgId, String projectId, String privateKeyBase64, boolean create) {
-    Map<String, String> body = Map.of("privateKeyBase64", privateKeyBase64);
+    PrivateKeyRequest body = new PrivateKeyRequest().privateKeyBase64(privateKeyBase64);
     if (create) {
-      client.postJson(sshKeyPath(orgId, projectId), body);
+      clients.call(
+          () -> sshKeyApi.createProjectRepositorySshKey(orgId, projectId, body, null, null));
     } else {
-      client.patchJson(sshKeyPath(orgId, projectId), body);
+      clients.call(
+          () -> sshKeyApi.updateProjectRepositorySshKey(orgId, projectId, body, null, null));
     }
   }
 
   public void removeSshKey(String orgId, String projectId) {
-    client.delete(sshKeyPath(orgId, projectId));
+    clients.call(() -> sshKeyApi.deleteProjectRepositorySshKey(orgId, projectId, null, null));
   }
 
   public String publicKey(String orgId, String projectId) {
-    return client.get(sshKeyPath(orgId, projectId) + "/public-key").path("publicKey").asText(null);
+    PublicKey key = clients.call(
+        () -> sshKeyApi.getSshPublicKey(orgId, projectId, null, null), PublicKey.class);
+    return key == null ? null : key.getPublicKey();
   }
 
-  /** Org-level helper: mints a key pair server-side without attaching it to any project. */
-  public SshKeyPair generateKeyPair(String orgId) {
-    return SshKeyPair.fromJson(client.postJson(
-        "/api/v1/organizations/" + PathSegments.encode(orgId)
-            + "/projects/repository/ssh-key/generate-key-pair",
-        Map.of()));
-  }
-
-  private static String repositoryPath(String orgId, String projectId) {
-    return "/api/v1/organizations/" + PathSegments.encode(orgId)
-        + "/projects/" + PathSegments.encode(projectId) + "/repository";
-  }
-
-  private static String sshKeyPath(String orgId, String projectId) {
-    return repositoryPath(orgId, projectId) + "/ssh-key";
+  public PrivatePublicKeyPair generateKeyPair(String orgId) {
+    ProjectsResourceApi projectsApi = clients.api(ProjectsResourceApi.class);
+    return clients.call(
+        () -> projectsApi.generateSshKeyPair(orgId, null, null), PrivatePublicKeyPair.class);
   }
 }

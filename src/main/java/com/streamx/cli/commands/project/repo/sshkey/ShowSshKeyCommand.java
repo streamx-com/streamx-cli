@@ -6,7 +6,7 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectRepositoryApi;
 import picocli.CommandLine;
@@ -31,14 +31,14 @@ public class ShowSshKeyCommand extends AbstractCommand<String> {
   public CommandResult<String> runCommand() {
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       String publicKey = new ProjectRepositoryApi(client)
           .publicKey(context.org(), context.project());
       if (publicKey == null) {
         throw new CliException(msg.projectSshKeyMissing(context.project()));
       }
       return new CommandResult<>(publicKey);
-    } catch (PlatformApiClient.NotFoundException e) {
+    } catch (PlatformClients.NotFoundException e) {
       throw new CliException(msg.projectSshKeyMissing(context.project()), e);
     }
   }

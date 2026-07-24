@@ -11,13 +11,13 @@ import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.InteractivePicker;
 import com.streamx.cli.framework.InteractivePicker.Session;
 import com.streamx.cli.ingestion.IngestionClientConfig;
-import com.streamx.cli.platform.Organization;
 import com.streamx.cli.platform.OrganizationsApi;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.generated.model.Organization;
+import com.streamx.cli.platform.generated.model.Project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -97,9 +97,9 @@ public class ConfigureCommand extends AbstractSilentCommand {
   }
 
   private void askOrgAndProject(Session session) {
-    try (PlatformApiClient client = PlatformApiClient.fromConfig()) {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
       List<String> orgIds = new OrganizationsApi(client).list().stream()
-          .map(Organization::id)
+          .map(Organization::getId)
           .filter(Objects::nonNull)
           .toList();
 
@@ -115,7 +115,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
       System.out.println(msg.orgUseSet(org));
 
       List<String> projectIds = new ProjectsApi(client).list(org).stream()
-          .map(Project::id)
+          .map(Project::getId)
           .filter(Objects::nonNull)
           .toList();
 
@@ -131,11 +131,6 @@ public class ConfigureCommand extends AbstractSilentCommand {
     }
   }
 
-  /**
-   * Prompts for a URL. Enter keeps the default (current profile value, falling back to the
-   * build-time default). For optional URLs, {@code -} skips without touching the settings.
-   * Returns whether the key ended up set.
-   */
   private boolean configureUrl(Session session, Properties settings, String prompt,
       String settingsKey, String buildTimeDefaultKey, boolean optional) {
     String defaultValue = currentOrBuiltIn(settings, settingsKey, buildTimeDefaultKey);
@@ -163,7 +158,6 @@ public class ConfigureCommand extends AbstractSilentCommand {
     return true;
   }
 
-  /** Positively phrased so the default "yes" answer yields the secure setting. */
   private void configureInsecure(Session session, Properties settings, String settingsKey,
       String target) {
     boolean currentInsecure = Boolean.parseBoolean(settings.getProperty(settingsKey));
@@ -188,7 +182,6 @@ public class ConfigureCommand extends AbstractSilentCommand {
     throw new CliException(msg.profileConfigureInvalidAnswer(answer));
   }
 
-  /** Current profile value if present, else the default baked into the CLI at build time. */
   private static String currentOrBuiltIn(Properties settings, String settingsKey,
       String buildTimeDefaultKey) {
     String current = settings.getProperty(settingsKey);

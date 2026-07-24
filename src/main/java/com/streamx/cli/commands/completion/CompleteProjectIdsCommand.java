@@ -2,10 +2,10 @@ package com.streamx.cli.commands.completion;
 
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.PlatformApiClient;
+import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.Project;
 import com.streamx.cli.platform.ProjectsApi;
+import com.streamx.cli.platform.generated.model.Project;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -22,17 +22,15 @@ public class CompleteProjectIdsCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    // Shell completion must stay silent and fast on ANY failure (no org typed yet, not
-    // logged in, platform unreachable) - an empty list simply completes nothing.
     String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
         ? PlatformContext.effectiveOrg()
         : orgId;
     if (org == null) {
       return new CommandResult<>(List.of());
     }
-    try (PlatformApiClient client = PlatformApiClient.completionClient()) {
+    try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new ProjectsApi(client).list(org).stream()
-          .map(Project::id)
+          .map(Project::getId)
           .filter(Objects::nonNull)
           .toList());
     } catch (RuntimeException anyFailure) {

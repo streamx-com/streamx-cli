@@ -6,19 +6,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.streamx.cli.framework.CliException;
 import org.junit.jupiter.api.Test;
 
-class PlatformApiClientCleartextTest {
+class PlatformClientsCleartextTest {
 
   @Test
   void refusesCleartextRemotePlatformUrl() {
-    assertThatThrownBy(() -> new PlatformApiClient("http://platform.example.com", false))
+    assertThatThrownBy(() -> new PlatformClients("http://platform.example.com", false, 30_000))
         .isInstanceOf(CliException.class)
         .hasMessageContaining("cleartext HTTP");
   }
 
   @Test
-  void allowsLoopbackHttpForLocalDevelopment() throws Exception {
-    try (PlatformApiClient client = new PlatformApiClient("http://localhost:8085", false)) {
-      assertThat(client).isNotNull();
+  void allowsLoopbackHttpForLocalDevelopment() {
+    try (PlatformClients clients = new PlatformClients("http://localhost:8085", false, 30_000)) {
+      assertThat(clients).isNotNull();
     }
   }
 }
