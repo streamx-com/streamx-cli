@@ -343,7 +343,7 @@
                   <includes>META-INF/openapi/openapi.yaml</includes>
                   <outputDirectory>${project.basedir}/src/main/openapi</outputDirectory>
                   <fileMappers>
-                    <org.codehaus.plexus.components.io.filemappers.FlattenFileMapper/>
+                    <org.codehaus.plexus.components.io.filemappers.FlattenFileMapper />
                   </fileMappers>
                 </artifactItem>
               </artifactItems>
