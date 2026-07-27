@@ -45,4 +45,4 @@ runs:
       with:
         java-version: '21'
         distribution: 'mandrel'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.github_token }}
