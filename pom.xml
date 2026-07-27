@@ -25,7 +25,7 @@
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
-    <surefire.forkCount>2</surefire.forkCount>
+    <surefire.forkCount>1</surefire.forkCount>
     <it.forkCount>1</it.forkCount>
   </properties>
 
