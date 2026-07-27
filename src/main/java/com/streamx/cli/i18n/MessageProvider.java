@@ -14,6 +14,22 @@ public interface MessageProvider {
   @Message(id = 100, value = "Unsupported output format")
   String unsupportedOutputFormat();
 
+  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
+  String authTokenCreated(String name);
+
+  @Message(id = 430, value = "Token revoked")
+  String authTokenRevoked();
+
+  @Message(id = 431, value = "No personal access tokens")
+  String authTokenListEmpty();
+
+  @Message(id = 432, value = "Could not read the profile the token belongs to")
+  String authTokenIdentityUnavailable();
+
+  @Message(id = 433, value = "Not authorized. The personal access token in "
+      + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
+  String platformTokenUnauthorized();
+
   @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,

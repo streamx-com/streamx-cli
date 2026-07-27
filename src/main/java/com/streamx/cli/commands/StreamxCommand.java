@@ -12,6 +12,7 @@ import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
 import com.streamx.cli.commands.completion.CompleteTemplateIdsCommand;
+import com.streamx.cli.commands.completion.CompleteTokenIdsCommand;
 import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.info.InfoCommand;
 import com.streamx.cli.commands.local.LocalCommand;
@@ -43,6 +44,7 @@ import picocli.CommandLine;
         CompleteSettingsSetKeysCommand.class,
         CompleteProfileNamesCommand.class,
         CompleteOrgIdsCommand.class,
+        CompleteTokenIdsCommand.class,
         CompleteProjectIdsCommand.class,
         CompleteOrgMemberIdsCommand.class,
         CompleteInvitedEmailsCommand.class,

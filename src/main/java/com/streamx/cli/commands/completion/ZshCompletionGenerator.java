@@ -12,6 +12,7 @@ import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
+import com.streamx.cli.platform.TokenIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -224,6 +225,9 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof OrgIdCompletionCandidates) {
       return "($(streamx __complete-org-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof TokenIdCompletionCandidates) {
+      return "($(streamx __complete-token-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof ProjectIdCompletionCandidates) {
       return "($(streamx __complete-project-ids " + ORG_FROM_WORDS + " 2>/dev/null))";

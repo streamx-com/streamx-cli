@@ -1,0 +1,59 @@
+package com.streamx.cli.commands.auth.token.list;
+
+import static com.streamx.cli.i18n.MessageProvider.msg;
+
+import com.streamx.cli.framework.AbstractCommand;
+import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.platform.PlatformClients;
+import com.streamx.cli.platform.tokens.ProfileTokensApi;
+import com.streamx.cli.platform.tokens.TokenSummary;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import picocli.CommandLine;
+
+@CommandLine.Command(
+    name = "list",
+    header = "List your personal access tokens"
+)
+public class ListCommand extends AbstractCommand<List<TokenSummary>> {
+
+  @CommandLine.Option(
+      names = {"-q", "--quiet"},
+      description = "Only display token ids, one per line"
+  )
+  public boolean quiet;
+
+  @Override
+  public String getTextOutput(CommandResult<List<TokenSummary>> result) {
+    List<TokenSummary> tokens = result.getData();
+
+    if (quiet) {
+      return tokens.stream()
+          .map(TokenSummary::id)
+          .filter(Objects::nonNull)
+          .collect(Collectors.joining("\n"));
+    }
+    if (tokens.isEmpty()) {
+      return msg.authTokenListEmpty();
+    }
+    return TextTable.render(
+        List.of("ID", "NAME", "CREATED", "LAST USED"),
+        tokens.stream()
+            .map(token -> Arrays.asList(
+                token.id(),
+                token.name(),
+                token.createdAt(),
+                token.lastUsedAt() == null ? "never" : token.lastUsedAt()))
+            .toList());
+  }
+
+  @Override
+  public CommandResult<List<TokenSummary>> runCommand() {
+    try (PlatformClients client = PlatformClients.fromConfig()) {
+      return new CommandResult<>(new ProfileTokensApi(client).list());
+    }
+  }
+}

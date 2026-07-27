@@ -14,6 +14,7 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.ingestion.IngestionClientConfig;
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.platform.PlatformContext;
 import java.io.IOException;
@@ -176,6 +177,10 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
   }
 
   private InfoResult.Login describeLogin(Properties file, List<String> warnings) {
+    if (AccessTokens.usingPlatformToken()) {
+      // The env credential outranks any stored session; a token is opaque and never expires.
+      return new InfoResult.Login("authenticated with a personal access token", null, null, null);
+    }
     Optional<Credentials> credentials;
     try {
       credentials = CredentialsStore.load();
@@ -261,9 +266,10 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
       String base = ingestionUrl.replaceAll("/+$", "");
       probes.add(() -> probeHealth("ingestion", base, ingestionInsecure));
     }
-    if (platformUrl != null && credentials.isPresent()) {
+    if (platformUrl != null && (credentials.isPresent() || AccessTokens.usingPlatformToken())) {
       String base = platformUrl.replaceAll("/+$", "");
-      String token = credentials.get().accessToken();
+      // AccessTokens prefers the env personal access token, then the stored session.
+      String token = AccessTokens.current();
       probes.add(() -> probeAuthenticatedApi(base, platformInsecure, token));
     }
     if (probes.isEmpty()) {
@@ -358,8 +364,12 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
       return new Probe("api (authenticated)", url, UP, probe.latencyMs, detail);
     }
     if (probe.status == 401 || probe.status == 403) {
+      // 'auth login' is impossible in CI; point at the credential actually in use.
+      String remedy = AccessTokens.usingPlatformToken()
+          ? "check the personal access token in " + AccessTokens.STREAMX_PLATFORM_TOKEN
+          : "run: streamx auth login";
       return new Probe("api (authenticated)", url, AUTH_REJECTED, probe.latencyMs,
-          "token rejected (HTTP " + probe.status + ") - run: streamx auth login");
+          "token rejected (HTTP " + probe.status + ") - " + remedy);
     }
     if (probe.status > 0) {
       return new Probe("api (authenticated)", url, DEGRADED, probe.latencyMs,

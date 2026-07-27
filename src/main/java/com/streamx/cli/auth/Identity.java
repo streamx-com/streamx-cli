@@ -10,6 +10,7 @@ public record Identity(
     String subject,
     String issuer,
     String expiresAt,
-    boolean expired
+    boolean expired,
+    String tokenId
 ) {
 }
