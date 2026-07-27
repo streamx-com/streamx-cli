@@ -3,8 +3,8 @@ package com.streamx.cli.commands.completion;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.PlatformClients;
-import com.streamx.cli.platform.tokens.ProfileTokensApi;
-import com.streamx.cli.platform.tokens.TokenSummary;
+import com.streamx.cli.platform.ProfileTokensApi;
+import com.streamx.cli.platform.generated.model.PersonalAccessTokenSummary;
 import java.util.List;
 import java.util.Objects;
 import picocli.CommandLine;
@@ -20,7 +20,7 @@ public class CompleteTokenIdsCommand extends AbstractCommand<List<String>> {
   public CommandResult<List<String>> runCommand() {
     try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new ProfileTokensApi(client).list().stream()
-          .map(TokenSummary::id)
+          .map(PersonalAccessTokenSummary::getId)
           .filter(Objects::nonNull)
           .toList());
     } catch (RuntimeException anyFailure) {

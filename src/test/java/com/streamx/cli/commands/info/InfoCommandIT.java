@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.auth.StubOidcServer;
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
@@ -34,6 +35,7 @@ class InfoCommandIT extends CliBaseIT {
 
   @AfterEach
   void stopServer() {
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
     if (oidcServer != null) {
       oidcServer.close();
       oidcServer = null;
@@ -132,6 +134,39 @@ class InfoCommandIT extends CliBaseIT {
         .contains("logged in")
         .contains("tester")
         .contains("Stored login belongs to https://other-idp.example.com/realms/streamx");
+  }
+
+  @Test
+  void refusesToProbeWithACredentialOverCleartextHttp() throws Exception {
+    exec("settings", "set", "streamx.platform.url", "http://platform.example.com").assertSuccess();
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, "sxp_v1_token");
+
+    ProcessResult result = exec("info");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("refusing to send a credential over cleartext http");
+  }
+
+  @Test
+  void stillReportsWhenTheStoredSessionCannotBeRefreshed() throws Exception {
+    exec("settings", "set", "streamx.platform.url", "https://127.0.0.1:1").assertSuccess();
+    String credentials = """
+        {
+          "access_token": "stale",
+          "refresh_token": "r",
+          "expires_at": %d,
+          "issuer_url": "http://127.0.0.1:1/realms/streamx",
+          "client_id": "streamx-cli"
+        }
+        """.formatted(Instant.now().minusSeconds(3600).getEpochSecond());
+    Files.createDirectories(streamxHome.resolve("profiles/default/config"));
+    Files.writeString(
+        streamxHome.resolve("profiles/default/config/credentials.json"), credentials);
+
+    ProcessResult result = exec("info");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("no usable credential");
   }
 
   private static void deleteRecursively(Path root) throws IOException {

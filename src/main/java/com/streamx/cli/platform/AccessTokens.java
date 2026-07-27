@@ -43,6 +43,12 @@ public final class AccessTokens {
     return platformTokenOverride() != null;
   }
 
+  public static void requireInteractiveSession() {
+    if (usingPlatformToken()) {
+      throw new CliException(msg.authTokenNeedsLoginSession(STREAMX_PLATFORM_TOKEN));
+    }
+  }
+
   public static Optional<String> platformTokenId() {
     String token = platformTokenOverride();
     if (token == null) {

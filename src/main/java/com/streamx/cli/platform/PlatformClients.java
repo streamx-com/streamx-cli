@@ -4,6 +4,8 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.Urls;
 import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
@@ -17,7 +19,9 @@ import java.util.function.Supplier;
 
 public class PlatformClients implements AutoCloseable {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final ObjectMapper MAPPER = new ObjectMapper()
+      .registerModule(new JavaTimeModule())
+      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
   private static final long TIMEOUT_MS = 30_000;
   private static final long COMPLETION_TIMEOUT_MS = 3_000;
 

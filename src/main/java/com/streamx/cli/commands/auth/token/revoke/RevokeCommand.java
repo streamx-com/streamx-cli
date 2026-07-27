@@ -4,9 +4,10 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformClients;
+import com.streamx.cli.platform.ProfileTokensApi;
 import com.streamx.cli.platform.TokenIdCompletionCandidates;
-import com.streamx.cli.platform.tokens.ProfileTokensApi;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -25,6 +26,7 @@ public class RevokeCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
+    AccessTokens.requireInteractiveSession();
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new ProfileTokensApi(client).revoke(id);
     }

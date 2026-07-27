@@ -12,7 +12,9 @@ import picocli.CommandLine;
     description = {
         "Personal access tokens authenticate the CLI in CI and other non-interactive environments.",
         "Set STREAMX_PLATFORM_TOKEN=<token> to use one for platform calls, no login needed.",
-        "A token acts as you, with your permissions, and does not expire until revoked."
+        "A token acts as you, with your permissions, and does not expire until revoked.",
+        "These subcommands need a login session: a token cannot manage tokens, so unset "
+            + "STREAMX_PLATFORM_TOKEN to use them."
     },
     subcommands = {
         CreateCommand.class,

@@ -105,7 +105,7 @@ class TokenCommandIT extends CliBaseIT {
     Files.deleteIfExists(getCredentialsPath());
     setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, StubTokensServer.TOKEN);
 
-    ProcessResult result = exec("auth", "token", "list");
+    ProcessResult result = exec("auth", "whoami");
 
     result.assertSuccess();
     assertThat(platform.getAuthorizationHeaders()).contains("Bearer " + StubTokensServer.TOKEN);
@@ -115,11 +115,48 @@ class TokenCommandIT extends CliBaseIT {
   void shouldPreferPersonalAccessTokenOverStoredSession() throws Exception {
     setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, StubTokensServer.TOKEN);
 
-    exec("auth", "token", "list").assertSuccess();
+    exec("auth", "whoami").assertSuccess();
 
     assertThat(platform.getAuthorizationHeaders()).contains("Bearer " + StubTokensServer.TOKEN);
     assertThat(platform.getAuthorizationHeaders())
         .doesNotContain("Bearer test-access-token");
+  }
+
+  @Test
+  void shouldRefuseTokenManagementWhenAmbientCredentialIsAToken() throws Exception {
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, StubTokensServer.TOKEN);
+
+    for (String[] command : new String[][] {
+        {"auth", "token", "list"},
+        {"auth", "token", "create", "ci"},
+        {"auth", "token", "revoke", StubTokensServer.TOKEN_ID}}) {
+      ProcessResult result = exec(command);
+
+      result.assertExitCode(1);
+      assertThat(result.stderr())
+          .contains(msg.authTokenNeedsLoginSession(AccessTokens.STREAMX_PLATFORM_TOKEN));
+    }
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void shouldNotPrintTheTokenOutsideItsOwnField() throws Exception {
+    ProcessResult result = exec("auth", "token", "create", "-o", "json", "ci");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("\"token\"");
+    assertThat(result.stdout()).contains(StubTokensServer.TOKEN);
+    assertThat(result.stderr()).doesNotContain(StubTokensServer.TOKEN);
+  }
+
+  @Test
+  void shouldReportAnUnknownTokenIdOnRevoke() throws Exception {
+    platform.failWith(404, "");
+
+    ProcessResult result = exec("auth", "token", "revoke", "0".repeat(32));
+
+    result.assertExitCode(1);
+    assertThat(result.stdout()).doesNotContain(msg.authTokenRevoked());
   }
 
   @Test
@@ -149,7 +186,7 @@ class TokenCommandIT extends CliBaseIT {
     setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, StubTokensServer.TOKEN);
     platform.failWith(401, "");
 
-    ProcessResult result = exec("auth", "token", "list");
+    ProcessResult result = exec("auth", "whoami");
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.platformTokenUnauthorized());
@@ -158,14 +195,13 @@ class TokenCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldSurfaceServerDetailWhenTokenCannotManageTokens() throws Exception {
+  void shouldSurfaceTheServerExplanationOnRefusal() throws Exception {
     setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, StubTokensServer.TOKEN);
-    platform.failWith(403,
-        "{\"errorMessage\":\"Personal access tokens cannot manage personal access tokens\"}");
+    platform.failWith(403, "{\"errorMessage\":\"Token owner is no longer active\"}");
 
-    ProcessResult result = exec("auth", "token", "create", "ci");
+    ProcessResult result = exec("auth", "whoami");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains("cannot manage personal access tokens");
+    assertThat(result.stderr()).contains("Token owner is no longer active");
   }
 }

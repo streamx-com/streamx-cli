@@ -30,6 +30,10 @@ public interface MessageProvider {
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
 
+  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
+      + "Unset %s and run 'streamx auth login' first.")
+  String authTokenNeedsLoginSession(String variableName);
+
   @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,

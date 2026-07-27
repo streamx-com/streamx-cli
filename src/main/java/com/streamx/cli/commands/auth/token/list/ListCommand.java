@@ -5,9 +5,11 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformClients;
-import com.streamx.cli.platform.tokens.ProfileTokensApi;
-import com.streamx.cli.platform.tokens.TokenSummary;
+import com.streamx.cli.platform.ProfileTokensApi;
+import com.streamx.cli.platform.generated.model.PersonalAccessTokenSummary;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +20,7 @@ import picocli.CommandLine;
     name = "list",
     header = "List your personal access tokens"
 )
-public class ListCommand extends AbstractCommand<List<TokenSummary>> {
+public class ListCommand extends AbstractCommand<List<PersonalAccessTokenSummary>> {
 
   @CommandLine.Option(
       names = {"-q", "--quiet"},
@@ -27,12 +29,12 @@ public class ListCommand extends AbstractCommand<List<TokenSummary>> {
   public boolean quiet;
 
   @Override
-  public String getTextOutput(CommandResult<List<TokenSummary>> result) {
-    List<TokenSummary> tokens = result.getData();
+  public String getTextOutput(CommandResult<List<PersonalAccessTokenSummary>> result) {
+    List<PersonalAccessTokenSummary> tokens = result.getData();
 
     if (quiet) {
       return tokens.stream()
-          .map(TokenSummary::id)
+          .map(PersonalAccessTokenSummary::getId)
           .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
@@ -43,15 +45,20 @@ public class ListCommand extends AbstractCommand<List<TokenSummary>> {
         List.of("ID", "NAME", "CREATED", "LAST USED"),
         tokens.stream()
             .map(token -> Arrays.asList(
-                token.id(),
-                token.name(),
-                token.createdAt(),
-                token.lastUsedAt() == null ? "never" : token.lastUsedAt()))
+                token.getId(),
+                token.getName(),
+                timestamp(token.getCreatedAt(), "-"),
+                timestamp(token.getLastUsedAt(), "never")))
             .toList());
   }
 
+  private static String timestamp(OffsetDateTime value, String absent) {
+    return value == null ? absent : value.toString();
+  }
+
   @Override
-  public CommandResult<List<TokenSummary>> runCommand() {
+  public CommandResult<List<PersonalAccessTokenSummary>> runCommand() {
+    AccessTokens.requireInteractiveSession();
     try (PlatformClients client = PlatformClients.fromConfig()) {
       return new CommandResult<>(new ProfileTokensApi(client).list());
     }

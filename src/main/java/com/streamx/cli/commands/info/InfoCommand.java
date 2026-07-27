@@ -13,6 +13,7 @@ import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.framework.Urls;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
@@ -43,6 +44,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
@@ -268,9 +270,19 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
     }
     if (platformUrl != null && (credentials.isPresent() || AccessTokens.usingPlatformToken())) {
       String base = platformUrl.replaceAll("/+$", "");
-      // AccessTokens prefers the env personal access token, then the stored session.
-      String token = AccessTokens.current();
-      probes.add(() -> probeAuthenticatedApi(base, platformInsecure, token));
+      if (Urls.isCleartextRemote(base)) {
+        probes.add(() -> new Probe("api (authenticated)", base, DEGRADED, null,
+            "not probed: refusing to send a credential over cleartext http"));
+      } else {
+        // AccessTokens prefers the env personal access token, then the stored session.
+        String token = quiet(AccessTokens::current);
+        if (token == null) {
+          probes.add(() -> new Probe("api (authenticated)", base, DEGRADED, null,
+              "not probed: no usable credential - run: streamx auth login"));
+        } else {
+          probes.add(() -> probeAuthenticatedApi(base, platformInsecure, token));
+        }
+      }
     }
     if (probes.isEmpty()) {
       return List.of();
@@ -397,7 +409,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
   private static HttpProbe get(String url, boolean insecure, String bearerToken) {
     long start = System.nanoTime();
-    try (CloseableHttpClient client = buildHttpClient(insecure)) {
+    try (CloseableHttpClient client = buildHttpClient(insecure, bearerToken == null)) {
       HttpGet request = new HttpGet(url);
       request.setHeader("Accept", "application/json");
       if (bearerToken != null) {
@@ -430,26 +442,27 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
     return message == null || message.isBlank() ? root.getClass().getSimpleName() : message;
   }
 
-  private static CloseableHttpClient buildHttpClient(boolean insecure) {
+  private static CloseableHttpClient buildHttpClient(boolean insecure, boolean followRedirects) {
     int timeoutMillis = (int) PROBE_TIMEOUT.toMillis();
     RequestConfig requestConfig = RequestConfig.custom()
         .setConnectTimeout(timeoutMillis)
         .setConnectionRequestTimeout(timeoutMillis)
         .setSocketTimeout(timeoutMillis)
         .build();
+    HttpClientBuilder builder = HttpClients.custom()
+        .setDefaultRequestConfig(requestConfig)
+        .disableAutomaticRetries();
+    if (!followRedirects) {
+      builder.disableRedirectHandling();
+    }
     if (!insecure) {
-      return HttpClients.custom()
-          .setDefaultRequestConfig(requestConfig)
-          .disableAutomaticRetries()
-          .build();
+      return builder.build();
     }
     try {
       SSLContext sslContext = SSLContexts.custom()
           .loadTrustMaterial(null, TrustAllStrategy.INSTANCE)
           .build();
-      return HttpClients.custom()
-          .setDefaultRequestConfig(requestConfig)
-          .disableAutomaticRetries()
+      return builder
           .setSSLContext(sslContext)
           .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
           .build();
