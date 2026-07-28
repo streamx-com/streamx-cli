@@ -159,7 +159,7 @@ jobs:
           java -jar target/*-runner.jar completion zsh > artifacts/completions/_streamx
 
           echo "Pre-create platform ZIPs for native binaries"
-          for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
+          for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64; do
             mkdir -p staging/$PLATFORM/bin
             mkdir -p staging/$PLATFORM/share/completions
             cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
