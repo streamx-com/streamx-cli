@@ -12,8 +12,9 @@ import jakarta.enterprise.event.Observes;
 import java.net.ServerSocket;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
@@ -27,10 +28,10 @@ public class RunCommandIT extends CliBaseIT {
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
 
-  private static final AtomicInteger CONTAINER_FAILED_COUNT = new AtomicInteger(0);
+  private static final List<ContainerFailed> CONTAINER_FAILURES = new CopyOnWriteArrayList<>();
 
   void onContainerFailed(@Observes ContainerFailed event) {
-    CONTAINER_FAILED_COUNT.incrementAndGet();
+    CONTAINER_FAILURES.add(event);
   }
 
   @Test
@@ -75,21 +76,21 @@ public class RunCommandIT extends CliBaseIT {
         .normalize()
         .toString();
 
-    int failureBaseline = CONTAINER_FAILED_COUNT.get();
-
     try (ServerSocket blocker = new ServerSocket(0)) {
       int blockedPort = blocker.getLocalPort();
-      System.setProperty("streamx.runner.gateway.http-port", String.valueOf(blockedPort));
+      System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
 
+      CONTAINER_FAILURES.clear();
       AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
       try {
         Awaitility.await()
             .atMost(Duration.ofMinutes(3))
             .pollInterval(Duration.ofSeconds(1))
-            .until(() -> CONTAINER_FAILED_COUNT.get() > failureBaseline);
-
-        assertThat(CONTAINER_FAILED_COUNT.get()).isGreaterThan(failureBaseline);
+            .untilAsserted(() -> assertThat(CONTAINER_FAILURES)
+                .as("a container must fail to start because host port %d is taken", blockedPort)
+                .anySatisfy(failure -> assertThat(failure.result().getException())
+                    .hasStackTraceContaining(String.valueOf(blockedPort))));
       } finally {
         if (handle.thread().isAlive()) {
           handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
@@ -99,7 +100,7 @@ public class RunCommandIT extends CliBaseIT {
         } catch (Exception ignored) {
           // best-effort cleanup
         }
-        System.clearProperty("streamx.runner.gateway.http-port");
+        System.clearProperty("test.proxy.host-port");
       }
     }
   }
