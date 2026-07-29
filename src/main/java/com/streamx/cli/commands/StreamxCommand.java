@@ -7,6 +7,7 @@ import com.streamx.cli.commands.completion.CompleteInvitedEmailsCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteOrgIdsCommand;
 import com.streamx.cli.commands.completion.CompleteOrgMemberIdsCommand;
+import com.streamx.cli.commands.completion.CompleteProjectIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
@@ -16,6 +17,7 @@ import com.streamx.cli.commands.context.ContextCommand;
 import com.streamx.cli.commands.info.InfoCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.org.OrgCommand;
+import com.streamx.cli.commands.project.ProjectCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
@@ -28,6 +30,7 @@ import picocli.CommandLine;
         AuthCommand.class,
         ContextCommand.class,
         OrgCommand.class,
+        ProjectCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,
@@ -40,6 +43,7 @@ import picocli.CommandLine;
         CompleteSettingsSetKeysCommand.class,
         CompleteContextNamesCommand.class,
         CompleteOrgIdsCommand.class,
+        CompleteProjectIdsCommand.class,
         CompleteOrgMemberIdsCommand.class,
         CompleteInvitedEmailsCommand.class,
         CompleteClusterIdsCommand.class
