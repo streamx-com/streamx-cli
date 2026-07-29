@@ -183,6 +183,45 @@ class ContextCommandIT extends CliBaseIT {
   }
 
   @Test
+  void configureAcceptsBuildTimeDefaultsOnEnter() throws Exception {
+    org.eclipse.microprofile.config.Config config =
+        org.eclipse.microprofile.config.ConfigProvider.getConfig();
+    String authDefault = config.getValue("streamx.defaults.auth.server-url", String.class);
+    String platformDefault = config.getValue("streamx.defaults.platform.url", String.class);
+
+    ProcessResult result = execWithStdin("\n\n\n\n\nn\n", "context", "configure");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("Context 'default' configured");
+    Path settings = streamxHome.resolve("contexts/default/config/application.properties");
+    assertThat(settings).content()
+        .contains("streamx.auth.server-url=" + authDefault.replace(":", "\\:"))
+        .contains("streamx.auth.insecure=false")
+        .contains("streamx.platform.url=" + platformDefault.replace(":", "\\:"))
+        .contains("streamx.platform.insecure=false")
+        // Ingestion has no default (per-project URL); Enter leaves it unset.
+        .doesNotContain("streamx.ingestion.url");
+  }
+
+  @Test
+  void configureTakesCustomValuesIncludingIngestion() throws Exception {
+    ProcessResult result = execWithStdin(
+        "https://kc.example.com/\nn\nhttps://api.example.com\ny\n"
+            + "https://in.proj.example.com\nn\nn\n",
+        "context", "configure");
+
+    result.assertSuccess();
+    Path settings = streamxHome.resolve("contexts/default/config/application.properties");
+    assertThat(settings).content()
+        .contains("streamx.auth.server-url=https\\://kc.example.com")
+        .contains("streamx.auth.insecure=true")
+        .contains("streamx.platform.url=https\\://api.example.com")
+        .contains("streamx.platform.insecure=false")
+        .contains("streamx.ingestion.url=https\\://in.proj.example.com")
+        .contains("streamx.ingestion.insecure=true");
+  }
+
+  @Test
   void contextFlagOverridesPointerWithoutChangingIt() throws Exception {
     exec("context", "create", "prod").assertSuccess();
     exec("context", "use", "default").assertSuccess();
@@ -354,6 +393,81 @@ class ContextCommandIT extends CliBaseIT {
           throw new RuntimeException(e);
         }
       });
+    }
+  }
+
+  @Test
+  void configureAsksOrgAndProjectAfterLogin() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    try (StubPlatformServer platform = new StubPlatformServer()) {
+      String stdin = String.join("\n",
+          oidcServer.getServerUrl(),
+          "n",
+          platform.getUrl(),
+          "n",
+          "",
+          "y",
+          "device-code",
+          "acme",
+          "so-acme-shop-a1b2c") + "\n";
+
+      ProcessResult result = execWithStdin(stdin, "context", "configure");
+
+      result.assertSuccess();
+      assertThat(result.stdout())
+          .contains(msg.orgUseSet("acme"))
+          .contains(msg.projectUseSet("so-acme-shop-a1b2c"));
+      assertThat(streamxHome.resolve("contexts/default/current-org")).content()
+          .isEqualToIgnoringNewLines("acme");
+      assertThat(streamxHome.resolve("contexts/default/current-project")).content()
+          .isEqualToIgnoringNewLines("so-acme-shop-a1b2c");
+      assertThat(platform.getRequests())
+          .contains("GET /api/v1/organizations", "GET /api/v1/organizations/acme/projects");
+    }
+  }
+
+  @Test
+  void configureSkipsContextWhenPlatformUnreachable() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    String stdin = String.join("\n",
+        oidcServer.getServerUrl(),
+        "n",
+        "https://127.0.0.1:9",        // unreachable platform
+        "n",
+        "",
+        "y",
+        "device-code") + "\n";
+
+    ProcessResult result = execWithStdin(stdin, "context", "configure");
+
+    result.assertSuccess();
+    assertThat(result.stderr()).contains("Skipping organization/project selection");
+    assertThat(streamxHome.resolve("contexts/default/current-org")).doesNotExist();
+  }
+
+  @Test
+  void configureRefreshesUrlsBeforeLoginOnReconfigure() throws Exception {
+    exec("settings", "set", "streamx.platform.url", "https://127.0.0.1:9").assertSuccess();
+
+    oidcServer = new StubOidcServer("streamx", 0);
+    try (StubPlatformServer platform = new StubPlatformServer()) {
+      String stdin = String.join("\n",
+          oidcServer.getServerUrl(),
+          "n",
+          platform.getUrl(),
+          "n",
+          "",
+          "y",
+          "device-code",
+          "acme",
+          "") + "\n";                  // skip project
+
+      ProcessResult result = execWithStdin(stdin, "context", "configure");
+
+      result.assertSuccess();
+      assertThat(result.stderr()).doesNotContain("Skipping organization/project selection");
+      assertThat(streamxHome.resolve("contexts/default/current-org")).content()
+          .isEqualToIgnoringNewLines("acme");
     }
   }
 
