@@ -115,19 +115,16 @@ public class RunCommandIT extends CliBaseIT {
     String blockerId = startPortBlocker(blockedPort);
     System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
 
-    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+    AsyncProcessHandle handle = execAsync("local", "run", "--verbose", "-f=" + meshPath);
     try {
       Awaitility.await()
           .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
-          .untilAsserted(() -> {
-            assertThat(handle.getStdout())
-                .as("the user must be told which container failed")
-                .contains("rest-ingestion.proxy failed");
-            assertThat(handle.getStderr())
-                .as("the run must be reported as failed")
-                .contains(msg.somethingWentWrong().strip());
-          });
+          .untilAsserted(() -> assertThat(handle.getStderr())
+              .as("the run must fail, and say it was host port %d that could not be bound",
+                  blockedPort)
+              .contains(msg.somethingWentWrong().strip())
+              .contains(String.valueOf(blockedPort)));
     } finally {
       if (handle.thread().isAlive()) {
         handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());

@@ -27,7 +27,7 @@ public final class MeshTestSupport {
   private static final Path PORT_RESERVATIONS =
       Paths.get(System.getProperty("java.io.tmpdir"), "streamx-cli-test-ports");
 
-  public static final String CONTAINER_STARTUP_TIMEOUT_SECONDS = "300";
+  public static final String CONTAINER_STARTUP_TIMEOUT_SECONDS = "180";
 
   private static volatile MeshManager activeMeshManager;
   private static volatile int activeProxyPort;
