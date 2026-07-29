@@ -317,4 +317,36 @@ class OrgCommandIT extends CliBaseIT {
     }
   }
 
+  @Test
+  void membersAddUsesCurrentOrgContext() throws Exception {
+    exec("context", "org", "use", "acme").assertSuccess();
+
+    ProcessResult result = exec("org", "members", "add", "alice@example.com", "-r", "edit");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("POST /api/v1/organizations/acme/users");
+  }
+
+  @Test
+  void membersAddHonorsExplicitOrgOverContext() throws Exception {
+    exec("context", "org", "use", "acme").assertSuccess();
+
+    ProcessResult result =
+        exec("org", "members", "add", "alice@example.com", "--org", "globex", "-r", "edit");
+
+    result.assertSuccess();
+    assertThat(platform.getRequests())
+        .containsExactly("POST /api/v1/organizations/globex/users");
+  }
+
+  @Test
+  void membersAddRequiresEmailArgument() throws Exception {
+    ProcessResult result = exec("org", "members", "add", "--org", "acme", "-r", "edit");
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("<email>");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
 }
