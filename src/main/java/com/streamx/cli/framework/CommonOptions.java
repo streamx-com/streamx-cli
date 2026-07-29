@@ -1,5 +1,6 @@
 package com.streamx.cli.framework;
 
+import com.streamx.cli.config.ContextNameCompletionCandidates;
 import picocli.CommandLine;
 
 public class CommonOptions {
@@ -11,6 +12,9 @@ public class CommonOptions {
 
   public static final String STREAMX_HOME_SHORT = "-H";
   public static final String STREAMX_HOME_LONG = "--streamx-home";
+
+  public static final String CONTEXT_SHORT = "-C";
+  public static final String CONTEXT_LONG = "--context";
 
   public static final String HELP_SHORT = "-h";
   public static final String HELP_LONG = "--help";
@@ -30,6 +34,13 @@ public class CommonOptions {
       description = "StreamX home path [default: ~/.streamx, env: STREAMX_HOME]"
   )
   public String streamxHome;
+
+  @CommandLine.Option(
+      names = {CONTEXT_SHORT, CONTEXT_LONG},
+      description = "Context to use for this invocation [default: default, env: STREAMX_CONTEXT]",
+      completionCandidates = ContextNameCompletionCandidates.class
+  )
+  public String context;
 
   @CommandLine.Option(
       names = {VERSION_SHORT, VERSION_LONG},

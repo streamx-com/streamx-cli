@@ -21,7 +21,7 @@ import picocli.CommandLine;
     name = "create",
     header = "Create a new event template (interactive wizard)",
     description = "Prompts for a template ID and a CloudEvent type, then writes a starter "
-        + "template to <streamxHome>/event-templates/custom/<id>.json. Run `edit` afterwards to "
+        + "template to the context's event-templates/<id>.json. Run `edit` afterwards to "
         + "customize the content.",
     footer = {
         "",

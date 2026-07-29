@@ -1,11 +1,13 @@
 package com.streamx.cli.commands.settings.eventtemplates.delete;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.contextFile;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.defaultTemplatesDir;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -21,7 +23,7 @@ class DeleteCommandIT extends CliBaseIT {
   @Test
   void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, sampleTemplate("com.example.thing.v1"));
@@ -30,7 +32,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.thing",
-        "--yes",
+        "--force",
         "-o", "json"
     );
 
@@ -44,7 +46,7 @@ class DeleteCommandIT extends CliBaseIT {
   @Test
   void shouldDeleteUserTemplateWithYesFlag(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, sampleTemplate("com.example.thing.v1"));
@@ -53,7 +55,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.thing",
-        "--yes"
+        "--force"
     );
 
     result.assertSuccess();
@@ -63,7 +65,7 @@ class DeleteCommandIT extends CliBaseIT {
   @Test
   void shouldDeleteUserTemplateAfterConfirmation(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, sampleTemplate("com.example.thing.v1"));
@@ -82,7 +84,7 @@ class DeleteCommandIT extends CliBaseIT {
   @Test
   void shouldCancelOnNo(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, sampleTemplate("com.example.thing.v1"));
@@ -110,13 +112,13 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "page.published",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();
     assertThat(result.stderr()).contains("Cannot delete a default template");
     assertThat(result.stderr()).contains("reset-default-templates");
-    Path defaultFile = home.resolve("event-templates/default/page.published.json");
+    Path defaultFile = defaultTemplatesDir(home).resolve("page.published.json");
     assertThat(defaultFile).isRegularFile();
   }
 
@@ -124,7 +126,7 @@ class DeleteCommandIT extends CliBaseIT {
   void shouldRefuseDeleteOfRegisteredTemplate(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Path file = home.resolve("registered.json");
+    Path file = contextFile(home, "registered.json");
     Files.writeString(file, sampleTemplate("com.example.reg.v1"));
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
@@ -134,7 +136,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "my.alias",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();
@@ -151,7 +153,7 @@ class DeleteCommandIT extends CliBaseIT {
         "settings", "event-templates", "delete",
         "--streamx-home", home.toString(),
         "definitely.does.not.exist",
-        "--yes"
+        "--force"
     );
 
     assertThat(result.exitCode()).isNotZero();

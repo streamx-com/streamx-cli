@@ -25,7 +25,7 @@ public class MeshAssertions {
       prevEventCount.set(topicMessageCount);
     } catch (PulsarAdminException e) {
       throw new AssertionError(
-          "Failed to retrieve stats for topic: " + PULSAR_TOPIC + " — " + e.getMessage(), e);
+          "Failed to retrieve stats for topic: " + PULSAR_TOPIC + " - " + e.getMessage(), e);
     } catch (Exception e) {
       throw new RuntimeException(
           "Failed to create Pulsar admin client: " + e.getMessage(), e);
@@ -38,7 +38,7 @@ public class MeshAssertions {
       TopicStats stats = admin.topics().getStats(PULSAR_TOPIC);
       prevEventCount.set(stats.getMsgInCounter());
     } catch (Exception e) {
-      // ignore — topic may not exist yet
+      // ignore - topic may not exist yet
     }
   }
 }

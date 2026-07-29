@@ -31,7 +31,7 @@ public abstract class CliBaseIT {
   private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
   protected static final String CONFIG_FILE_PATH =
-      "config/application.properties";
+      "contexts/default/config/application.properties";
 
   @TempDir
   public static Path streamxHome;
@@ -171,7 +171,9 @@ public abstract class CliBaseIT {
 
       if (command instanceof AbstractCommand<?> abstractCommand) {
         try {
-          abstractCommand.populateStreamxHome();
+          abstractCommand.populateStreamxHome(parsed);
+          // -H/--context are applied now; refresh the root help header to reflect them.
+          com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(parsed.get(0));
         } catch (Exception e) {
           return abstractCommand.handleExecutionError(e);
         }
@@ -192,6 +194,7 @@ public abstract class CliBaseIT {
       return new CommandLine.RunLast().execute(parseResult);
     });
 
+    com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(cmd);
     return cmd;
   }
 
