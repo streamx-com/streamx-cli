@@ -6,6 +6,8 @@ import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ContextNameCompletionCandidates;
+import com.streamx.cli.platform.ClusterIdCompletionCandidates;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 
 public final class ZshCompletionGenerator {
 
+  private static final String ORG_FROM_WORDS = "\"${words[${words[(i)--org]}+1]}\"";
 
   private ZshCompletionGenerator() {
   }
@@ -214,6 +217,12 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof ContextNameCompletionCandidates) {
       return "($(streamx __complete-context-names 2>/dev/null))";
+    }
+    if (completionCandidates instanceof OrgIdCompletionCandidates) {
+      return "($(streamx __complete-org-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ClusterIdCompletionCandidates) {
+      return "($(streamx __complete-cluster-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {

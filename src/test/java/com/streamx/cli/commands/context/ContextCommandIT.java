@@ -5,6 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.auth.StubOidcServer;
+import com.streamx.cli.commands.org.StubPlatformServer;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
