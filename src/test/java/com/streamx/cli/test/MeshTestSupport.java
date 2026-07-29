@@ -5,6 +5,8 @@ import io.quarkus.arc.Arc;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ServerSocket;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -22,6 +24,9 @@ import java.util.regex.Pattern;
  */
 public final class MeshTestSupport {
 
+  private static final Path PORT_RESERVATIONS =
+      Paths.get(System.getProperty("java.io.tmpdir"), "streamx-cli-test-ports");
+
   private static volatile MeshManager activeMeshManager;
   private static volatile int activeProxyPort;
   private static volatile int activePulsarHttpPort;
@@ -31,11 +36,37 @@ public final class MeshTestSupport {
   private MeshTestSupport() {
   }
 
+  /**
+   * The port reservation machinery is needed to fix parallel tests flakiness for commands which
+   * run docker containers like `streamx local run`.
+   * The naive new ServerSocket(0) doesn't work reliably in this case.
+   */
   public static int freePort() {
-    try (ServerSocket s = new ServerSocket(0)) {
-      return s.getLocalPort();
+    for (int attempt = 0; attempt < 100; attempt++) {
+      int candidate;
+      try (ServerSocket s = new ServerSocket(0)) {
+        candidate = s.getLocalPort();
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to find a free port", e);
+      }
+      if (reserve(candidate)) {
+        return candidate;
+      }
+    }
+    throw new IllegalStateException("Could not reserve a free port after 100 attempts");
+  }
+
+  private static boolean reserve(int port) {
+    try {
+      Path lock = PORT_RESERVATIONS.resolve(port + ".lock");
+      Files.createDirectories(PORT_RESERVATIONS);
+      Files.createFile(lock);
+      lock.toFile().deleteOnExit();
+      return true;
+    } catch (FileAlreadyExistsException takenByAnotherJvm) {
+      return false;
     } catch (IOException e) {
-      throw new RuntimeException("Failed to find a free port", e);
+      throw new RuntimeException("Failed to reserve port " + port, e);
     }
   }
 
