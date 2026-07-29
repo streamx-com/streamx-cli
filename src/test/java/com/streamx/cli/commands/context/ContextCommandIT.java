@@ -262,6 +262,42 @@ class ContextCommandIT extends CliBaseIT {
   }
 
   @Test
+  void helpHeaderShowsOrgAndProjectContext() throws Exception {
+    ProcessResult bareHelp = exec("--help");
+    bareHelp.assertSuccess();
+    assertThat(bareHelp.stdout())
+        .contains("Current context: default")
+        .contains("Current organization: -")
+        .contains("Current project: -");
+
+    exec("context", "org", "use", "acme").assertSuccess();
+    exec("context", "project", "use", "acme-shop").assertSuccess();
+
+    ProcessResult contextHelp = exec("--help");
+    contextHelp.assertSuccess();
+    String out = contextHelp.stdout();
+    assertThat(out)
+        .contains("Current organization: acme")
+        .contains("Current project: acme-shop");
+    assertThat(out.indexOf("Current context:"))
+        .isLessThan(out.indexOf("Current organization:"));
+    assertThat(out.indexOf("Current organization:"))
+        .isLessThan(out.indexOf("Current project:"));
+    assertThat(out.indexOf("Current project:")).isLessThan(out.indexOf("Commands:"));
+
+    setEnv("STREAMX_ORG", "globex");
+    try {
+      ProcessResult envHelp = exec("--help");
+      envHelp.assertSuccess();
+      assertThat(envHelp.stdout())
+          .as("header reflects the STREAMX_ORG override")
+          .contains("Current organization: globex");
+    } finally {
+      clearEnv("STREAMX_ORG");
+    }
+  }
+
+  @Test
   void completeContextNamesListsAllContexts() throws Exception {
     exec("context", "create", "prod").assertSuccess();
     exec("context", "create", "staging").assertSuccess();

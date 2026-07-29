@@ -349,4 +349,37 @@ class OrgCommandIT extends CliBaseIT {
     assertThat(platform.getRequests()).isEmpty();
   }
 
+  @Test
+  void orgUseSwitchClearsCurrentProject() throws Exception {
+    exec("context", "org", "use", "acme").assertSuccess();
+    exec("context", "project", "use", "my-proj").assertSuccess();
+
+    ProcessResult switched = exec("context", "org", "use", "globex");
+
+    switched.assertSuccess();
+    assertThat(switched.stderr()).contains(msg.orgUseClearedProject("my-proj"));
+    assertThat(streamxHome.resolve("contexts/default/current-project")).doesNotExist();
+    assertThat(exec("context", "project", "current").exitCode()).isEqualTo(1);
+  }
+
+  @Test
+  void unsetOrgClearsOrgAndProject() throws Exception {
+    exec("context", "org", "use", "acme").assertSuccess();
+    exec("context", "project", "use", "my-proj").assertSuccess();
+
+    ProcessResult result = exec("context", "org", "unset");
+
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains(msg.orgUnset())
+        .contains(msg.projectUnset());
+    assertThat(streamxHome.resolve("contexts/default/current-org")).doesNotExist();
+    assertThat(streamxHome.resolve("contexts/default/current-project")).doesNotExist();
+    assertThat(exec("context", "org", "current").exitCode()).isEqualTo(1);
+
+    ProcessResult again = exec("context", "org", "unset");
+    again.assertSuccess();
+    assertThat(again.stdout()).contains(msg.orgUnset()).doesNotContain(msg.projectUnset());
+  }
+
 }
