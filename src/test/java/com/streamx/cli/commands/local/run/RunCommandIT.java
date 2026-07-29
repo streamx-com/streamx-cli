@@ -36,7 +36,8 @@ public class RunCommandIT extends CliBaseIT {
 
   @BeforeEach
   void isolateRunFromConcurrentInstances() {
-    System.setProperty("streamx.container.startup-timeout-seconds", "180");
+    System.setProperty("streamx.container.startup-timeout-seconds",
+        MeshTestSupport.CONTAINER_STARTUP_TIMEOUT_SECONDS);
     System.setProperty("streamx.runner.pulsar.broker-port",
         String.valueOf(MeshTestSupport.freePort()));
     System.setProperty("streamx.runner.pulsar.http-port",

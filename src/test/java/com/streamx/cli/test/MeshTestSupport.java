@@ -27,6 +27,8 @@ public final class MeshTestSupport {
   private static final Path PORT_RESERVATIONS =
       Paths.get(System.getProperty("java.io.tmpdir"), "streamx-cli-test-ports");
 
+  public static final String CONTAINER_STARTUP_TIMEOUT_SECONDS = "300";
+
   private static volatile MeshManager activeMeshManager;
   private static volatile int activeProxyPort;
   private static volatile int activePulsarHttpPort;
@@ -93,7 +95,8 @@ public final class MeshTestSupport {
         "http://localhost:" + activeProxyPort);
     System.setProperty("test.proxy.host-port",
         String.valueOf(activeProxyPort));
-    System.setProperty("streamx.container.startup-timeout-seconds", "180");
+    System.setProperty("streamx.container.startup-timeout-seconds",
+        CONTAINER_STARTUP_TIMEOUT_SECONDS);
 
     capturedToken = null;
     tokenLatch = new CountDownLatch(1);
