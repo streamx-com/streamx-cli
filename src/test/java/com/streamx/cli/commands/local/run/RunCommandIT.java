@@ -1,21 +1,25 @@
 package com.streamx.cli.commands.local.run;
 
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Ports;
 import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.test.CliBaseIT;
+import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
-import com.streamx.runner.event.ContainerFailed;
+import com.streamx.runner.docker.DockerClientFactory;
 import io.quarkus.arc.Arc;
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.enterprise.event.Observes;
-import java.net.ServerSocket;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -28,10 +32,30 @@ public class RunCommandIT extends CliBaseIT {
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
 
-  private static final List<ContainerFailed> CONTAINER_FAILURES = new CopyOnWriteArrayList<>();
+  private static final String BLOCKER_IMAGE = "alpine:3.20";
 
-  void onContainerFailed(@Observes ContainerFailed event) {
-    CONTAINER_FAILURES.add(event);
+  @BeforeEach
+  void isolateRunFromConcurrentInstances() {
+    System.setProperty("streamx.container.startup-timeout-seconds", "180");
+    System.setProperty("streamx.runner.pulsar.broker-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("streamx.runner.pulsar.http-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("test.proxy.host-port", String.valueOf(MeshTestSupport.freePort()));
+  }
+
+  @AfterEach
+  void stopMeshAndResetRunnerState() {
+    try {
+      Arc.container().select(MeshManager.class).get().stop();
+    } catch (Exception ignored) {
+      // best-effort cleanup
+    }
+    System.clearProperty("streamx.runner.mesh-name-prefix");
+    System.clearProperty("streamx.container.startup-timeout-seconds");
+    System.clearProperty("streamx.runner.pulsar.broker-port");
+    System.clearProperty("streamx.runner.pulsar.http-port");
+    System.clearProperty("test.proxy.host-port");
   }
 
   @Test
@@ -66,7 +90,17 @@ public class RunCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldFailWhenRequiredPortIsAlreadyAllocated() throws Exception {
+  void shouldFailWhenMeshFileDoesNotExist() throws Exception {
+    String missing = streamxHome.resolve("no-such-mesh.yaml").toAbsolutePath().toString();
+
+    ProcessResult result = exec("local", "run", "-f=" + missing);
+
+    assertThat(result.exitCode()).isNotEqualTo(0);
+    assertThat(result.stderr()).contains("Mesh file not found at: " + missing);
+  }
+
+  @Test
+  void shouldReportContainerFailureWhenItsHostPortIsAlreadyTaken() throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
@@ -76,32 +110,53 @@ public class RunCommandIT extends CliBaseIT {
         .normalize()
         .toString();
 
-    try (ServerSocket blocker = new ServerSocket(0)) {
-      int blockedPort = blocker.getLocalPort();
-      System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
+    int blockedPort = MeshTestSupport.freePort();
+    String blockerId = startPortBlocker(blockedPort);
+    System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
 
-      CONTAINER_FAILURES.clear();
-      AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
-
-      try {
-        Awaitility.await()
-            .atMost(Duration.ofMinutes(3))
-            .pollInterval(Duration.ofSeconds(1))
-            .untilAsserted(() -> assertThat(CONTAINER_FAILURES)
-                .as("a container must fail to start because host port %d is taken", blockedPort)
-                .anySatisfy(failure -> assertThat(failure.result().getException())
-                    .hasStackTraceContaining(String.valueOf(blockedPort))));
-      } finally {
-        if (handle.thread().isAlive()) {
-          handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
-        }
-        try {
-          Arc.container().select(MeshManager.class).get().stop();
-        } catch (Exception ignored) {
-          // best-effort cleanup
-        }
-        System.clearProperty("test.proxy.host-port");
+    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(3))
+          .pollInterval(Duration.ofSeconds(1))
+          .untilAsserted(() -> {
+            assertThat(handle.getStdout())
+                .as("the user must be told which container failed")
+                .contains("rest-ingestion.proxy failed");
+            assertThat(handle.getStderr())
+                .as("the run must be reported as failed")
+                .contains(msg.somethingWentWrong().strip());
+          });
+    } finally {
+      if (handle.thread().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
       }
+      removePortBlocker(blockerId);
+    }
+  }
+
+  private static String startPortBlocker(int hostPort) throws Exception {
+    try (DockerClient docker = DockerClientFactory.create()) {
+      docker.pullImageCmd(BLOCKER_IMAGE).start().awaitCompletion();
+      ExposedPort containerPort = ExposedPort.tcp(80);
+      Ports bindings = new Ports();
+      bindings.bind(containerPort, Ports.Binding.bindPort(hostPort));
+      String id = docker.createContainerCmd(BLOCKER_IMAGE)
+          .withCmd("sleep", "300")
+          .withExposedPorts(containerPort)
+          .withHostConfig(HostConfig.newHostConfig().withPortBindings(bindings))
+          .exec()
+          .getId();
+      docker.startContainerCmd(id).exec();
+      return id;
+    }
+  }
+
+  private static void removePortBlocker(String containerId) {
+    try (DockerClient docker = DockerClientFactory.create()) {
+      docker.removeContainerCmd(containerId).withForce(true).exec();
+    } catch (Exception ignored) {
+      // best-effort cleanup
     }
   }
 
