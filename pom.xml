@@ -167,6 +167,11 @@
       <version>${cloudevents.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+    </dependency>
+
     <!-- Native image dependencies -->
     <dependency>
       <groupId>org.graalvm.sdk</groupId>
