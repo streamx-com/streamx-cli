@@ -11,14 +11,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +44,12 @@ public abstract class CliBaseIT {
   private Process process;
   private final Map<String, String> envVars = new HashMap<>();
 
+  private static final long ASYNC_COMMAND_SHUTDOWN_TIMEOUT_MILLIS = 60_000;
+
+  private static final Path BUILD_OUTPUT_DIR = Path.of("target");
+
+  private static final List<AsyncProcessHandle> ASYNC_COMMANDS = new ArrayList<>();
+
   private static boolean isNative() {
     return "true".equals(System.getProperty("native.image"));
   }
@@ -56,17 +67,15 @@ public abstract class CliBaseIT {
   }
 
   protected void setEnv(String key, String value) {
-    if (isNative()) {
-      envVars.put(key, value);
-    } else {
+    envVars.put(key, value);
+    if (!isNative()) {
       System.setProperty(key, value);
     }
   }
 
   protected void clearEnv(String key) {
-    if (isNative()) {
-      envVars.remove(key);
-    } else {
+    envVars.remove(key);
+    if (!isNative()) {
       System.clearProperty(key);
     }
   }
@@ -231,9 +240,13 @@ public abstract class CliBaseIT {
     return new ProcessResult(process.exitValue(), stdout, stderr);
   }
 
-  private record StreamCapture(Thread thread, ByteArrayOutputStream buffer) {
+  record StreamCapture(Thread thread, ByteArrayOutputStream buffer) {
     String join() throws InterruptedException {
       thread.join();
+      return content();
+    }
+
+    String content() {
       return buffer.toString(StandardCharsets.UTF_8);
     }
   }
@@ -271,81 +284,124 @@ public abstract class CliBaseIT {
   }
 
   public record AsyncProcessHandle(
-      Thread thread,
-      ByteArrayOutputStream stdout,
-      ByteArrayOutputStream stderr,
-      AtomicInteger exitCode
+      Process process,
+      StreamCapture stdoutCapture,
+      StreamCapture stderrCapture
   ) {
     public String getStdout() {
-      return stdout.toString(StandardCharsets.UTF_8);
+      return stdoutCapture.content();
     }
 
     public String getStderr() {
-      return stderr.toString(StandardCharsets.UTF_8);
+      return stderrCapture.content();
     }
 
-    public void interruptAndJoin(long timeoutMillis) throws InterruptedException {
-      thread.interrupt();
-      thread.join(timeoutMillis);
+    public boolean isAlive() {
+      return process.isAlive();
     }
 
-    public ProcessResult toResult() {
-      return new ProcessResult(exitCode.get(), getStdout(), getStderr());
-    }
-  }
-
-  protected AsyncProcessHandle execAsync(String... args) {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ByteArrayOutputStream err = new ByteArrayOutputStream();
-    AtomicInteger exitCode = new AtomicInteger(-1);
-
-    PrintStream originalOut = System.out;
-    PrintStream originalErr = System.err;
-
-    PrintStream teeOut = new PrintStream(new TeeOutputStream(out, originalOut), true);
-    PrintStream teeErr = new PrintStream(new TeeOutputStream(err, originalErr), true);
-
-    Thread thread = Thread.ofVirtual().start(() -> {
-      System.setOut(teeOut);
-      System.setErr(teeErr);
-      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
-      try {
-        exitCode.set(createCommandLine().execute(args));
-      } finally {
-        System.clearProperty("STREAMX_HOME");
-        System.setOut(originalOut);
-        System.setErr(originalErr);
+    public void stopAndJoin(long timeoutMillis) throws InterruptedException {
+      process.destroy();
+      if (!process.waitFor(timeoutMillis, TimeUnit.MILLISECONDS)) {
+        process.destroyForcibly();
+        process.waitFor(timeoutMillis, TimeUnit.MILLISECONDS);
       }
-    });
+      joinCaptures(timeoutMillis);
+    }
 
-    return new AsyncProcessHandle(thread, out, err, exitCode);
+    public ProcessResult toResult() throws InterruptedException {
+      if (!process.isAlive()) {
+        joinCaptures(ASYNC_COMMAND_SHUTDOWN_TIMEOUT_MILLIS);
+      }
+      return new ProcessResult(
+          process.isAlive() ? -1 : process.exitValue(), getStdout(), getStderr());
+    }
+
+    private void joinCaptures(long timeoutMillis) throws InterruptedException {
+      stdoutCapture.thread().join(timeoutMillis);
+      stderrCapture.thread().join(timeoutMillis);
+    }
   }
 
-  private static class TeeOutputStream extends OutputStream {
-    private final OutputStream buffer;
-    private final OutputStream console;
+  protected AsyncProcessHandle execAsync(String... args) throws IOException {
+    awaitAsyncCommands();
 
-    TeeOutputStream(OutputStream buffer, OutputStream console) {
-      this.buffer = buffer;
-      this.console = console;
-    }
+    List<String> command = cliLaunchCommand();
+    command.addAll(List.of(args));
 
-    @Override
-    public void write(int b) throws IOException {
-      buffer.write(b);
-      console.write(b);
-    }
+    ProcessBuilder pb = new ProcessBuilder(command);
+    pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+    pb.environment().putAll(envVars);
+    Process process = pb.start();
 
-    @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-      buffer.write(b, off, len);
-      console.write(b, off, len);
-    }
+    AsyncProcessHandle handle = new AsyncProcessHandle(
+        process,
+        captureAndForward(process.getInputStream(), System.out),
+        captureAndForward(process.getErrorStream(), System.err));
+    ASYNC_COMMANDS.add(handle);
+    return handle;
+  }
 
-    @Override
-    public void flush() throws IOException {
-      buffer.flush();
-      console.flush();
+  protected void awaitAsyncCommands() {
+    for (AsyncProcessHandle handle : ASYNC_COMMANDS) {
+      try {
+        handle.stopAndJoin(ASYNC_COMMAND_SHUTDOWN_TIMEOUT_MILLIS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        break;
+      }
     }
+    ASYNC_COMMANDS.clear();
+  }
+
+  private static List<String> cliLaunchCommand() {
+    List<String> command = new ArrayList<>();
+    if (isNative()) {
+      command.addAll(BuildExecutableOnce.getExecutablePath());
+      command.addAll(forwardedSystemProperties());
+      return command;
+    }
+    command.add(ProcessHandle.current().info().command().orElseThrow());
+    command.addAll(tracingAgentArguments());
+    command.addAll(forwardedSystemProperties());
+    command.add("-jar");
+    command.add(packagedCliJar().toString());
+    return command;
+  }
+
+  private static Path packagedCliJar() {
+    try (Stream<Path> files = Files.list(BUILD_OUTPUT_DIR)) {
+      return files
+          .filter(path -> path.getFileName().toString().endsWith("-runner.jar"))
+          .max(Comparator.comparing(CliBaseIT::lastModified))
+          .orElseThrow(() -> new IllegalStateException(
+              "Packaged CLI (*-runner.jar) not found in target; run mvn package first"));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static FileTime lastModified(Path path) {
+    try {
+      return Files.getLastModifiedTime(path);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static List<String> tracingAgentArguments() {
+    return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
+        .filter(argument -> argument.startsWith("-agentlib:native-image-agent"))
+        .toList();
+  }
+
+  private static List<String> forwardedSystemProperties() {
+    List<String> arguments = new ArrayList<>();
+    for (String name : System.getProperties().stringPropertyNames()) {
+      if (name.startsWith("streamx.") || name.startsWith("test.")) {
+        arguments.add("-D" + name + "=" + System.getProperty(name));
+      }
+    }
+    return arguments;
   }
 }

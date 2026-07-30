@@ -34,6 +34,8 @@ public class RunCommandIT extends CliBaseIT {
 
   private static final String BLOCKER_IMAGE = "alpine:3.20";
 
+  private static final int SIGTERM_EXIT_CODE = 128 + 15;
+
   @BeforeEach
   void isolateRunFromConcurrentInstances() {
     System.setProperty("streamx.container.startup-timeout-seconds",
@@ -52,6 +54,7 @@ public class RunCommandIT extends CliBaseIT {
     } catch (Exception ignored) {
       // best-effort cleanup
     }
+    awaitAsyncCommands();
     System.clearProperty("streamx.runner.mesh-name-prefix");
     System.clearProperty("streamx.container.startup-timeout-seconds");
     System.clearProperty("streamx.runner.pulsar.broker-port");
@@ -84,8 +87,8 @@ public class RunCommandIT extends CliBaseIT {
           .contains("WARNING:")
           .contains("STREAMX_OWNER_SERVICE_NAME");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
@@ -126,8 +129,8 @@ public class RunCommandIT extends CliBaseIT {
               .contains(msg.somethingWentWrong().strip())
               .contains(String.valueOf(blockedPort)));
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
       removePortBlocker(blockerId);
     }
@@ -175,7 +178,7 @@ public class RunCommandIT extends CliBaseIT {
       Awaitility.await()
           .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
-          .until(() -> !handle.thread().isAlive());
+          .until(() -> !handle.isAlive());
 
       ProcessResult result = handle.toResult();
       assertThat(result.exitCode()).isNotEqualTo(0);
@@ -183,8 +186,8 @@ public class RunCommandIT extends CliBaseIT {
           .contains("Property 'config.image.interpolated'")
           .contains("is not set");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
@@ -226,8 +229,8 @@ public class RunCommandIT extends CliBaseIT {
           .as("runner should use the prefix from streamxHome settings via the bridge")
           .contains(bridgedPrefix);
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
       System.clearProperty("streamx.runner.mesh-name-prefix");
     }
@@ -253,18 +256,18 @@ public class RunCommandIT extends CliBaseIT {
           .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
 
       Thread.sleep(Duration.ofSeconds(5));
-      assertThat(handle.thread().isAlive()).isTrue();
+      assertThat(handle.isAlive()).isTrue();
 
-      handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
-      assertThat(handle.thread().isAlive()).isFalse();
+      handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
+      assertThat(handle.isAlive()).isFalse();
 
       ProcessResult result = handle.toResult();
-      result.assertSuccess();
+      assertThat(result.exitCode()).isIn(0, SIGTERM_EXIT_CODE);
       assertThat(result.stdout()).contains("Stopping mesh...");
       assertThat(result.stderr()).doesNotContain("Exception");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
@@ -284,7 +287,7 @@ public class RunCommandIT extends CliBaseIT {
     runUntilReadyThenStop(meshPath);
   }
 
-  private void runUntilReadyThenStop(String meshPath) throws InterruptedException {
+  private void runUntilReadyThenStop(String meshPath) throws Exception {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
       Awaitility.await()
@@ -295,8 +298,8 @@ public class RunCommandIT extends CliBaseIT {
       assertThat(handle.getStderr())
           .doesNotContain("MissingReflectionRegistrationError");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
