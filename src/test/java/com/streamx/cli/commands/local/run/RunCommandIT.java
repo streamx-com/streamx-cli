@@ -77,11 +77,7 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStderr()
-              .contains("Environment variable 'STREAMX_OWNER_SERVICE_NAME'"));
+      awaitStderrContains(handle, "Environment variable 'STREAMX_OWNER_SERVICE_NAME'");
 
       assertThat(handle.getStderr())
           .contains("WARNING:")
@@ -120,14 +116,8 @@ public class RunCommandIT extends CliBaseIT {
 
     AsyncProcessHandle handle = execAsync("local", "run", "--verbose", "-f=" + meshPath);
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .untilAsserted(() -> assertThat(handle.getStderr())
-              .as("the run must fail, and say it was host port %d that could not be bound",
-                  blockedPort)
-              .contains(msg.somethingWentWrong().strip())
-              .contains(String.valueOf(blockedPort)));
+      awaitStderrContains(handle, msg.somethingWentWrong().strip(),
+          String.valueOf(blockedPort));
     } finally {
       if (handle.isAlive()) {
         handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
@@ -220,10 +210,7 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       assertThat(handle.getStdout())
           .as("runner should use the prefix from streamxHome settings via the bridge")
@@ -232,6 +219,7 @@ public class RunCommandIT extends CliBaseIT {
       if (handle.isAlive()) {
         handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
+      exec("settings", "unset", "streamx.runner.mesh-name-prefix");
       System.clearProperty("streamx.runner.mesh-name-prefix");
     }
   }
@@ -250,10 +238,7 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       Thread.sleep(Duration.ofSeconds(5));
       assertThat(handle.isAlive()).isTrue();
@@ -290,10 +275,7 @@ public class RunCommandIT extends CliBaseIT {
   private void runUntilReadyThenStop(String meshPath) throws Exception {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       assertThat(handle.getStderr())
           .doesNotContain("MissingReflectionRegistrationError");

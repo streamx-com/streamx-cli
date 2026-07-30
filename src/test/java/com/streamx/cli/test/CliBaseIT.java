@@ -1,5 +1,7 @@
 package com.streamx.cli.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.streamx.cli.commands.StreamxCommand;
 import com.streamx.cli.framework.AbstractCommand;
 import io.quarkus.arc.Arc;
@@ -17,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -355,6 +360,44 @@ public abstract class CliBaseIT {
       }
     }
     ASYNC_COMMANDS.clear();
+  }
+
+  protected void awaitStdoutContains(AsyncProcessHandle handle, String... expected) {
+    awaitOutputContains(handle, AsyncProcessHandle::getStdout, expected);
+  }
+
+  protected void awaitStderrContains(AsyncProcessHandle handle, String... expected) {
+    awaitOutputContains(handle, AsyncProcessHandle::getStderr, expected);
+  }
+
+  private static void awaitOutputContains(
+      AsyncProcessHandle handle,
+      Function<AsyncProcessHandle, String> output,
+      String... expected
+  ) {
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofMinutes(3))
+          .pollInterval(Duration.ofSeconds(1))
+          .failFast(() -> !handle.isAlive() && !containsAll(output.apply(handle), expected))
+          .untilAsserted(() -> assertThat(output.apply(handle)).contains(expected));
+    } catch (RuntimeException e) {
+      throw new AssertionError(
+          ("Expected the CLI output to contain %s. CLI process alive: %s"
+              + "%n--- captured stdout ---%n%s%n--- captured stderr ---%n%s")
+              .formatted(List.of(expected), handle.isAlive(),
+                  handle.getStdout(), handle.getStderr()),
+          e);
+    }
+  }
+
+  private static boolean containsAll(String output, String... expected) {
+    for (String part : expected) {
+      if (!output.contains(part)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static List<String> cliLaunchCommand() {
