@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +50,8 @@ public abstract class CliBaseIT {
   private static final Path BUILD_OUTPUT_DIR = Path.of("target");
 
   private static final List<AsyncProcessHandle> ASYNC_COMMANDS = new ArrayList<>();
+
+  private static final AtomicInteger ASYNC_COMMAND_COUNTER = new AtomicInteger();
 
   private static boolean isNative() {
     return "true".equals(System.getProperty("native.image"));
@@ -392,6 +395,8 @@ public abstract class CliBaseIT {
   private static List<String> tracingAgentArguments() {
     return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
         .filter(argument -> argument.startsWith("-agentlib:native-image-agent"))
+        .map(argument -> argument.replace("config-merge-dir=", "config-output-dir=")
+            + "-async-" + ASYNC_COMMAND_COUNTER.incrementAndGet())
         .toList();
   }
 
