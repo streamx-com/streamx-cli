@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -384,10 +386,24 @@ public abstract class CliBaseIT {
     } catch (RuntimeException e) {
       throw new AssertionError(
           ("Expected the CLI output to contain %s. CLI process alive: %s"
-              + "%n--- captured stdout ---%n%s%n--- captured stderr ---%n%s")
+              + "%n--- captured stdout ---%n%s%n--- captured stderr ---%n%s%s")
               .formatted(List.of(expected), handle.isAlive(),
-                  handle.getStdout(), handle.getStderr()),
+                  handle.getStdout(), handle.getStderr(), errorLogContent(handle)),
           e);
+    }
+  }
+
+  private static String errorLogContent(AsyncProcessHandle handle) {
+    Matcher matcher = Pattern.compile("Error details saved to: (\\S+)")
+        .matcher(handle.getStderr());
+    if (!matcher.find()) {
+      return "";
+    }
+    Path errorLog = Path.of(matcher.group(1));
+    try {
+      return "%n--- %s ---%n%s".formatted(errorLog, Files.readString(errorLog));
+    } catch (IOException e) {
+      return "%n--- %s (unreadable: %s) ---".formatted(errorLog, e);
     }
   }
 

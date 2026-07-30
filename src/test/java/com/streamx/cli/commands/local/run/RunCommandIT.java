@@ -277,6 +277,11 @@ public class RunCommandIT extends CliBaseIT {
 
   private void runUntilReadyThenStop(String meshPath) throws Exception {
     System.setProperty("streamx.runner.mesh-name-prefix", freshPrefix());
+    System.setProperty("streamx.runner.pulsar.broker-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("streamx.runner.pulsar.http-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("test.proxy.host-port", String.valueOf(MeshTestSupport.freePort()));
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
       awaitStdoutContains(handle, "STREAMX IS READY!");
