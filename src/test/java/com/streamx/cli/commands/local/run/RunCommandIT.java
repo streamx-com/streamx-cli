@@ -26,8 +26,9 @@ import org.junit.jupiter.api.Test;
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
-  private static final String PREFIX =
-      "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+  private static String freshPrefix() {
+    return "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+  }
 
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
@@ -64,7 +65,7 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    System.setProperty("streamx.runner.mesh-name-prefix", freshPrefix());
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
     clearEnv("STREAMX_OWNER_SERVICE_NAME");
@@ -101,9 +102,10 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldReportContainerFailureWhenItsHostPortIsAlreadyTaken() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -153,9 +155,10 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "unset", "config.image.interpolated");
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -226,9 +229,10 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -259,9 +263,8 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldStartMeshSecondTimeAfterPreviousStopped() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", freshPrefix() + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -273,6 +276,7 @@ public class RunCommandIT extends CliBaseIT {
   }
 
   private void runUntilReadyThenStop(String meshPath) throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", freshPrefix());
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
       awaitStdoutContains(handle, "STREAMX IS READY!");
