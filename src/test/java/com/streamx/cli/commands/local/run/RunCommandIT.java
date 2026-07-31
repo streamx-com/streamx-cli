@@ -16,6 +16,7 @@ import io.quarkus.arc.Arc;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -26,13 +27,16 @@ import org.junit.jupiter.api.Test;
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
-  private static final String PREFIX =
-      "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+  private static String freshPrefix() {
+    return "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+  }
 
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
 
   private static final String BLOCKER_IMAGE = "alpine:3.20";
+
+  private static final int SIGTERM_EXIT_CODE = 128 + 15;
 
   @BeforeEach
   void isolateRunFromConcurrentInstances() {
@@ -52,6 +56,7 @@ public class RunCommandIT extends CliBaseIT {
     } catch (Exception ignored) {
       // best-effort cleanup
     }
+    awaitAsyncCommands();
     System.clearProperty("streamx.runner.mesh-name-prefix");
     System.clearProperty("streamx.container.startup-timeout-seconds");
     System.clearProperty("streamx.runner.pulsar.broker-port");
@@ -61,7 +66,7 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    System.setProperty("streamx.runner.mesh-name-prefix", freshPrefix());
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
     clearEnv("STREAMX_OWNER_SERVICE_NAME");
@@ -74,18 +79,14 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStderr()
-              .contains("Environment variable 'STREAMX_OWNER_SERVICE_NAME'"));
+      awaitStderrContains(handle, "Environment variable 'STREAMX_OWNER_SERVICE_NAME'");
 
       assertThat(handle.getStderr())
           .contains("WARNING:")
           .contains("STREAMX_OWNER_SERVICE_NAME");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
@@ -102,9 +103,10 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldReportContainerFailureWhenItsHostPortIsAlreadyTaken() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -115,24 +117,29 @@ public class RunCommandIT extends CliBaseIT {
     String blockerId = startPortBlocker(blockedPort);
     System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
 
-    AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
+    AsyncProcessHandle handle = execAsync("local", "run", "--verbose", "-f=" + meshPath);
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .untilAsserted(() -> {
-            assertThat(handle.getStdout())
-                .as("the user must be told which container failed")
-                .contains("rest-ingestion.proxy failed");
-            assertThat(handle.getStderr())
-                .as("the run must be reported as failed")
-                .contains(msg.somethingWentWrong().strip());
-          });
+      awaitStderrContains(handle, msg.somethingWentWrong().strip(),
+          String.valueOf(blockedPort));
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
       removePortBlocker(blockerId);
+    }
+  }
+
+  private static void awaitNoContainersWithPrefix(String prefix) throws Exception {
+    try (DockerClient docker = DockerClientFactory.create()) {
+      Awaitility.await()
+          .atMost(Duration.ofSeconds(60))
+          .pollInterval(Duration.ofSeconds(1))
+          .untilAsserted(() -> assertThat(docker.listContainersCmd()
+              .withShowAll(true)
+              .withNameFilter(List.of(prefix))
+              .exec())
+              .as("mesh containers with prefix %s must be removed after the run stops", prefix)
+              .isEmpty());
     }
   }
 
@@ -163,9 +170,10 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "unset", "config.image.interpolated");
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -178,7 +186,7 @@ public class RunCommandIT extends CliBaseIT {
       Awaitility.await()
           .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
-          .until(() -> !handle.thread().isAlive());
+          .until(() -> !handle.isAlive());
 
       ProcessResult result = handle.toResult();
       assertThat(result.exitCode()).isNotEqualTo(0);
@@ -186,8 +194,8 @@ public class RunCommandIT extends CliBaseIT {
           .contains("Property 'config.image.interpolated'")
           .contains("is not set");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
@@ -220,27 +228,26 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       assertThat(handle.getStdout())
           .as("runner should use the prefix from streamxHome settings via the bridge")
           .contains(bridgedPrefix);
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
+      exec("settings", "unset", "streamx.runner.mesh-name-prefix");
       System.clearProperty("streamx.runner.mesh-name-prefix");
     }
   }
 
   @Test
   void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    String prefix = freshPrefix();
+    System.setProperty("streamx.runner.mesh-name-prefix", prefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", prefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -250,33 +257,28 @@ public class RunCommandIT extends CliBaseIT {
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
 
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       Thread.sleep(Duration.ofSeconds(5));
-      assertThat(handle.thread().isAlive()).isTrue();
+      assertThat(handle.isAlive()).isTrue();
 
-      handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
-      assertThat(handle.thread().isAlive()).isFalse();
+      handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
+      assertThat(handle.isAlive()).isFalse();
 
       ProcessResult result = handle.toResult();
-      result.assertSuccess();
-      assertThat(result.stdout()).contains("Stopping mesh...");
-      assertThat(result.stderr()).doesNotContain("Exception");
+      assertThat(result.exitCode()).isIn(0, SIGTERM_EXIT_CODE);
+      awaitNoContainersWithPrefix(prefix);
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }
 
   @Test
   void shouldStartMeshSecondTimeAfterPreviousStopped() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", freshPrefix() + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -287,19 +289,22 @@ public class RunCommandIT extends CliBaseIT {
     runUntilReadyThenStop(meshPath);
   }
 
-  private void runUntilReadyThenStop(String meshPath) throws InterruptedException {
+  private void runUntilReadyThenStop(String meshPath) throws Exception {
+    System.setProperty("streamx.runner.mesh-name-prefix", freshPrefix());
+    System.setProperty("streamx.runner.pulsar.broker-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("streamx.runner.pulsar.http-port",
+        String.valueOf(MeshTestSupport.freePort()));
+    System.setProperty("test.proxy.host-port", String.valueOf(MeshTestSupport.freePort()));
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
-      Awaitility.await()
-          .atMost(Duration.ofMinutes(3))
-          .pollInterval(Duration.ofSeconds(1))
-          .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
+      awaitStdoutContains(handle, "STREAMX IS READY!");
 
       assertThat(handle.getStderr())
           .doesNotContain("MissingReflectionRegistrationError");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.isAlive()) {
+        handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
     }
   }

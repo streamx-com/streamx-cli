@@ -18,7 +18,8 @@ log_event() {
 # Named pipes so we can capture PIDs of both sides of each pipeline
 IMAGE_FIFO=$(mktemp -u)
 CONTAINER_FIFO=$(mktemp -u)
-mkfifo "$IMAGE_FIFO" "$CONTAINER_FIFO"
+NETWORK_FIFO=$(mktemp -u)
+mkfifo "$IMAGE_FIFO" "$CONTAINER_FIFO" "$NETWORK_FIFO"
 
 # --- Image pull logging ---
 docker events \
@@ -31,6 +32,18 @@ while read -r line; do
   log_event "$line"
 done < "$IMAGE_FIFO" &
 IMAGE_READER_PID=$!
+
+# --- Network lifecycle logging ---
+docker events \
+  --filter 'type=network' \
+  --format '{{.Time}} NETWORK {{.Action}} name={{.Actor.Attributes.name}} id={{.Actor.ID}} container={{.Actor.Attributes.container}}' \
+  > "$NETWORK_FIFO" &
+NETWORK_EVENTS_PID=$!
+
+while read -r line; do
+  log_event "$line"
+done < "$NETWORK_FIFO" &
+NETWORK_READER_PID=$!
 
 # --- Container lifecycle logging ---
 docker events \
@@ -82,10 +95,12 @@ CONTAINER_READER_PID=$!
 cleanup() {
   log_event "Shutting down docker log collector"
   kill "$IMAGE_EVENTS_PID" "$IMAGE_READER_PID" \
+       "$NETWORK_EVENTS_PID" "$NETWORK_READER_PID" \
        "$CONTAINER_EVENTS_PID" "$CONTAINER_READER_PID" 2>/dev/null || true
   pkill -f "docker logs -f" 2>/dev/null || true
-  rm -f "$IMAGE_FIFO" "$CONTAINER_FIFO"
+  rm -f "$IMAGE_FIFO" "$CONTAINER_FIFO" "$NETWORK_FIFO"
   wait "$IMAGE_EVENTS_PID" "$IMAGE_READER_PID" \
+       "$NETWORK_EVENTS_PID" "$NETWORK_READER_PID" \
        "$CONTAINER_EVENTS_PID" "$CONTAINER_READER_PID" 2>/dev/null || true
 }
 trap cleanup EXIT

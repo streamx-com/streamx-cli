@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +29,15 @@ public final class MeshTestSupport {
   private static final Path PORT_RESERVATIONS =
       Paths.get(System.getProperty("java.io.tmpdir"), "streamx-cli-test-ports");
 
-  public static final String CONTAINER_STARTUP_TIMEOUT_SECONDS = "300";
+  /** Docker allocates its own published ports from 32768 upward, so we allocate below it. */
+  private static final int PORT_RANGE_START = 20000;
+
+  private static final int PORT_RANGE_SIZE = 12000;
+
+  private static final AtomicInteger NEXT_PORT_OFFSET =
+      new AtomicInteger(ThreadLocalRandom.current().nextInt(PORT_RANGE_SIZE));
+
+  public static final String CONTAINER_STARTUP_TIMEOUT_SECONDS = "180";
 
   private static volatile MeshManager activeMeshManager;
   private static volatile int activeProxyPort;
@@ -44,18 +54,22 @@ public final class MeshTestSupport {
    * The naive new ServerSocket(0) doesn't work reliably in this case.
    */
   public static int freePort() {
-    for (int attempt = 0; attempt < 100; attempt++) {
-      int candidate;
-      try (ServerSocket s = new ServerSocket(0)) {
-        candidate = s.getLocalPort();
-      } catch (IOException e) {
-        throw new RuntimeException("Failed to find a free port", e);
-      }
-      if (reserve(candidate)) {
+    for (int attempt = 0; attempt < PORT_RANGE_SIZE; attempt++) {
+      int candidate = PORT_RANGE_START
+          + Math.floorMod(NEXT_PORT_OFFSET.getAndIncrement(), PORT_RANGE_SIZE);
+      if (isFree(candidate) && reserve(candidate)) {
         return candidate;
       }
     }
-    throw new IllegalStateException("Could not reserve a free port after 100 attempts");
+    throw new IllegalStateException("Could not reserve a free port");
+  }
+
+  private static boolean isFree(int port) {
+    try (ServerSocket probe = new ServerSocket(port)) {
+      return probe.getLocalPort() == port;
+    } catch (IOException alreadyInUse) {
+      return false;
+    }
   }
 
   private static boolean reserve(int port) {
