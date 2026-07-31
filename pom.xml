@@ -22,7 +22,7 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <graalvm.version>25.0.2</graalvm.version>
-    <streamx.version>2.0.37</streamx.version>
+    <streamx.version>2.1.0-dev.STX-221.3</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
@@ -165,6 +165,11 @@
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-json-jackson</artifactId>
       <version>${cloudevents.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
 
     <!-- Native image dependencies -->
