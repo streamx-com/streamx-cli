@@ -381,7 +381,17 @@ public abstract class CliBaseIT {
       Awaitility.await()
           .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
-          .failFast(() -> !handle.isAlive() && !containsAll(output.apply(handle), expected))
+          .failFast(() -> {
+            if (handle.isAlive()) {
+              return false;
+            }
+            try {
+              handle.joinCaptures(Duration.ofSeconds(5).toMillis());
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+            return !containsAll(output.apply(handle), expected);
+          })
           .untilAsserted(() -> assertThat(output.apply(handle)).contains(expected));
     } catch (RuntimeException e) {
       throw new AssertionError(
