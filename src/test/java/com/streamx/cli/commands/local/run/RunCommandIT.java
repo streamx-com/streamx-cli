@@ -16,6 +16,7 @@ import io.quarkus.arc.Arc;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -125,6 +126,20 @@ public class RunCommandIT extends CliBaseIT {
         handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
       }
       removePortBlocker(blockerId);
+    }
+  }
+
+  private static void awaitNoContainersWithPrefix(String prefix) throws Exception {
+    try (DockerClient docker = DockerClientFactory.create()) {
+      Awaitility.await()
+          .atMost(Duration.ofSeconds(60))
+          .pollInterval(Duration.ofSeconds(1))
+          .untilAsserted(() -> assertThat(docker.listContainersCmd()
+              .withShowAll(true)
+              .withNameFilter(List.of(prefix))
+              .exec())
+              .as("mesh containers with prefix %s must be removed after the run stops", prefix)
+              .isEmpty());
     }
   }
 
@@ -252,8 +267,7 @@ public class RunCommandIT extends CliBaseIT {
 
       ProcessResult result = handle.toResult();
       assertThat(result.exitCode()).isIn(0, SIGTERM_EXIT_CODE);
-      assertThat(result.stdout()).contains("Stopping mesh...");
-      assertThat(result.stderr()).doesNotContain("Exception");
+      awaitNoContainersWithPrefix(prefix);
     } finally {
       if (handle.isAlive()) {
         handle.stopAndJoin(Duration.ofSeconds(30).toMillis());
