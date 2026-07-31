@@ -1,11 +1,12 @@
 package com.streamx.cli.commands.settings.eventtemplates.copy;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.defaultTemplatesDir;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -56,18 +57,18 @@ class CopyCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    Path copy = home.resolve(UserEventTemplates.DIRECTORY).resolve("my.page.json");
+    Path copy = userTemplatesDir(home).resolve("my.page.json");
     assertThat(copy).isRegularFile();
     String content = Files.readString(copy);
     assertThat(content).contains("com.streamx.blueprints.page.published");
 
-    assertThat(home.resolve("event-templates/default/page.published.json")).isRegularFile();
+    assertThat(defaultTemplatesDir(home).resolve("page.published.json")).isRegularFile();
   }
 
   @Test
   void shouldCopyUserTemplateUnderNewId(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path source = userDir.resolve("source.json");
     Files.writeString(source, sampleTemplate("com.example.source.v1"));
@@ -88,7 +89,7 @@ class CopyCommandIT extends CliBaseIT {
   @Test
   void shouldRefuseToOverwriteExistingId(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("source.json"), sampleTemplate("com.example.source.v1"));
     Files.writeString(userDir.resolve("dest.json"), sampleTemplate("com.example.dest.v1"));
@@ -132,7 +133,7 @@ class CopyCommandIT extends CliBaseIT {
     );
 
     result.assertSuccess();
-    assertThat(home.resolve(UserEventTemplates.DIRECTORY).resolve("my.copy.json"))
+    assertThat(userTemplatesDir(home).resolve("my.copy.json"))
         .isRegularFile();
   }
 }

@@ -7,6 +7,8 @@ import com.streamx.cli.commands.publish.event.EventTemplateCatalog.TemplateLocat
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.TextTable;
+import java.util.Arrays;
 import java.util.List;
 import picocli.CommandLine;
 
@@ -40,33 +42,10 @@ public class ListCommand extends AbstractCommand<ListCommandResult> {
       return msg.eventTemplatesNoTemplatesFound();
     }
 
-    int idWidth = Math.max(11, templates.stream()
-        .mapToInt(t -> t.id() == null ? 0 : t.id().length())
-        .max().orElse(0));
-    int typeWidth = Math.max(4, templates.stream()
-        .mapToInt(t -> t.type() == null ? 0 : t.type().length())
-        .max().orElse(0));
-    int sourceWidth = Math.max(10, templates.stream()
-        .mapToInt(t -> t.source() == null ? 0 : t.source().length())
-        .max().orElse(0));
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(msg.eventTemplatesListHeader()).append("\n");
-    sb.append(String.format(
-        "%-" + idWidth + "s  %-" + typeWidth + "s  %-" + sourceWidth + "s  %s%n",
-        "TEMPLATE ID", "TYPE", "DEFINED AT", "PATH"));
-    for (TemplateLocation t : templates) {
-      sb.append(String.format(
-          "%-" + idWidth + "s  %-" + typeWidth + "s  %-" + sourceWidth + "s  %s%n",
-          nullToDash(t.id()),
-          nullToDash(t.type()),
-          nullToDash(t.source()),
-          nullToDash(t.path())));
-    }
-    return sb.toString().stripTrailing();
-  }
-
-  private static String nullToDash(String s) {
-    return s == null ? "-" : s;
+    return TextTable.render(
+        List.of("TEMPLATE ID", "TYPE", "DEFINED AT", "PATH"),
+        templates.stream()
+            .map(t -> Arrays.asList(t.id(), t.type(), t.source(), t.path()))
+            .toList());
   }
 }

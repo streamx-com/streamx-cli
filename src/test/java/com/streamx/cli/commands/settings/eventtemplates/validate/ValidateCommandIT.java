@@ -2,10 +2,10 @@ package com.streamx.cli.commands.settings.eventtemplates.validate;
 
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.JSON;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -31,7 +31,7 @@ class ValidateCommandIT extends CliBaseIT {
   @Test
   void shouldFailOnInvalidJson(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("broken.json"), "{ this is not json");
 
@@ -48,7 +48,7 @@ class ValidateCommandIT extends CliBaseIT {
   @Test
   void shouldFailOnMissingRequiredField(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("nospec.json"), "{\"id\":\"x\",\"source\":\"s\"}");
 
@@ -89,7 +89,7 @@ class ValidateCommandIT extends CliBaseIT {
     exec("settings", "event-templates", "list",
         "--streamx-home", home.toString()).assertSuccess();
 
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("good.json"), sampleTemplate("com.example.good.v1"));
     Files.writeString(userDir.resolve("bad.json"), "{}");
