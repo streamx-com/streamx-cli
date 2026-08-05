@@ -4,6 +4,7 @@ import com.streamx.cli.platform.generated.api.PersonalAccessTokenResourceApi;
 import com.streamx.cli.platform.generated.model.CreatePersonalAccessTokenRequest;
 import com.streamx.cli.platform.generated.model.PersonalAccessTokenResponse;
 import com.streamx.cli.platform.generated.model.PersonalAccessTokenSummary;
+import java.time.Duration;
 import java.util.List;
 
 public class ProfileTokensApi {
@@ -16,8 +17,10 @@ public class ProfileTokensApi {
     this.api = clients.api(PersonalAccessTokenResourceApi.class);
   }
 
-  public PersonalAccessTokenResponse create(String name) {
-    return clients.call(() -> api.create(new CreatePersonalAccessTokenRequest().name(name),
+  public PersonalAccessTokenResponse create(String name, Duration expiresIn) {
+    String lifetime = expiresIn == null ? null : expiresIn.toString();
+    return clients.call(() -> api.create(
+        new CreatePersonalAccessTokenRequest().name(name).expiresIn(lifetime),
         null, null), PersonalAccessTokenResponse.class);
   }
 
