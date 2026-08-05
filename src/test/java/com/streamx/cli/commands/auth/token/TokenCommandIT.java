@@ -76,8 +76,28 @@ class TokenCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "token", "list");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains("ID", "NAME", "CREATED", "LAST USED");
+    assertThat(result.stdout()).contains("ID", "NAME", "CREATED", "LAST USED", "EXPIRES");
     assertThat(result.stdout()).contains(StubTokensServer.TOKEN_ID, "ci", "never");
+    assertThat(result.stdout()).contains(StubTokensServer.EXPIRED_TOKEN_ID, "expired");
+  }
+
+  @Test
+  void shouldSendTheRequestedExpiry() throws Exception {
+    ProcessResult result = exec("auth", "token", "create", "ci", "--expires-in", "30d");
+
+    result.assertSuccess();
+    // 30d parses to a Duration whose ISO-8601 form is PT720H - the wire format of expiresIn.
+    assertThat(platform.getRequestBodies())
+        .anyMatch(body -> body.contains("\"expiresIn\":\"PT720H\""));
+  }
+
+  @Test
+  void shouldRejectAnInvalidExpiryBeforeCallingThePlatform() throws Exception {
+    ProcessResult result = exec("auth", "token", "create", "ci", "--expires-in", "soon");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.authTokenInvalidExpiry("soon"));
+    assertThat(platform.getRequests()).doesNotContain("POST /api/v1/profile/tokens");
   }
 
   @Test
@@ -176,7 +196,8 @@ class TokenCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "token", "list", "--quiet");
 
     result.assertSuccess();
-    assertThat(result.stdout().strip()).isEqualTo(StubTokensServer.TOKEN_ID);
+    assertThat(result.stdout().lines().filter(line -> !line.isBlank()))
+        .containsExactly(StubTokensServer.TOKEN_ID, StubTokensServer.EXPIRED_TOKEN_ID);
     assertThat(result.stdout()).doesNotContain("NAME", "CREATED");
   }
 

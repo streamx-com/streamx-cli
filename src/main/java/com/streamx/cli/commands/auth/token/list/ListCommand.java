@@ -42,18 +42,26 @@ public class ListCommand extends AbstractCommand<List<PersonalAccessTokenSummary
       return msg.authTokenListEmpty();
     }
     return TextTable.render(
-        List.of("ID", "NAME", "CREATED", "LAST USED"),
+        List.of("ID", "NAME", "CREATED", "LAST USED", "EXPIRES"),
         tokens.stream()
             .map(token -> Arrays.asList(
                 token.getId(),
                 token.getName(),
                 timestamp(token.getCreatedAt(), "-"),
-                timestamp(token.getLastUsedAt(), "never")))
+                timestamp(token.getLastUsedAt(), "never"),
+                expiry(token)))
             .toList());
   }
 
   private static String timestamp(OffsetDateTime value, String absent) {
     return value == null ? absent : value.toString();
+  }
+
+  private static String expiry(PersonalAccessTokenSummary token) {
+    if (Boolean.TRUE.equals(token.getExpired())) {
+      return "expired";
+    }
+    return timestamp(token.getExpiresAt(), "never");
   }
 
   @Override

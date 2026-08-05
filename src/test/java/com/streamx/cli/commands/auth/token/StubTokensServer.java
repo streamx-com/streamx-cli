@@ -17,6 +17,7 @@ public class StubTokensServer implements AutoCloseable {
       + "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGh" + "_"
       + "Zz09Yx";
   public static final String TOKEN_ID = "0123456789abcdef0123456789abcdef";
+  public static final String EXPIRED_TOKEN_ID = "e".repeat(32);
 
   private final HttpServer server;
   private final List<String> requests = new ArrayList<>();
@@ -78,8 +79,11 @@ public class StubTokensServer implements AutoCloseable {
     }
     if (path.endsWith("/tokens") && "GET".equals(method)) {
       respond(exchange, 200, empty ? "[]" : """
-          [{"id":"%s","name":"ci","createdAt":"2026-07-25T10:00:00Z","lastUsedAt":null}]
-          """.formatted(TOKEN_ID));
+          [{"id":"%s","name":"ci","createdAt":"2026-07-25T10:00:00Z","lastUsedAt":null,
+            "expiresAt":null,"expired":false},
+           {"id":"%s","name":"old-ci","createdAt":"2026-06-01T10:00:00Z","lastUsedAt":null,
+            "expiresAt":"2026-07-01T00:00:00Z","expired":true}]
+          """.formatted(TOKEN_ID, EXPIRED_TOKEN_ID));
       return;
     }
     if ("DELETE".equals(method)) {
