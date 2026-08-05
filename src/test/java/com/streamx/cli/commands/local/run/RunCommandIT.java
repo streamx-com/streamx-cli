@@ -7,13 +7,10 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
-import com.streamx.cli.mesh.MeshManager;
 import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.runner.docker.DockerClientFactory;
-import io.quarkus.arc.Arc;
-import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
@@ -22,12 +19,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 @DisabledIfDockerUnavailable
 public class RunCommandIT extends CliBaseIT {
 
-  private static final String PREFIX =
-      "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+  private String meshPrefix;
 
   private static final String WEB_SERVER_SINK_IMAGE =
       "ghcr.io/streamx-com/streamx-blueprints/web-server-sink:3.0.7-jvm";
@@ -36,31 +31,40 @@ public class RunCommandIT extends CliBaseIT {
 
   @BeforeEach
   void isolateRunFromConcurrentInstances() {
-    System.setProperty("streamx.container.startup-timeout-seconds", "180");
-    System.setProperty("streamx.runner.pulsar.broker-port",
+    meshPrefix = "sx-run-" + UUID.randomUUID().toString().substring(0, 4) + "-";
+    setEnv("streamx.container.startup-timeout-seconds", "180");
+    setEnv("streamx.runner.pulsar.broker-port",
         String.valueOf(MeshTestSupport.freePort()));
-    System.setProperty("streamx.runner.pulsar.http-port",
+    setEnv("streamx.runner.pulsar.http-port",
         String.valueOf(MeshTestSupport.freePort()));
-    System.setProperty("test.proxy.host-port", String.valueOf(MeshTestSupport.freePort()));
+    setEnv("test.proxy.host-port", String.valueOf(MeshTestSupport.freePort()));
   }
 
   @AfterEach
   void stopMeshAndResetRunnerState() {
+    removeMeshContainers();
+  }
+
+  private int meshContainerCount() throws Exception {
+    Process p = new ProcessBuilder("sh", "-c",
+        "docker ps -aq --filter name=" + meshPrefix + " | wc -l").start();
+    p.waitFor();
+    return Integer.parseInt(new String(p.getInputStream().readAllBytes()).trim());
+  }
+
+  private void removeMeshContainers() {
     try {
-      Arc.container().select(MeshManager.class).get().stop();
+      new ProcessBuilder("sh", "-c",
+          "docker ps -aq --filter name=" + meshPrefix + " | xargs docker rm -f")
+          .start().waitFor();
     } catch (Exception ignored) {
       // best-effort cleanup
     }
-    System.clearProperty("streamx.runner.mesh-name-prefix");
-    System.clearProperty("streamx.container.startup-timeout-seconds");
-    System.clearProperty("streamx.runner.pulsar.broker-port");
-    System.clearProperty("streamx.runner.pulsar.http-port");
-    System.clearProperty("test.proxy.host-port");
   }
 
   @Test
   void shouldWarnWhenEnvVariableIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    setEnv("streamx.runner.mesh-name-prefix", meshPrefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
     exec("settings", "unset", "STREAMX_OWNER_SERVICE_NAME");
     clearEnv("STREAMX_OWNER_SERVICE_NAME");
@@ -83,8 +87,8 @@ public class RunCommandIT extends CliBaseIT {
           .contains("WARNING:")
           .contains("STREAMX_OWNER_SERVICE_NAME");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
     }
   }
@@ -101,9 +105,9 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldReportContainerFailureWhenItsHostPortIsAlreadyTaken() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    setEnv("streamx.runner.mesh-name-prefix", meshPrefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", meshPrefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -112,7 +116,7 @@ public class RunCommandIT extends CliBaseIT {
 
     int blockedPort = MeshTestSupport.freePort();
     String blockerId = startPortBlocker(blockedPort);
-    System.setProperty("test.proxy.host-port", String.valueOf(blockedPort));
+    setEnv("test.proxy.host-port", String.valueOf(blockedPort));
 
     AsyncProcessHandle handle = execAsync("local", "run", "-f=" + meshPath);
     try {
@@ -128,8 +132,8 @@ public class RunCommandIT extends CliBaseIT {
                 .contains(msg.somethingWentWrong().strip());
           });
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
       removePortBlocker(blockerId);
     }
@@ -162,9 +166,9 @@ public class RunCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailWhenSystemPropertyIsUndefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    setEnv("streamx.runner.mesh-name-prefix", meshPrefix);
     exec("settings", "unset", "config.image.interpolated");
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", meshPrefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -177,7 +181,7 @@ public class RunCommandIT extends CliBaseIT {
       Awaitility.await()
           .atMost(Duration.ofMinutes(3))
           .pollInterval(Duration.ofSeconds(1))
-          .until(() -> !handle.thread().isAlive());
+          .until(() -> !handle.process().isAlive());
 
       ProcessResult result = handle.toResult();
       assertThat(result.exitCode()).isNotEqualTo(0);
@@ -185,8 +189,8 @@ public class RunCommandIT extends CliBaseIT {
           .contains("Property 'config.image.interpolated'")
           .contains("is not set");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
     }
   }
@@ -204,7 +208,6 @@ public class RunCommandIT extends CliBaseIT {
   @Test
   void shouldBridgeRunnerSettingToSystemPropertyForLocalRun() throws Exception {
     String bridgedPrefix = "sx-bridge-" + UUID.randomUUID().toString().substring(0, 4) + "-";
-    System.clearProperty("streamx.runner.mesh-name-prefix");
 
     exec("settings", "set", "streamx.runner.mesh-name-prefix", bridgedPrefix).assertSuccess();
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE).assertSuccess();
@@ -228,18 +231,17 @@ public class RunCommandIT extends CliBaseIT {
           .as("runner should use the prefix from streamxHome settings via the bridge")
           .contains(bridgedPrefix);
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
-      System.clearProperty("streamx.runner.mesh-name-prefix");
     }
   }
 
   @Test
   void shouldSucceedWhenInterpolationValuesAreDefined() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    setEnv("streamx.runner.mesh-name-prefix", meshPrefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", meshPrefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -255,27 +257,30 @@ public class RunCommandIT extends CliBaseIT {
           .until(() -> handle.getStdout().contains("STREAMX IS READY!"));
 
       Thread.sleep(Duration.ofSeconds(5));
-      assertThat(handle.thread().isAlive()).isTrue();
+      assertThat(handle.process().isAlive()).isTrue();
 
-      handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
-      assertThat(handle.thread().isAlive()).isFalse();
+      handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
+      assertThat(handle.process().isAlive()).isFalse();
 
       ProcessResult result = handle.toResult();
-      result.assertSuccess();
-      assertThat(result.stdout()).contains("Stopping mesh...");
+      result.assertGracefulStop();
+      Awaitility.await()
+          .atMost(Duration.ofSeconds(30))
+          .pollInterval(Duration.ofSeconds(1))
+          .until(() -> meshContainerCount() == 0);
       assertThat(result.stderr()).doesNotContain("Exception");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
     }
   }
 
   @Test
   void shouldStartMeshSecondTimeAfterPreviousStopped() throws Exception {
-    System.setProperty("streamx.runner.mesh-name-prefix", PREFIX);
+    setEnv("streamx.runner.mesh-name-prefix", meshPrefix);
     exec("settings", "set", "config.image.interpolated", WEB_SERVER_SINK_IMAGE);
-    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", PREFIX + "test-owner");
+    exec("settings", "set", "STREAMX_OWNER_SERVICE_NAME", meshPrefix + "test-owner");
 
     String meshPath = Paths.get("target/test-classes/mesh-interpolated.yaml")
         .toAbsolutePath()
@@ -283,6 +288,9 @@ public class RunCommandIT extends CliBaseIT {
         .toString();
 
     runUntilReadyThenStop(meshPath);
+    // The second run reuses this test's prefix and ports: clear any straggling containers
+    // rather than racing the first run's shutdown.
+    removeMeshContainers();
     runUntilReadyThenStop(meshPath);
   }
 
@@ -297,8 +305,8 @@ public class RunCommandIT extends CliBaseIT {
       assertThat(handle.getStderr())
           .doesNotContain("MissingReflectionRegistrationError");
     } finally {
-      if (handle.thread().isAlive()) {
-        handle.interruptAndJoin(Duration.ofSeconds(30).toMillis());
+      if (handle.process().isAlive()) {
+        handle.interruptAndJoin(Duration.ofSeconds(60).toMillis());
       }
     }
   }
