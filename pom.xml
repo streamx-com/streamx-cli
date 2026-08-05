@@ -4,7 +4,7 @@
 
   <groupId>com.streamx.cli</groupId>
   <artifactId>streamx-cli</artifactId>
-  <version>2.0.4-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/streamx-com/streamx-cli.git</connection>
@@ -21,17 +21,12 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <graalvm.version>25.0.2</graalvm.version>
-    <streamx.version>2.0.37</streamx.version>
+    <streamx.version>2.1.0-dev.16</streamx.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
     <surefire.forkCount>1</surefire.forkCount>
     <it.forkCount>1</it.forkCount>
-
-    <native.agent.argLine>
-      -agentlib:native-image-agent=config-merge-dir=${project.basedir}/src/main/resources/META-INF/native-image/fork-${surefire.forkNumber}
-    </native.agent.argLine>
   </properties>
 
   <dependencyManagement>
@@ -49,18 +44,49 @@
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-picocli</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
     </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-scheduler</artifactId>
-      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config</artifactId>
+    </dependency>
+
+    <!--  Jackson dependencies  -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jackson</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+    </dependency>
+
+    <!-- Picocli and JLine Dependencies  -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-picocli</artifactId>
     </dependency>
 
     <dependency>
@@ -70,19 +96,56 @@
     </dependency>
 
     <dependency>
-      <groupId>io.smallrye.config</groupId>
-      <artifactId>smallrye-config</artifactId>
-      <version>3.15.1</version>
-      <scope>compile</scope>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>2.4.1</version>
     </dependency>
 
     <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>26.0.2-1</version>
-      <scope>provided</scope>
+      <groupId>com.github.albfernandez</groupId>
+      <artifactId>juniversalchardet</artifactId>
+      <version>2.5.0</version>
     </dependency>
 
+    <!--  StreamX dependencies  -->
+    <dependency>
+      <groupId>com.streamx</groupId>
+      <artifactId>streamx-runner</artifactId>
+      <version>${streamx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.streamx</groupId>
+      <artifactId>mesh-model</artifactId>
+      <version>${streamx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.streamx</groupId>
+      <artifactId>ingestion-client</artifactId>
+      <version>${streamx.version}</version>
+    </dependency>
+
+    <!--  CloudEvents dependencies  -->
+    <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-core</artifactId>
+      <version>${cloudevents.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-json-jackson</artifactId>
+      <version>${cloudevents.version}</version>
+    </dependency>
+
+    <!--  JSON Patch dependencies  -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jsonp</artifactId>
+    </dependency>
+
+    <!--  Logger dependencies  -->
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-annotations</artifactId>
@@ -102,108 +165,17 @@
       <version>2.0.17</version>
     </dependency>
 
+    <!--  Utils dependencies  -->
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jackson</artifactId>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.20.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jdk8</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
-      <version>2.20.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.14</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.streamx</groupId>
-      <artifactId>streamx-runner</artifactId>
-      <version>${streamx.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.streamx</groupId>
-      <artifactId>mesh-model</artifactId>
-      <version>${streamx.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.streamx</groupId>
-      <artifactId>ingestion-client</artifactId>
-      <version>${streamx.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cloudevents</groupId>
-      <artifactId>cloudevents-core</artifactId>
-      <version>${cloudevents.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cloudevents</groupId>
-      <artifactId>cloudevents-json-jackson</artifactId>
-      <version>${cloudevents.version}</version>
-    </dependency>
-
-    <!-- Native image dependencies -->
-    <dependency>
-      <groupId>org.graalvm.sdk</groupId>
-      <artifactId>graal-sdk</artifactId>
-      <version>${graalvm.version}</version>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>26.0.2-1</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.graalvm.nativeimage</groupId>
-      <artifactId>svm</artifactId>
-      <version>${graalvm.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-      <version>2.4.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.albfernandez</groupId>
-      <artifactId>juniversalchardet</artifactId>
-      <version>2.5.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.brotli</groupId>
-      <artifactId>dec</artifactId>
-      <version>0.1.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.java-json-tools</groupId>
-      <artifactId>json-patch</artifactId>
-      <version>1.13</version>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
 
     <!-- Testing Dependencies -->
@@ -406,8 +378,6 @@
           <argLine>
             -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
-            --enable-native-access=ALL-UNNAMED
-            ${native.agent.argLine}
           </argLine>
         </configuration>
       </plugin>
@@ -432,19 +402,7 @@
           <argLine>
             -Dsurefire.forkNumber=${surefire.forkNumber}
             --add-opens java.base/java.lang=ALL-UNNAMED
-            ${native.agent.argLine}
           </argLine>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.graalvm.buildtools</groupId>
-        <artifactId>native-maven-plugin</artifactId>
-        <version>0.11.4</version>
-        <extensions>true</extensions>
-        <configuration>
-          <metadataRepository>
-            <enabled>true</enabled>
-          </metadataRepository>
         </configuration>
       </plugin>
       <plugin>
@@ -500,37 +458,6 @@
       </properties>
     </profile>
     <profile>
-      <id>native-image-agent</id>
-      <activation>
-        <file>
-          <exists>${java.home}/bin/native-image</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>merge-native-image-metadata</id>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <phase>post-integration-test</phase>
-                <configuration>
-                  <executable>${project.basedir}/.github/scripts/merge-native-image-metadata.sh</executable>
-                  <arguments>
-                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>native</id>
       <activation>
         <property>
@@ -538,49 +465,18 @@
         </property>
       </activation>
       <properties>
-        <quarkus.package.type>native</quarkus.package.type>
-        <quarkus.native.enable-metadata-repository>true</quarkus.native.enable-metadata-repository>
-        <quarkus.native.enable-all-security-services>true</quarkus.native.enable-all-security-services>
-
-        <!-- Override native agent argLine as we need to run GraalVM tracing agent only JVM, before running the native profile -->
-        <native.agent.argLine> </native.agent.argLine>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
       </properties>
       <build>
         <plugins>
           <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <systemPropertyVariables>
-                <native.image>true</native.image>
-              </systemPropertyVariables>
-            </configuration>
-          </plugin>
-          <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
               <systemPropertyVariables>
+                <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                 <native.image>true</native.image>
               </systemPropertyVariables>
             </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>prepare-native-image-metadata</id>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <phase>initialize</phase>
-                <configuration>
-                  <executable>${project.basedir}/.github/scripts/prepare-native-image-metadata.sh</executable>
-                  <arguments>
-                    <argument>${project.basedir}/src/main/resources/META-INF/native-image</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>

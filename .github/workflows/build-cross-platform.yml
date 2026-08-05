@@ -31,17 +31,11 @@ jobs:
       - name: Define platform matrix
         id: matrix
         run: |
-          # TEMPORARY(native): native-image build fails (javax.ws.rs NoClassDefFoundError),
-          # JVM-only release for now. Restore the full platform matrix when fixed.
           PLATFORMS='[
-            { "os": "ubuntu-24.04",     "name": "linux-amd64",  "artifact": "streamx-linux-x86_64" }
+            { "os": "ubuntu-24.04",     "name": "linux-amd64",  "artifact": "streamx-linux-x86_64" },
+            { "os": "ubuntu-24.04-arm", "name": "linux-arm64",  "artifact": "streamx-linux-aarch64" },
+            { "os": "macos-26-xlarge",  "name": "macos-arm64",  "artifact": "streamx-macos-aarch64" }
           ]'
-          # PLATFORMS='[
-          #   { "os": "ubuntu-24.04",     "name": "linux-amd64",  "artifact": "streamx-linux-x86_64" },
-          #   { "os": "ubuntu-24.04-arm", "name": "linux-arm64",  "artifact": "streamx-linux-aarch64" },
-          #   { "os": "macos-26-xlarge",  "name": "macos-arm64",  "artifact": "streamx-macos-aarch64" },
-          #   { "os": "macos-26-large",   "name": "macos-amd64",  "artifact": "streamx-macos-x86_64" }
-          # ]'
           echo "platforms=$(echo "$PLATFORMS" | jq -c .)" >> "$GITHUB_OUTPUT"
 
   build:
@@ -63,15 +57,9 @@ jobs:
           gar_docker_registry: ${{ vars.GAR_DOCKER_REGISTRY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run tests with native-image-agent (Linux only)
-        if: startsWith(matrix.name, 'linux')
+      - name: Build native-image executable
         run: |
-          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
-
-      # TEMPORARY(native): restore when native image builds again.
-      # - name: Build native-image executable
-      #   run: |
-      #     .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
+          .github/scripts/with-capture-docker-logs.sh ./mvnw verify -Pci,native -T 2 -Dsurefire.forkCount=8 -Dit.forkCount=4
 
       - name: Upload test reports
         if: always()
@@ -87,26 +75,24 @@ jobs:
           path: target/docker-logs/
           if-no-files-found: ignore
 
-      # TEMPORARY(native): restore when native image builds again.
-      # - name: Prepare artifact
-      #   run: |
-      #     mkdir -p staging
-      #     cp target/*-runner staging/${{ matrix.artifact }}
-      #     chmod +x staging/${{ matrix.artifact }}
-      #
-      # - name: Smoke test
-      #   run: ./staging/${{ matrix.artifact }} --help
-      #
-      # - name: Upload native executable
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ matrix.artifact }}
-      #     path: staging/${{ matrix.artifact }}
+      - name: Prepare artifact
+        run: |
+          mkdir -p staging
+          cp target/*-runner staging/${{ matrix.artifact }}
+          chmod +x staging/${{ matrix.artifact }}
+
+      - name: Smoke test
+        run: ./staging/${{ matrix.artifact }} --help
+
+      - name: Upload native executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: staging/${{ matrix.artifact }}
 
       - name: Upload runner JAR
         # We need to upload the jar only once, as it cross-platform
-        # TEMPORARY(native): was linux-arm64; that runner is out of the reduced matrix.
-        if: matrix.name == 'linux-amd64'
+        if: matrix.name == 'linux-arm64'
         uses: actions/upload-artifact@v4
         with:
           name: streamx-runner-jar
