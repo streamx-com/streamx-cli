@@ -39,6 +39,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <!-- Sole provider of org.apache.commons.logging (the jboss bridge is excluded below):
+             1.3.x routes JCL to SLF4J natively, replacing the removed jcl-over-slf4j. -->
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.3.5</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -46,6 +53,14 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-rest-client-jackson</artifactId>
+      <exclusions>
+        <exclusion>
+          <!-- Second provider of org.apache.commons.logging whose LogFactory lacks the 1.3
+               methods; with it present the native image fails to link. -->
+          <groupId>org.jboss.logging</groupId>
+          <artifactId>commons-logging-jboss-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -169,12 +184,6 @@
       <artifactId>jboss-logging-processor</artifactId>
       <scope>provided</scope>
       <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>2.0.17</version>
     </dependency>
 
     <!--  Utils dependencies  -->
