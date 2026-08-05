@@ -52,8 +52,8 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
       index = "0",
       description = {
           "Template ID (the template to use for this event).",
-          "Resolved from <streamx-home>/event-templates/custom and "
-              + "<streamx-home>/event-templates/default (~/.streamx by default).",
+          "Resolved from the context's event-templates folder and the shared "
+              + "<streamx-home>/default-event-templates (~/.streamx by default).",
           "Run `streamx settings event-templates list` to see all available templates."
       },
       completionCandidates = TemplateIdCompletionCandidates.class

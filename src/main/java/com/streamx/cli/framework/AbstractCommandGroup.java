@@ -10,6 +10,11 @@ public class AbstractCommandGroup extends AbstractCommand<Void> {
   }
 
   @Override
+  public boolean needsContext() {
+    return false;
+  }
+
+  @Override
   public String getTextOutput(CommandResult<Void> result) {
     return "";
   }

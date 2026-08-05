@@ -23,6 +23,7 @@ class StreamxHomeTest {
   void cleanup() {
     System.clearProperty("STREAMX_HOME");
     StreamxHome.clearStreamxHomeCliArg();
+    StreamxHome.clearContextCliArg();
   }
 
   @Test
@@ -36,7 +37,7 @@ class StreamxHomeTest {
       URL url = StreamxHome.getConfigUrl();
 
       Path result = Path.of(url.toURI());
-      assertEquals(tempDir.resolve("config/application.properties"), result);
+      assertEquals(tempDir.resolve("contexts/default/config/application.properties"), result);
       assertTrue(Files.exists(result));
     }
   }
@@ -49,7 +50,7 @@ class StreamxHomeTest {
     URL url = StreamxHome.getConfigUrl();
 
     Path result = Path.of(url.toURI());
-    assertEquals(tempDir.resolve("config/application.properties"), result);
+    assertEquals(tempDir.resolve("contexts/default/config/application.properties"), result);
     assertTrue(Files.exists(result), "application.properties should be created");
   }
 
@@ -73,7 +74,7 @@ class StreamxHomeTest {
 
     StreamxHome.createConfigIfNotExists();
 
-    Path configDir = homeDir.resolve("config");
+    Path configDir = homeDir.resolve("contexts/default/config");
     assertTrue(Files.isDirectory(configDir), "Config directory should be created");
     assertTrue(Files.exists(configDir.resolve("application.properties")));
   }
@@ -86,7 +87,7 @@ class StreamxHomeTest {
     System.clearProperty(key);
     System.clearProperty(otherKey);
     try {
-      Path configDir = tempDir.resolve("config");
+      Path configDir = tempDir.resolve("contexts/default/config");
       Files.createDirectories(configDir);
       Files.writeString(configDir.resolve("application.properties"),
           key + "=true\n" + otherKey + "=8081\n");
@@ -107,7 +108,7 @@ class StreamxHomeTest {
     String key = "streamx.runner.gateway.http-port";
     System.setProperty(key, "9999");
     try {
-      Path configDir = tempDir.resolve("config");
+      Path configDir = tempDir.resolve("contexts/default/config");
       Files.createDirectories(configDir);
       Files.writeString(configDir.resolve("application.properties"), key + "=8081\n");
 
@@ -125,7 +126,7 @@ class StreamxHomeTest {
     String key = "streamx.runner.gateway.http-port";
     System.clearProperty(key);
     try {
-      Path configDir = tempDir.resolve("config");
+      Path configDir = tempDir.resolve("contexts/default/config");
       Files.createDirectories(configDir);
       Path configFile = configDir.resolve("application.properties");
 

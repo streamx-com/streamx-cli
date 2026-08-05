@@ -13,7 +13,7 @@ import java.util.List;
 
 public final class DefaultEventTemplates {
 
-  public static final String DIRECTORY = "event-templates/default";
+  public static final String DIRECTORY = "default-event-templates";
   public static final String EXTENSION = ".json";
 
   static final String RESOURCE_DIRECTORY = "default-event-templates";

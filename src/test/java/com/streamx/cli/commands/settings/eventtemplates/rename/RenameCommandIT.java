@@ -1,12 +1,14 @@
 package com.streamx.cli.commands.settings.eventtemplates.rename;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.configFile;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.contextFile;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.io.InputStream;
@@ -24,7 +26,7 @@ class RenameCommandIT extends CliBaseIT {
   @Test
   void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("old.json"), sampleTemplate("com.example.v1"));
 
@@ -46,7 +48,7 @@ class RenameCommandIT extends CliBaseIT {
   @Test
   void shouldRenameUserTemplateFile(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path original = userDir.resolve("old.json");
     String content = sampleTemplate("com.example.v1");
@@ -69,7 +71,7 @@ class RenameCommandIT extends CliBaseIT {
   void shouldRenameSettingsRegisteredTemplate(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
     Files.createDirectories(home);
-    Path file = home.resolve("registered.json");
+    Path file = contextFile(home, "registered.json");
     Files.writeString(file, sampleTemplate("com.example.reg.v1"));
     exec("settings", "event-templates", "register",
         "--streamx-home", home.toString(),
@@ -112,7 +114,7 @@ class RenameCommandIT extends CliBaseIT {
   @Test
   void shouldRefuseToRenameWhenNewIdAlreadyExists(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("a.json"), sampleTemplate("com.example.a.v1"));
     Files.writeString(userDir.resolve("b.json"), sampleTemplate("com.example.b.v1"));
@@ -128,7 +130,7 @@ class RenameCommandIT extends CliBaseIT {
   }
 
   private static Properties readConfig(Path home) throws Exception {
-    Path config = home.resolve("config/application.properties");
+    Path config = configFile(home);
     Properties props = new Properties();
     try (InputStream is = Files.newInputStream(config)) {
       props.load(is);

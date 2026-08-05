@@ -20,10 +20,10 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "register",
     header = "Register an event template file under a template ID (writes to settings)",
-    description = "Adds an `eventtemplate.<id>=<path>` entry to "
-        + "<streamxHome>/config/application.properties. The path can be absolute or relative "
-        + "to streamxHome. Registered templates take precedence over templates in "
-        + "event-templates/custom and event-templates/default.",
+    description = "Adds an `eventtemplate.<id>=<path>` entry to the active context's "
+        + "application.properties. The path can be absolute or relative to the context "
+        + "directory. Registered templates take precedence over the context's custom "
+        + "templates and the shared default templates.",
     footer = {
         "",
         "Examples:",
@@ -41,7 +41,8 @@ public class RegisterCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "1",
-      description = "Path to the template JSON file (relative to streamxHome or absolute)"
+      description = "Path to the template JSON file (relative to the context directory "
+          + "or absolute)"
   )
   public String path;
 

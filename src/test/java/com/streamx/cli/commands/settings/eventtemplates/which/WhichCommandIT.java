@@ -23,7 +23,7 @@ class WhichCommandIT extends CliBaseIT {
     );
     result.assertSuccess();
     String stdout = result.stdout().strip();
-    assertThat(stdout).endsWith("event-templates/default/page.published.json");
+    assertThat(stdout).endsWith("default-event-templates/page.published.json");
     assertThat(Path.of(stdout)).isAbsolute();
   }
 
@@ -51,7 +51,7 @@ class WhichCommandIT extends CliBaseIT {
     result.assertSuccess();
     JsonNode root = JSON.readTree(result.stdout());
     assertThat(root.get("id").asText()).isEqualTo("page.published");
-    assertThat(root.get("source").asText()).isEqualTo("event-templates/default");
+    assertThat(root.get("source").asText()).isEqualTo("default");
     assertThat(root.get("path").asText()).endsWith("page.published.json");
   }
 }

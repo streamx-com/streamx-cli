@@ -14,6 +14,26 @@ public interface MessageProvider {
   @Message(id = 100, value = "Unsupported output format")
   String unsupportedOutputFormat();
 
+  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
+  String authTokenCreated(String name);
+
+  @Message(id = 430, value = "Token revoked")
+  String authTokenRevoked();
+
+  @Message(id = 431, value = "No personal access tokens")
+  String authTokenListEmpty();
+
+  @Message(id = 432, value = "Could not read the context the token belongs to")
+  String authTokenIdentityUnavailable();
+
+  @Message(id = 433, value = "Not authorized. The personal access token in "
+      + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
+  String platformTokenUnauthorized();
+
+  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
+      + "Unset %s and run 'streamx auth login' first.")
+  String authTokenNeedsLoginSession(String variableName);
+
   @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,
@@ -143,12 +163,6 @@ public interface MessageProvider {
 
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
-
-  @Message(id = 139, value = """
-      StreamX settings properties:
-      =================================
-      """)
-  String listSettingsHeader();
 
   @Message(id = 140, value = "No StreamX settings properties found")
   String listSettingsNoPropertiesFound();
@@ -414,12 +428,6 @@ public interface MessageProvider {
   @Message(id = 213, value = "No event templates found.")
   String eventTemplatesNoTemplatesFound();
 
-  @Message(id = 214, value = """
-      Event templates:
-      ================
-      """)
-  String eventTemplatesListHeader();
-
   @Message(id = 215, value = "Failed to list event templates from %s: %s")
   String failedToListEventTemplates(String path, String reason);
 
@@ -604,4 +612,427 @@ public interface MessageProvider {
 
   @Message(id = 263, value = "(TAB for options)")
   String interactivePickerHint();
+
+  @Message(
+      id = 277,
+      value = "StreamX auth server URL is not configured.%n"
+          + "Set it with: streamx settings set %s <url>"
+  )
+  String authServerUrlNotConfigured(String key);
+
+  @Message(id = 278, value = "%s does not support the device authorization flow")
+  String authDeviceFlowUnsupported(String issuerUrl);
+
+  @Message(
+      id = 279,
+      value = "To finish signing in, open:%n  %s%nand enter the code:%n  %s%n%nWaiting..."
+  )
+  String authLoginInstructions(String verificationUri, String userCode);
+
+  @Message(id = 280, value = "Or open this link directly:%n  %s")
+  String authLoginDirectLink(String verificationUriComplete);
+
+  @Message(id = 281, value = "Logged in successfully")
+  String authLoginSuccess();
+
+  @Message(id = 282, value = "Login was denied")
+  String authLoginDenied();
+
+  @Message(id = 283, value = "Login timed out before it was confirmed. Run 'streamx auth login'"
+      + " again")
+  String authLoginExpired();
+
+  @Message(id = 284, value = "Login failed: %s")
+  String authLoginFailed(String error);
+
+  @Message(id = 285, value = "Login was interrupted")
+  String authLoginInterrupted();
+
+  @Message(id = 286, value = "Request to %s failed: %s")
+  String authRequestFailed(String url, String reason);
+
+  @Message(id = 287, value = "Request to %s failed with status %d")
+  String authRequestFailedWithStatus(String url, int statusCode);
+
+  @Message(id = 288, value = "Response from %s was not valid JSON")
+  String authResponseNotJson(String url);
+
+  @Message(id = 289, value = "Unable to save credentials to %s: %s")
+  String authCredentialsNotSaved(String path, String reason);
+
+  @Message(id = 290, value = "Unable to read credentials from %s: %s")
+  String authCredentialsUnreadable(String path, String reason);
+
+  @Message(id = 291, value = "Unable to delete credentials at %s: %s")
+  String authCredentialsNotDeleted(String path, String reason);
+
+  @Message(id = 292, value = "Logged out successfully")
+  String authLogoutSuccess();
+
+  @Message(id = 293, value = "Not logged in")
+  String authLogoutNotLoggedIn();
+
+  @Message(id = 294, value = "Unable to disable TLS verification: %s")
+  String authInsecureTlsFailed(String reason);
+
+  @Message(id = 353, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// auth server URL (http:// is allowed only for localhost)")
+  String authCleartextHttpBlocked(String url);
+
+  @Message(id = 295, value = "Your session has expired. Run 'streamx auth login' again")
+  String authSessionExpired();
+
+  @Message(id = 296, value = "Not logged in. Run 'streamx auth login' first")
+  String platformNotLoggedIn();
+
+  @Message(
+      id = 297,
+      value = "StreamX platform URL is not configured.%nSet it with: streamx settings set %s <url>"
+  )
+  String platformUrlNotConfigured(String key);
+
+  @Message(id = 298, value = "Not authorized. Run 'streamx auth login' again")
+  String platformUnauthorized();
+
+  @Message(id = 301, value = "Request to %s failed: %s")
+  String platformRequestFailed(String url, String reason);
+
+  @Message(id = 302, value = "Request to %s failed with status %d")
+  String platformRequestFailedWithStatus(String url, int statusCode);
+
+  @Message(id = 303, value = "Request rejected (%d): %s")
+  String platformRequestRejected(int statusCode, String detail);
+
+  @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// platform URL (http:// is allowed only for localhost)")
+  String platformCleartextHttpBlocked(String url);
+
+  @Message(id = 309, value = "Stored access token is not a readable JWT")
+  String authTokenMalformed();
+
+  @Message(id = 319, value = "Identity provider returned a token response without an access token")
+  String authTokenResponseIncomplete();
+
+  @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
+  String authLoginOpeningBrowser();
+
+  @Message(id = 332, value = "No browser available; falling back to device code sign-in.")
+  String authBrowserFallbackToDevice();
+
+  @Message(
+      id = 333,
+      value = "The identity provider does not advertise an authorization endpoint. "
+          + "Retry with --no-browser to use the device flow."
+  )
+  String authCodeFlowUnsupported();
+
+  @Message(id = 334, value = "Could not start the local login listener: %s")
+  String authLoopbackFailed(String reason);
+
+  @Message(id = 335, value = "Signed in. You can close this tab and return to the terminal.")
+  String authLoopbackSuccess();
+
+  @Message(id = 336, value = "Sign-in failed. Return to the terminal and try again.")
+  String authLoopbackDenied();
+
+  @Message(id = 337, value = "Unable to generate a PKCE challenge: %s")
+  String authPkceFailed(String reason);
+
+  @Message(id = 338, value = "Configured issuer '%s' does not match discovery document issuer '%s'")
+  String authIssuerMismatch(String configured, String documentIssuer);
+
+  @Message(id = 339, value = "Token request rejected (%d): %s")
+  String authTokenRequestRejected(int statusCode, String detail);
+
+  @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
+  String authRevocationUnsupported();
+
+
+  @Message(id = 306, value = "No organizations found")
+  String orgListEmpty();
+
+  @Message(id = 307, value = "Organization '%s' created")
+  String orgCreated(String name);
+
+  @Message(id = 308, value = "Organization '%s' deleted")
+  String orgDeleted(String orgId);
+
+  @Message(id = 310, value = "No members found")
+  String orgMembersListEmpty();
+
+  @Message(id = 311, value = "Member '%s' added with role '%s'")
+  String orgMemberAdded(String name, String role);
+
+  @Message(id = 312, value = "Member '%s' removed")
+  String orgMemberRemoved(String userId);
+
+  @Message(id = 313, value = "Role of '%s' changed to '%s'")
+  String orgMemberRoleChanged(String userId, String role);
+
+  @Message(id = 314, value = "No invitations found")
+  String orgInvitationsListEmpty();
+
+  @Message(id = 315, value = "Invitation sent to '%s' with role '%s'")
+  String orgInvitationCreated(String email, String role);
+
+  @Message(id = 316, value = "Invitation accepted")
+  String orgInvitationAccepted();
+
+  @Message(id = 317, value = "Invitation for '%s' cancelled")
+  String orgInvitationCancelled(String email);
+
+  @Message(id = 318, value = "No clusters found")
+  String orgClustersListEmpty();
+
+  @Message(id = 320, value = "Paste the invitation token")
+  String orgInvitationTokenPrompt();
+
+  @Message(id = 321, value = "Invitation token is required")
+  String orgInvitationTokenRequired();
+
+  @Message(id = 322, value = "'%s' is not a member of organization '%s'")
+  String orgMemberNotFound(String userId, String orgId);
+
+  @Message(
+      id = 323,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Cancel it with: streamx org invitations cancel %s %s"
+  )
+  String orgMemberNotActiveForRemoval(String userId, String status, String orgId, String email);
+
+  @Message(
+      id = 324,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Changing its role would grant membership without the invitation being accepted.%n"
+          + "Wait for the invitation to be accepted, or add the account directly with:%n"
+          + "  streamx org members add %s %s --role <role>"
+  )
+  String orgMemberNotActiveForRoleChange(String userId, String status, String orgId, String email);
+
+  @Message(id = 325, value = "No projects found")
+  String projectListEmpty();
+
+  @Message(id = 326, value = "Project '%s' created (id: %s)")
+  String projectCreated(String name, String id);
+
+  @Message(id = 327, value = "Project '%s' updated")
+  String projectUpdated(String projectId);
+
+  @Message(id = 328, value = "Project '%s' deleted")
+  String projectDeleted(String projectId);
+
+  @Message(id = 329, value = "At least one of --name or --description must be given")
+  String projectUpdateNothingToDo();
+
+  @Message(id = 330, value = "No pending changes")
+  String projectPendingChangesEmpty();
+
+  @Message(id = 355,
+      value = "Invalid context name '%s'. Use 1-32 lowercase letters, digits or dashes")
+  String contextNameInvalid(String name);
+
+  @Message(id = 356,
+      value = "Context '%1$s' does not exist. Create it with: streamx context create %1$s")
+  String contextNotFound(String name);
+
+  @Message(id = 357, value = "Context '%s' already exists")
+  String contextAlreadyExists(String name);
+
+  @Message(id = 358, value = "Context '%s' created")
+  String contextCreated(String name);
+
+  @Message(id = 359, value = "Switched to context '%s'")
+  String contextSwitched(String name);
+
+  @Message(id = 360, value = "Context '%s' deleted")
+  String contextDeleted(String name);
+
+  @Message(id = 361, value = "The context's stored login was removed locally but NOT revoked.%n"
+      + "Next time run 'streamx auth logout' in the context before deleting it.")
+  String contextDeletedLoginNote();
+
+  @Message(id = 362,
+      value = "Context '%s' is set as the current context. Switch to another context first")
+  String contextCannotDeleteCurrent(String name);
+
+  @Message(id = 363, value = "Context '%s' is active. Switch to another context first")
+  String contextCannotDeleteActive(String name);
+
+  @Message(id = 364, value = "Current context: %s")
+  String currentContextHeader(String name);
+
+  @Message(id = 365, value = "Could not create context '%s': %s")
+  String contextCreateFailed(String name, String reason);
+
+  @Message(id = 366, value = "Could not switch context: %s")
+  String contextSwitchFailed(String reason);
+
+  @Message(id = 367, value = "Could not delete context '%s': %s")
+  String contextDeleteFailed(String name, String reason);
+
+  @Message(id = 368, value = "Invalid context name '%1$s' in %2$s. "
+      + "Fix or delete that file, or pass --context to override")
+  String contextInvalidPointer(String name, String pointerFile);
+
+  @Message(id = 369, value = "Context '%s' does not exist")
+  String contextDoesNotExist(String name);
+
+  @Message(id = 370, value = "Auth server URL")
+  String contextConfigurePromptAuthUrl();
+
+  @Message(id = 371, value = "Platform API URL")
+  String contextConfigurePromptPlatformUrl();
+
+  @Message(id = 372,
+      value = "Ingestion URL (per-project on the cloud platform; leave empty to skip)")
+  String contextConfigurePromptIngestionUrl();
+
+  @Message(id = 373,
+      value = "Verify TLS certificates for %s (answer no for self-signed dev certs)?")
+  String contextConfigurePromptVerifyTls(String target);
+
+  @Message(id = 374, value = "A value for '%s' is required")
+  String contextConfigureValueRequired(String key);
+
+  @Message(id = 375, value = "Invalid URL '%s'. Use http:// or https://")
+  String contextConfigureInvalidUrl(String value);
+
+  @Message(id = 376, value = "Invalid answer '%s'")
+  String contextConfigureInvalidAnswer(String value);
+
+  @Message(id = 377, value = "Context '%s' configured")
+  String contextConfigureSaved(String name);
+
+  @Message(id = 378, value = "Log in now?")
+  String contextConfigurePromptLogin();
+
+  @Message(id = 379, value = "Login method")
+  String contextConfigurePromptLoginMethod();
+
+  @Message(id = 380, value = "Run 'streamx context configure' to set its endpoints")
+  String contextCreateConfigureHint();
+
+  @Message(id = 381, value = "This permanently deletes '%s'. Type the ID to confirm")
+  String deleteConfirmPrompt(String id);
+
+  @Message(id = 382, value = "Deletion cancelled: the entered value did not match '%s'")
+  String deleteConfirmMismatch(String id);
+
+  @Message(id = 383,
+      value = "Deletion needs confirmation. Re-run with --force in non-interactive environments")
+  String deleteConfirmRequired();
+
+  @Message(id = 384, value = "No organization given. Pass <orgId>, set STREAMX_ORG, "
+      + "or run: streamx context org use <orgId>")
+  String noOrgContext();
+
+  @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
+      + "or run: streamx context project use <projectId>")
+  String noProjectContext();
+
+  @Message(id = 387, value = "Current organization set to '%s'")
+  String orgUseSet(String orgId);
+
+  @Message(id = 388, value = "No current organization set. Run: streamx context org use <orgId>")
+  String noCurrentOrg();
+
+  @Message(id = 389, value = "Current project set to '%s'")
+  String projectUseSet(String projectId);
+
+  @Message(id = 390, value = "No current project set. Run: streamx context project use <projectId>")
+  String noCurrentProject();
+
+  @Message(id = 391,
+      value = "Cleared current project '%s' (it belonged to the previous organization)")
+  String orgUseClearedProject(String projectId);
+
+  @Message(id = 392, value = "Current organization (Enter to skip)")
+  String contextConfigurePromptOrg();
+
+  @Message(id = 393, value = "Current project (Enter to skip)")
+  String contextConfigurePromptProject();
+
+  @Message(id = 394, value = "Skipping organization/project selection: %s")
+  String contextConfigureContextSkipped(String reason);
+
+  @Message(id = 395, value = "Current organization cleared")
+  String orgUnset();
+
+  @Message(id = 396, value = "Current project cleared")
+  String projectUnset();
+
+  @Message(id = 397, value = "Current organization: %s")
+  String currentOrgHeader(String orgId);
+
+  @Message(id = 398, value = "Current project: %s")
+  String currentProjectHeader(String projectId);
+
+  @Message(id = 399, value = "Project '%s' now runs on: %s")
+  String projectClustersSet(String projectId, String clusterIds);
+
+  @Message(id = 400, value = "Cluster '%s' enabled for project '%s'")
+  String projectClusterEnabled(String clusterId, String projectId);
+
+  @Message(id = 401, value = "Cluster '%s' disabled for project '%s'")
+  String projectClusterDisabled(String clusterId, String projectId);
+
+  @Message(id = 402, value = "Cluster '%s' is already enabled for project '%s'")
+  String projectClusterAlreadyEnabled(String clusterId, String projectId);
+
+  @Message(id = 403, value = "Cluster '%s' is already disabled for project '%s'")
+  String projectClusterAlreadyDisabled(String clusterId, String projectId);
+
+  @Message(id = 404, value = "Unknown cluster '%s'. Available clusters: %s")
+  String projectClusterUnknown(String clusterId, String available);
+
+  @Message(id = 405, value = "Could not read SSH private key file '%s': %s")
+  String projectSshKeyFileUnreadable(String path, String reason);
+
+  @Message(id = 406, value = "Repository connected to project '%s'")
+  String projectRepoConnected(String projectId);
+
+  @Message(id = 407, value = "Repository settings updated for project '%s'")
+  String projectRepoUpdated(String projectId);
+
+  @Message(id = 408, value = "Repository disconnected from project '%s'")
+  String projectRepoRemoved(String projectId);
+
+  @Message(id = 409,
+      value = "Project '%1$s' has no repository connected. "
+          + "Connect one with: streamx project repo set --uri <uri> --branch <branch>")
+  String projectRepoNotConnected(String projectId);
+
+  @Message(id = 410, value = "SSH key set for project '%s'")
+  String projectSshKeySet(String projectId);
+
+  @Message(id = 411, value = "SSH key removed for project '%s'")
+  String projectSshKeyRemoved(String projectId);
+
+  @Message(id = 412, value = "Project '%s' has no SSH key configured")
+  String projectSshKeyMissing(String projectId);
+
+  @Message(id = 413, value = "SSH key pair written: '%s' (private) and '%s' (public). "
+      + "Add the public key to the Git hosting's deploy keys")
+  String projectSshKeyPairWritten(String privatePath, String publicPath);
+
+  @Message(id = 414, value = "Refusing to overwrite existing file '%s'")
+  String projectSshKeyFileExists(String path);
+
+  @Message(id = 415, value = "Could not write '%s': %s")
+  String projectSshKeyFileWriteFailed(String path, String reason);
+
+  @Message(id = 416, value = "specified")
+  String sshKeySpecified();
+
+  @Message(id = 417, value = "not specified")
+  String sshKeyNotSpecified();
+
+  @Message(id = 418, value = "not connected")
+  String repositoryNotConnected();
+
+  @Message(id = 419, value = "Not found, or you do not have access to it")
+  String platformNotFound();
+
+  @Message(id = 420, value = "You do not have permission to perform this action")
+  String platformAccessDenied();
 }

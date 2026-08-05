@@ -1,10 +1,11 @@
 package com.streamx.cli.commands.settings.eventtemplates.edit;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.defaultTemplatesDir;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ class EditCommandIT extends CliBaseIT {
   @Test
   void shouldWorkWithJsonOutput(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, "{\"type\":\"x\"}");
@@ -65,19 +66,19 @@ class EditCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    Path userCopy = home.resolve(UserEventTemplates.DIRECTORY).resolve("asset.published.json");
+    Path userCopy = userTemplatesDir(home).resolve("asset.published.json");
     assertThat(userCopy).isRegularFile();
     String content = Files.readString(userCopy);
     assertThat(content).contains("com.streamx.blueprints.asset.published.v1");
 
-    Path defaultFile = home.resolve("event-templates/default/asset.published.json");
+    Path defaultFile = defaultTemplatesDir(home).resolve("asset.published.json");
     assertThat(defaultFile).isRegularFile();
   }
 
   @Test
   void shouldEditUserTemplateInPlace(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path target = userDir.resolve("my.thing.json");
     Files.writeString(target, "{\"type\":\"x\"}");
@@ -104,7 +105,7 @@ class EditCommandIT extends CliBaseIT {
     );
 
     result.assertSuccess();
-    Path userCopy = home.resolve(UserEventTemplates.DIRECTORY).resolve("page.published.json");
+    Path userCopy = userTemplatesDir(home).resolve("page.published.json");
     assertThat(userCopy).isRegularFile();
   }
 

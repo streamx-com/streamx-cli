@@ -4,8 +4,10 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -40,7 +42,7 @@ public class CommandResult<ResultT> {
           return textFormatter.apply(this);
         }
         case OutputFormat.json -> {
-          ObjectMapper mapper = new ObjectMapper();
+          ObjectMapper mapper = withJavaTime(new ObjectMapper());
           JsonNode jsonNode = mapper.valueToTree(data);
           return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
         }
@@ -48,7 +50,7 @@ public class CommandResult<ResultT> {
           YAMLFactory yamlFactory = YAMLFactory.builder()
               .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
               .build();
-          ObjectMapper mapper = new ObjectMapper(yamlFactory);
+          ObjectMapper mapper = withJavaTime(new ObjectMapper(yamlFactory));
           JsonNode jsonNode = mapper.valueToTree(data);
           String formattedJsonNode = mapper
               .writerWithDefaultPrettyPrinter()
@@ -69,6 +71,11 @@ public class CommandResult<ResultT> {
     } catch (Exception e) {
       throw new CliException(msg.unableToSerializeJson(e.getMessage()), e);
     }
+  }
+
+  private static ObjectMapper withJavaTime(ObjectMapper mapper) {
+    return mapper.registerModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
   }
 
   public Optional<CliException> getError() {
