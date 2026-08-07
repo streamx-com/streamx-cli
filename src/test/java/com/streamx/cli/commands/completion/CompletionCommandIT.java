@@ -3,10 +3,8 @@ package com.streamx.cli.commands.completion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class CompletionCommandIT extends CliBaseIT {
 
   @Test

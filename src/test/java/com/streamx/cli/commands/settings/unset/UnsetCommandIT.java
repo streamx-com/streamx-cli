@@ -3,7 +3,6 @@ package com.streamx.cli.commands.settings.unset;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -12,7 +11,6 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class UnsetCommandIT extends CliBaseIT {
 
   @BeforeEach

@@ -4,7 +4,6 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -14,7 +13,6 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class GetCommandIT extends CliBaseIT {
 
   Map<String, String> testProperties = Map.of(

@@ -3,14 +3,12 @@ package com.streamx.cli.ingestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class IngestionClientPicocliOptionsIT extends CliBaseIT {
 
   @BeforeEach

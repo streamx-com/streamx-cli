@@ -6,13 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.EventTemplatePlaceholders;
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-@QuarkusTest
 class PlaceholdersCommandIT extends CliBaseIT {
 
   private static final ObjectMapper JSON = new ObjectMapper();

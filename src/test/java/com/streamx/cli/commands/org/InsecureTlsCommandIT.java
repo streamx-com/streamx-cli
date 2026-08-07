@@ -6,7 +6,6 @@ import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsServer;
-import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class InsecureTlsCommandIT extends CliBaseIT {
 
   private static final String ORGS = """
