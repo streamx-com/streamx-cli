@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public final class MarkdownDocsGenerator {
     try {
       Files.createDirectories(outputDir);
       globalOptionNames = commonLeafOptionNames(root);
-      writeCategory(outputDir, "Commands", 2);
+      writeCategory(outputDir, "Commands", 2, false);
       int pages = writeGlobalOptions(root, outputDir);
       return pages + writeCommand(root, outputDir, List.of(), 1);
     } catch (IOException e) {
@@ -71,7 +72,7 @@ public final class MarkdownDocsGenerator {
     Path childDir = path.isEmpty() ? dir : dir.resolve(spec.name());
     Files.createDirectories(childDir);
     if (!path.isEmpty()) {
-      writeCategory(childDir, spec.name(), position);
+      writeCategory(childDir, spec.name(), position, true);
     }
     Files.writeString(childDir.resolve("index.md"), frontMatter(spec, fullPath, 0) + body,
         StandardCharsets.UTF_8);
@@ -95,14 +96,14 @@ public final class MarkdownDocsGenerator {
       md.append(mdx(header)).append("\n\n");
     }
 
-    md.append("```bash\n").append(synopsis(spec, command, children)).append("\n```\n\n");
+    // Plain text, not bash: the synopsis is a usage template, and several subcommand names
+    // (local, set, unset) are shell builtins that a bash grammar would colour as keywords.
+    md.append("```text\n").append(synopsis(spec, command, children)).append("\n```\n\n");
 
-    String[] description = spec.usageMessage().description();
-    if (description != null && description.length > 0) {
-      String text = String.join("\n", description).strip();
-      if (!text.isEmpty()) {
-        md.append(mdx(text)).append("\n\n");
-      }
+    // The root's description is injected at runtime by SynopsisHelper (active context, current
+    // org and project), so it is machine state rather than documentation.
+    if (fullPath.size() > 1) {
+      md.append(describe(spec.usageMessage().description()));
     }
 
     appendSubcommands(md, fullPath, children);
@@ -113,6 +114,42 @@ public final class MarkdownDocsGenerator {
         .append("Every command also accepts the [global options](")
         .append(globalOptionsLink(fullPath, !children.isEmpty())).append(").\n");
     return md.toString();
+  }
+
+  /**
+   * Help text is plain terminal output, not markdown: indentation and line breaks carry meaning.
+   * Indented runs (setup snippets) are emitted as code blocks so they keep their shape, and prose
+   * lines keep their breaks with a trailing backslash.
+   */
+  private static String describe(String[] description) {
+    if (description == null || description.length == 0) {
+      return "";
+    }
+    List<String> lines = Arrays.asList(description);
+    StringBuilder out = new StringBuilder();
+    int i = 0;
+    while (i < lines.size()) {
+      if (lines.get(i).isBlank()) {
+        i++;
+        continue;
+      }
+      boolean indented = lines.get(i).startsWith(" ") || lines.get(i).startsWith("\t");
+      List<String> block = new ArrayList<>();
+      while (i < lines.size() && !lines.get(i).isBlank()
+          && (lines.get(i).startsWith(" ") || lines.get(i).startsWith("\t")) == indented) {
+        block.add(lines.get(i));
+        i++;
+      }
+      if (indented) {
+        out.append("```bash\n");
+        block.forEach(line -> out.append(line.strip()).append("\n"));
+        out.append("```\n\n");
+      } else {
+        out.append(String.join("\\\n", block.stream().map(MarkdownDocsGenerator::mdx).toList()))
+            .append("\n\n");
+      }
+    }
+    return out.toString();
   }
 
   private static void appendSubcommands(StringBuilder md, List<String> fullPath,
@@ -252,9 +289,11 @@ public final class MarkdownDocsGenerator {
    * No {@code link} here on purpose: Docusaurus then uses the folder's own {@code index.md} as the
    * category page, so the group is not listed twice (once as a category, once as a page).
    */
-  private static void writeCategory(Path dir, String label, int position) throws IOException {
+  private static void writeCategory(Path dir, String label, int position, boolean collapsed)
+      throws IOException {
     String json = "{\n  \"label\": \"" + label + "\",\n"
-        + "  \"position\": " + position + "\n}\n";
+        + "  \"position\": " + position + ",\n"
+        + "  \"collapsed\": " + collapsed + "\n}\n";
     Files.writeString(dir.resolve("_category_.json"), json, StandardCharsets.UTF_8);
   }
 
@@ -307,9 +346,21 @@ public final class MarkdownDocsGenerator {
    * as an expression. Help text is full of both ({@code <token>}, {@code source <(...)}), so they
    * are escaped for prose. Fenced code blocks are exempt and keep the literal text.
    */
+  /** Removes picocli's ANSI styling markup, e.g. {@code @|bold value|@} leaves {@code value}. */
+  private static String stripAnsiMarkup(String text) {
+    return text.replaceAll("@\\|[a-zA-Z,()\\d]*\\s+(.*?)\\|@", "$1");
+  }
+
   private static String mdx(String text) {
-    return text.replace("<", "&lt;").replace(">", "&gt;")
-        .replace("{", "&#123;").replace("}", "&#125;");
+    return stripAnsiMarkup(text)
+        .replace("\\", "\\\\")
+        .replace("<", "&lt;").replace(">", "&gt;")
+        .replace("{", "&#123;").replace("}", "&#125;")
+        .replace("~", "\\~")
+        .replace("*", "\\*")
+        .replace("_", "\\_")
+        .replace("`", "\\`")
+        .replace("[", "\\[").replace("]", "\\]");
   }
 
   private static String escapeYaml(String text) {

@@ -7,10 +7,15 @@ const config = {
   title: 'StreamX CLI',
   tagline: 'Command reference and guides',
 
-  url: 'https://streamx.com',
-  baseUrl: '/cli/',
+  // Defaults are for streamx.com, where the site lives at /cli/. CI overrides both for GitHub
+  // Pages, where every version is served from its own sub-directory - see
+  // .github/workflows/gen-docs-reference.yml.
+  url: process.env.DOCS_URL || 'https://streamx.com',
+  baseUrl: process.env.DOCS_BASE_URL || '/cli/',
   organizationName: 'streamx-com',
   projectName: 'streamx-cli',
+
+  favicon: 'img/favicon.svg',
 
   onBrokenLinks: 'warn',
   markdown: {hooks: {onBrokenMarkdownLinks: 'warn'}},
@@ -41,10 +46,23 @@ const config = {
         respectPrefersColorScheme: false,
       },
       navbar: {
-        title: 'StreamX CLI',
+        title: 'CLI',
+        logo: {
+          alt: 'StreamX',
+          // Docusaurus swaps these with the colour mode: `src` on light, `srcDark` on dark.
+          src: 'img/streamx-logo-light-bg.svg',
+          srcDark: 'img/streamx-logo-dark-bg.svg',
+          href: 'https://www.streamx.com',
+          target: '_self',
+          height: 28,
+        },
         items: [
           {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs'},
           {to: '/commands/', label: 'Commands', position: 'left'},
+          // Index of all published versions; only exists on the multi-version (GitHub Pages) deployment.
+          ...(process.env.DOCS_VERSIONS_URL
+            ? [{href: process.env.DOCS_VERSIONS_URL, label: 'Versions', position: 'right', target: '_self'}]
+            : []),
           {href: 'https://www.streamx.com', label: 'streamx.com', position: 'right'},
           {
             href: 'https://github.com/streamx-com/streamx-cli',

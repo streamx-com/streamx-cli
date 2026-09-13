@@ -83,6 +83,17 @@
 .navbar__title {
   font-weight: 600;
   letter-spacing: -0.01em;
+  opacity: 0.75;
+}
+
+/* The wordmark already says "StreamX", so the title beside it is just the product scope. */
+.navbar__logo {
+  height: 1.75rem;
+  margin-right: 0.6rem;
+}
+
+.navbar__brand:hover .navbar__title {
+  opacity: 1;
 }
 
 /* Command pages are dense with tables - make them readable. */

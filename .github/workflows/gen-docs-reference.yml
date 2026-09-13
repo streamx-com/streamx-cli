@@ -1,0 +1,137 @@
+# Builds the docs site (hand-written guides plus the command reference generated from the CLI
+# itself) and publishes it to GitHub Pages, one sub-directory per version:
+#
+#   https://<owner>.github.io/<repo>/main/      every push to main
+#   https://<owner>.github.io/<repo>/<tag>/     every release tag (X.Y.Z and X.Y.Z-rc.*), kept forever
+#   https://<owner>.github.io/<repo>/latest/    the highest X.Y.Z release
+#   https://<owner>.github.io/<repo>/pr-<n>/    every pull request, removed when it is closed
+#   https://<owner>.github.io/<repo>/           index of everything above
+#
+# The published site lives in the gh-pages branch (Pages source: "Deploy from a branch",
+# gh-pages, /); each run replaces only its own sub-directory. Nothing generated is committed to
+# the code branches.
+name: Docs
+run-name: Docs - ${{ github.event.pull_request.title || github.ref_name }}
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-rc.*'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: write        # push to gh-pages
+  pull-requests: write   # preview link comment
+  id-token: write        # GCP auth for the private Maven registry
+
+env:
+  # Sub-directory of the site this run owns.
+  SLOT: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+  SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+# One run per slot; a newer push supersedes the one in flight. The shared gh-pages branch is
+# deliberately not locked here - a global group would cancel the queued run of a different PR.
+# deploy-docs.sh retries on top of the new remote state instead.
+concurrency:
+  group: docs-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # A closed PR only needs its directory removed. PRs from forks are skipped: the Maven build
+    # resolves a private registry with the GCP secrets, which fork PRs do not receive.
+    if: >-
+      github.event.action != 'closed' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-env
+        with:
+          gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ secrets.GCP_STREAMX_RELEASES_SNAPSHOT_DEPLOY_SA }}
+          gar_docker_registry: ${{ vars.GAR_DOCKER_REGISTRY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Generate command reference from the CLI
+        run: |
+          ./mvnw -B -ntp -q package -DskipTests
+          java -jar target/streamx-cli-*-runner.jar __generate-docs docs/docs/commands
+
+      - name: Build site
+        working-directory: docs
+        env:
+          DOCS_URL: https://${{ github.repository_owner }}.github.io
+          DOCS_VERSIONS_URL: ${{ env.SITE_URL }}/
+        run: |
+          npm ci
+          build() {
+            DOCS_BASE_URL="/${GITHUB_REPOSITORY#*/}/$1/" npm run build
+            mkdir -p ../site && mv build "../site/$1"
+          }
+          build "$SLOT"
+          # The highest stable release is also published as "latest".
+          if [[ "$GITHUB_REF_TYPE" == tag && "$SLOT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            highest=$(git ls-remote --tags --refs origin | awk -F/ '{print $NF}' \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+            if [[ "$highest" == "$SLOT" ]]; then
+              build latest
+            fi
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site/
+          retention-days: 1
+
+  publish:
+    needs: build
+    # Also runs for closed PRs, where build is skipped on purpose.
+    if: >-
+      !cancelled() && (
+        needs.build.result == 'success' ||
+        (needs.build.result == 'skipped' && github.event.action == 'closed' &&
+          github.event.pull_request.head.repo.full_name == github.repository)
+      )
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@v4
+        if: github.event.action != 'closed'
+        with:
+          name: site
+          path: site
+
+      - name: Update gh-pages
+        env:
+          GH_PAGES_REMOTE: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+        run: |
+          if [[ "${{ github.event.action }}" == closed ]]; then
+            .github/scripts/deploy-docs.sh remove "$SLOT"
+          else
+            .github/scripts/deploy-docs.sh publish site
+            echo "Published to ${SITE_URL}/${SLOT}/" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Comment preview link on the PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: docs-preview
+          delete: ${{ github.event.action == 'closed' }}
+          message: |
+            📖 Docs preview: ${{ env.SITE_URL }}/${{ env.SLOT }}/
+
+            Rebuilt on every push to this PR and removed when it is closed. GitHub Pages can take a minute to pick up a new run.

@@ -51,3 +51,5 @@ src/main/openapi/
 docs/node_modules/
 docs/build/
 docs/.docusaurus/
+# Command reference generated from the CLI (`npm run generate` / CI) - never committed
+docs/docs/commands/
