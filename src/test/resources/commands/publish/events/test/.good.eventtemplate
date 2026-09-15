@@ -1,4 +1,0 @@
-[
-  { "op": "replace", "path": "/subject", "value": "Patched subject" },
-  { "op": "replace", "path": "/data/content", "value": "Patched content" }
-]
