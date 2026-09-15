@@ -3,6 +3,19 @@
 Docusaurus site for the CLI. Theme follows streamx.com: background `#0a0a0b`, text `#ecf5ff`,
 surfaces `#232323`, accent `#7714ff`, type "Be Vietnam Pro" - see `src/css/custom.css`.
 
+⚠️ This CLI reference generator is a temporary solution, at least we think so.
+This is what it adds to the repository and what should be removed after the migration:
+
+- `docs/` - this Docusaurus site
+- `.github/workflows/gen-docs-reference.yml` - build and publish to GitHub Pages
+- `.github/scripts/deploy-docs.sh` - the gh-pages publishing script
+- `src/main/java/com/streamx/cli/docs/MarkdownDocsGenerator.java` and
+  `src/main/java/com/streamx/cli/commands/docs/GenerateDocsCommand.java` - the hidden
+  `__generate-docs` command (registered in `StreamxCommand`). The generator itself may be worth
+  keeping, since the reference has to come from the CLI wherever it is published
+- The `# Docusaurus docs site` block in `.gitignore`
+- Outside the tree: the `gh-pages` branch and the repository's Pages settings.
+
 ## Layout
 
     docs/
