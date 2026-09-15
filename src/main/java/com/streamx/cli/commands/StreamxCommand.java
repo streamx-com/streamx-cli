@@ -6,6 +6,7 @@ import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
 import com.streamx.cli.commands.completion.CompleteTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompletionCommand;
+import com.streamx.cli.commands.docs.GenerateDocsCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
@@ -24,7 +25,8 @@ import picocli.CommandLine;
         CompleteRegisteredTemplateIdsCommand.class,
         CompleteNonDefaultTemplateIdsCommand.class,
         CompleteSettingsKeysCommand.class,
-        CompleteSettingsSetKeysCommand.class
+        CompleteSettingsSetKeysCommand.class,
+        GenerateDocsCommand.class
     }
 )
 public class StreamxCommand extends AbstractCommandGroup {
