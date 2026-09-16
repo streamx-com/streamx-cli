@@ -46,3 +46,10 @@ streamx.*
 streamx-*.log
 # Spec unpacked from the aggregated-openapi artifact at build time (not committed).
 src/main/openapi/
+
+# Docusaurus docs site
+docs/node_modules/
+docs/build/
+docs/.docusaurus/
+# Command reference generated from the CLI (`npm run generate` / CI) - never committed
+docs/docs/commands/
