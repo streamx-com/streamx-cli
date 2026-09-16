@@ -13,6 +13,16 @@ import com.streamx.cli.commands.settings.eventtemplates.list.ListCommandResult;
 import com.streamx.cli.commands.settings.eventtemplates.rename.RenameCommandResult;
 import com.streamx.cli.commands.settings.eventtemplates.resetdefaulttemplates.ResetDefaultTemplatesCommandResult;
 import com.streamx.cli.commands.settings.eventtemplates.validate.ValidateCommandResult;
+import com.streamx.cli.platform.generated.model.AutoRefUsing;
+import com.streamx.cli.platform.generated.model.ChannelType;
+import com.streamx.cli.platform.generated.model.ContainerStatus;
+import com.streamx.cli.platform.generated.model.InitStateMode;
+import com.streamx.cli.platform.generated.model.MetricsParamResultType;
+import com.streamx.cli.platform.generated.model.PodStatus;
+import com.streamx.cli.platform.generated.model.ServiceType;
+import com.streamx.cli.platform.generated.model.SourceStatus;
+import com.streamx.cli.platform.generated.model.State;
+import com.streamx.cli.platform.generated.model.UserStatus;
 import com.streamx.runner.StreamxRunner;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.commons.logging.impl.LogFactoryImpl;
@@ -24,6 +34,8 @@ import org.apache.commons.logging.impl.SimpleLog;
     ResetDefaultTemplatesCommandResult.class, EventCommandResult.class, EventsCommandResult.class,
     StreamCommandResult.class, CopyCommandResult.class, CreateCommandResult.class,
     DeleteCommandResult.class, EditCommandResult.class, ListCommandResult.class,
-    ValidateCommandResult.class}, registerFullHierarchy = true)
+    ValidateCommandResult.class, AutoRefUsing.class, ChannelType.class, ContainerStatus.class,
+    InitStateMode.class, MetricsParamResultType.class, PodStatus.class, ServiceType.class,
+    SourceStatus.class, State.class, UserStatus.class}, registerFullHierarchy = true)
 public class ReflectionConfiguration {
 }
