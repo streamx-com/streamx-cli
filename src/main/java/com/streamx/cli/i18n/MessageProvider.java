@@ -34,6 +34,10 @@ public interface MessageProvider {
       + "Unset %s and run 'streamx auth login' first.")
   String authTokenNeedsLoginSession(String variableName);
 
+  @Message(id = 435,
+      value = "Invalid expiry '%s'. Use a positive duration such as 20m, 2h or 30d.")
+  String authTokenInvalidExpiry(String value);
+
   @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,

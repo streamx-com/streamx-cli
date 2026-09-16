@@ -6,6 +6,7 @@ import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ContextNameCompletionCandidates;
+import com.streamx.cli.platform.TokenIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -214,6 +215,9 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof ContextNameCompletionCandidates) {
       return "($(streamx __complete-context-names 2>/dev/null))";
+    }
+    if (completionCandidates instanceof TokenIdCompletionCandidates) {
+      return "($(streamx __complete-token-ids 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {
