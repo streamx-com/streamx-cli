@@ -61,7 +61,7 @@ public class PlatformClients implements AutoCloseable {
         .baseUri(baseUri)
         .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
         .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-        .register(AuthHeaderFilter.class);
+        .register(new AuthHeaderFilter());
     if (insecure) {
       builder.trustAll(true).verifyHost(false);
     }
