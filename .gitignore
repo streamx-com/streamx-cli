@@ -44,3 +44,10 @@ nb-configuration.xml
 streamx.log
 streamx.*
 streamx-*.log
+
+# Docusaurus docs site
+docs/node_modules/
+docs/build/
+docs/.docusaurus/
+# Command reference generated from the CLI (`npm run generate` / CI) - never committed
+docs/docs/commands/
