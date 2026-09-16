@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.auth.AuthConfig;
 import com.streamx.cli.test.CliBaseIT;
-import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
 class AuthCommandIT extends CliBaseIT {
   private static final String REALM = "streamx";
 
