@@ -1,21 +1,3 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StreamX CLI documentation</title>
-<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzg0IiBoZWlnaHQ9IjM4NCIgdmlld0JveD0iMCAwIDM4NCAzODQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTkyIDhDOTAuMzc4MyA4IDggOTAuMzc4MyA4IDE5MkM4IDI5My42MjIgOTAuMzc4MyAzNzYgMTkyIDM3NkMyOTMuNjIyIDM3NiAzNzYgMjkzLjYyMiAzNzYgMTkyQzM3NiA5MC4zNzgzIDI5My42MjIgOCAxOTIgOFpNMCAxOTJDMCA4NS45NiA4NS45NiAwIDE5MiAwQzI5OC4wNCAwIDM4NCA4NS45NiAzODQgMTkyQzM4NCAyOTguMDQgMjk4LjA0IDM4NCAxOTIgMzg0Qzg1Ljk2IDM4NCAwIDI5OC4wNCAwIDE5MloiIGZpbGw9IiM3NzE0RkYiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0wIDE5MkwxOTIgMEwzODQgMTkyTDE5MiAzODRMMCAxOTJaTTExLjMxMzcgMTkyTDE5MiAzNzIuNjg2TDM3Mi42ODYgMTkyTDE5MiAxMS4zMTM3TDExLjMxMzcgMTkyWiIgZmlsbD0iIzc3MTRGRiIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTI1LjY5IDI4OC4wMkgzNTguM0wxOTIgMEwyNS42OSAyODguMDJaTTc3LjY1NDkgMjU4LjAySDMwNi4zMzdMMTkxLjk5OSA1OS45OTU1TDc3LjY1NDkgMjU4LjAyWiIgZmlsbD0iIzc3MTRGRiIvPgo8L3N2Zz4K">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&display=swap">
-<style>
-  /* Same ground, text, accent and typeface as the docs site (docs/src/css/custom.css). */
-  body { max-width: 56rem; margin: 2rem auto; padding: 0 1rem; background: #ffffff; color: #0a0a0b;
-         font-family: "Be Vietnam Pro", system-ui, sans-serif; line-height: 1.5; }
-  a { color: #7714ff; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
-  th, td { text-align: left; padding: 0.4rem 0.75rem; border-bottom: 1px solid #e6e6e6; }
-</style>
-</head>
-<body>
 <svg width="187" height="48" viewBox="0 0 187 48" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_84_7631)">
 <path d="M121.698 46.8438C121.475 46.8438 121.291 46.8073 121.148 46.7354C121.004 46.6635 120.89 46.5831 120.81 46.4966C120.73 46.4089 120.674 46.3419 120.643 46.2932H120.597V46.778H119.725V41.7941H120.597V43.7884H120.643C120.674 43.736 120.73 43.6666 120.81 43.5789C120.89 43.4911 121.004 43.4132 121.148 43.3425C121.291 43.2731 121.475 43.2377 121.698 43.2377C121.96 43.2377 122.188 43.2889 122.38 43.3912C122.573 43.4936 122.733 43.6312 122.859 43.8042C122.986 43.9772 123.081 44.1709 123.144 44.3841C123.208 44.5986 123.239 44.8166 123.239 45.0396C123.239 45.2625 123.208 45.4818 123.144 45.695C123.081 45.9094 122.986 46.1031 122.859 46.2749C122.733 46.4479 122.573 46.5856 122.38 46.6879C122.188 46.7902 121.96 46.8414 121.698 46.8414V46.8438ZM121.469 46.1287C121.67 46.1287 121.836 46.0751 121.967 45.9679C122.099 45.8607 122.196 45.7242 122.262 45.5586C122.328 45.3929 122.361 45.2199 122.361 45.0408C122.361 44.8617 122.328 44.6887 122.262 44.523C122.196 44.3573 122.098 44.2209 121.967 44.1137C121.836 44.0065 121.67 43.9529 121.469 43.9529C121.268 43.9529 121.109 44.0065 120.977 44.1137C120.845 44.2209 120.748 44.3573 120.682 44.523C120.616 44.6887 120.583 44.8617 120.583 45.0408C120.583 45.2199 120.616 45.3929 120.682 45.5586C120.748 45.7242 120.847 45.8619 120.977 45.9679C121.109 46.0751 121.272 46.1287 121.469 46.1287Z" fill="#0a0a0b"/>
@@ -59,23 +41,3 @@
 </clipPath>
 </defs>
 </svg>
-
-<h1>CLI documentation</h1>
-<p>Every published version of the command reference and guides.</p>
-<h2>Pull requests</h2>
-<table>
-<tr><th>Pull request</th><th>Documentation</th><th>GitHub</th></tr>
-<tr><td>#45</td><td><a href="pr-45/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/45">View PR on GitHub</a></td></tr>
-<tr><td>#43</td><td><a href="pr-43/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/43">View PR on GitHub</a></td></tr>
-<tr><td>#42</td><td><a href="pr-42/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/42">View PR on GitHub</a></td></tr>
-<tr><td>#40</td><td><a href="pr-40/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/40">View PR on GitHub</a></td></tr>
-<tr><td>#39</td><td><a href="pr-39/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/39">View PR on GitHub</a></td></tr>
-<tr><td>#37</td><td><a href="pr-37/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/pull/37">View PR on GitHub</a></td></tr>
-</table>
-<h2>Branches</h2>
-<table>
-<tr><th>Branch</th><th>Documentation</th><th>GitHub</th></tr>
-<tr><td>main</td><td><a href="main/">View documentation</a></td><td><a href="https://github.com/streamx-com/streamx-cli/tree/main">View branch on GitHub</a></td></tr>
-</table>
-</body>
-</html>
