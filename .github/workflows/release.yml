@@ -105,13 +105,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # TEMPORARY(native): restore when native image builds again.
-      # - name: Download native binary artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     path: artifacts
-      #     pattern: streamx-*
-      #     merge-multiple: true
+      - name: Download native binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: streamx-*
+          merge-multiple: true
 
       - name: Download JAR artifacts
         uses: actions/download-artifact@v4
@@ -152,27 +151,25 @@ jobs:
           JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
         run: |
-          # TEMPORARY(native): restore when native image builds again.
-          # chmod +x artifacts/streamx-*
+          chmod +x artifacts/streamx-*
 
           echo "Generate shell completions from JAR"
           mkdir -p artifacts/completions
           java -jar target/*-runner.jar completion bash > artifacts/completions/streamx.bash
           java -jar target/*-runner.jar completion zsh > artifacts/completions/_streamx
 
-          # TEMPORARY(native): restore when native image builds again.
-          # echo "Pre-create platform ZIPs for native binaries"
-          # for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64 macos-x86_64; do
-          #   mkdir -p staging/$PLATFORM/bin
-          #   mkdir -p staging/$PLATFORM/share/completions
-          #   cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
-          #   cp artifacts/completions/streamx.bash staging/$PLATFORM/share/completions/
-          #   cp artifacts/completions/_streamx staging/$PLATFORM/share/completions/
-          #   cp LICENSE.txt staging/$PLATFORM/
-          #   cd staging
-          #   zip -r ../artifacts/streamx-${RELEASE_TAG}-${PLATFORM}.zip $PLATFORM/
-          #   cd ..
-          # done
+          echo "Pre-create platform ZIPs for native binaries"
+          for PLATFORM in linux-x86_64 linux-aarch64 macos-aarch64; do
+            mkdir -p staging/$PLATFORM/bin
+            mkdir -p staging/$PLATFORM/share/completions
+            cp artifacts/streamx-$PLATFORM staging/$PLATFORM/bin/streamx
+            cp artifacts/completions/streamx.bash staging/$PLATFORM/share/completions/
+            cp artifacts/completions/_streamx staging/$PLATFORM/share/completions/
+            cp LICENSE.txt staging/$PLATFORM/
+            cd staging
+            zip -r ../artifacts/streamx-${RELEASE_TAG}-${PLATFORM}.zip $PLATFORM/
+            cd ..
+          done
 
           echo "Prepare Java binary JAR"
           cp target/*-runner.jar artifacts/streamx-jar.jar
@@ -201,9 +198,7 @@ jobs:
 
           CLASS_SUFFIX=$(echo "$RELEASE_TAG" | sed -E 's/[^a-zA-Z0-9]+([a-zA-Z])/\U\1/g; s/[^a-zA-Z0-9]//g')
 
-          # TEMPORARY(native): only the JVM formula while native is disabled;
-          # restore to "streamx streamx-jvm" when native builds again.
-          for BASE_FORMULA in streamx-jvm; do
+          for BASE_FORMULA in streamx streamx-jvm; do
             FILENAME="${BASE_FORMULA}@${RELEASE_TAG}.rb"
 
             if [ -f "$FILENAME" ]; then
@@ -243,12 +238,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TEMPORARY(native): only JVM/JAR tests run, which need no per-platform build
-        # artifacts, so the matrix is decoupled from the build platforms to keep macOS
-        # covered. Restore: include: ${{ fromJSON(needs.build.outputs.platforms) }}
-        include:
-          - { os: ubuntu-24.04, name: linux-amd64 }
-          - { os: macos-26-xlarge, name: macos-arm64 }
+        include: ${{ fromJSON(needs.build.outputs.platforms) }}
     env:
       RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
     steps:
@@ -271,23 +261,22 @@ jobs:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      # TEMPORARY(native): restore when native image builds again.
-      # - name: Test Homebrew install
-      #   run: |
-      #     echo "Test latest version"
-      #     brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
-      #     streamx --version | grep -q "${RELEASE_TAG}"
-      #
-      #     echo "Verify shell completions were installed"
-      #     test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
-      #     test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
-      #
-      #     brew uninstall streamx
-      #
-      #     echo "Test versioned formula"
-      #     brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${RELEASE_TAG}
-      #     streamx --version | grep -q "${RELEASE_TAG}"
-      #     brew uninstall streamx@${RELEASE_TAG}
+      - name: Test Homebrew install
+        run: |
+          echo "Test latest version"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx
+          streamx --version | grep -q "${RELEASE_TAG}"
+
+          echo "Verify shell completions were installed"
+          test -f "$(brew --prefix)/etc/bash_completion.d/streamx"
+          test -f "$(brew --prefix)/share/zsh/site-functions/_streamx"
+
+          brew uninstall streamx
+
+          echo "Test versioned formula"
+          brew install ${{ needs.release.outputs.brew_tap_slug }}/streamx@${RELEASE_TAG}
+          streamx --version | grep -q "${RELEASE_TAG}"
+          brew uninstall streamx@${RELEASE_TAG}
 
       - name: Test Homebrew JVM install
         run: |
@@ -306,29 +295,28 @@ jobs:
           streamx --version | grep -q "${RELEASE_TAG}"
           brew uninstall streamx-jvm@${RELEASE_TAG}
 
-      # TEMPORARY(native): restore when native image builds again.
-      # - name: Test native binary from GitHub release
-      #   env:
-      #     GH_TOKEN: ${{ steps.app-token.outputs.token }}
-      #   run: |
-      #     gh release download "${RELEASE_TAG}" \
-      #       --repo "${{ needs.release.outputs.release_repo }}" \
-      #       --pattern "${{ matrix.artifact }}" \
-      #       --dir .
-      #     chmod +x ${{ matrix.artifact }}
-      #     ./${{ matrix.artifact }} --version | grep -q "${RELEASE_TAG}"
-      #
-      # - name: Test native archive from GitHub release
-      #   env:
-      #     GH_TOKEN: ${{ steps.app-token.outputs.token }}
-      #   run: |
-      #     ARCHIVE_PLATFORM=$(echo "${{ matrix.artifact }}" | sed 's/^streamx-//')
-      #     gh release download "${RELEASE_TAG}" \
-      #       --repo "${{ needs.release.outputs.release_repo }}" \
-      #       --pattern "streamx-*-${ARCHIVE_PLATFORM}.zip" \
-      #       --dir .
-      #     unzip streamx-*-${ARCHIVE_PLATFORM}.zip
-      #     ./${ARCHIVE_PLATFORM}/bin/streamx --version | grep -q "${RELEASE_TAG}"
+      - name: Test native binary from GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download "${RELEASE_TAG}" \
+            --repo "${{ needs.release.outputs.release_repo }}" \
+            --pattern "${{ matrix.artifact }}" \
+            --dir .
+          chmod +x ${{ matrix.artifact }}
+          ./${{ matrix.artifact }} --version | grep -q "${RELEASE_TAG}"
+
+      - name: Test native archive from GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          ARCHIVE_PLATFORM=$(echo "${{ matrix.artifact }}" | sed 's/^streamx-//')
+          gh release download "${RELEASE_TAG}" \
+            --repo "${{ needs.release.outputs.release_repo }}" \
+            --pattern "streamx-*-${ARCHIVE_PLATFORM}.zip" \
+            --dir .
+          unzip streamx-*-${ARCHIVE_PLATFORM}.zip
+          ./${ARCHIVE_PLATFORM}/bin/streamx --version | grep -q "${RELEASE_TAG}"
 
       - name: Test JAR archive from GitHub release
         env:
@@ -341,6 +329,5 @@ jobs:
           unzip streamx-jar-*.zip
           streamx-jar-*/bin/streamx --version | grep -q "${RELEASE_TAG}"
 
-      # TEMPORARY(native): install.sh downloads native binaries; restore when native builds again.
-      # - name: Test install script
-      #   run: ./install.sh.test "${RELEASE_TAG}"
+      - name: Test install script
+        run: ./install.sh.test "${RELEASE_TAG}"
