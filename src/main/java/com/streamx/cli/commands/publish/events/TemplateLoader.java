@@ -4,10 +4,14 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
 import com.streamx.cli.framework.CliException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
@@ -26,7 +30,7 @@ class TemplateLoader {
   }
 
   static JsonNode applyPatch(Path rootPath, JsonNode template, String patchName,
-                             Supplier<Boolean> confirmContinue) {
+      Supplier<Boolean> confirmContinue) {
     String patchFileName = "." + patchName + EVENTTEMPLATE_FILE;
     Path patchFile = rootPath.resolve(patchFileName);
 
@@ -34,17 +38,22 @@ class TemplateLoader {
       return Boolean.TRUE.equals(confirmContinue.get()) ? template : null;
     }
 
-    JsonNode patchNode;
     try {
-      patchNode = mapper.readTree(patchFile.toFile());
-    } catch (IOException e) {
-      throw new CliException(msg.eventTemplateCorrupted(rootPath.toString()), e);
-    }
+      JsonArray patchArray;
+      try (JsonReader patchReader =
+          Json.createReader(Files.newBufferedReader(patchFile))) {
+        patchArray = patchReader.readArray();
+      }
+      JsonPatch patch = Json.createPatch(patchArray);
+      JsonStructure target;
+      try (JsonReader targetReader = Json.createReader(
+          new StringReader(mapper.writeValueAsString(template)))) {
+        target = targetReader.read();
+      }
+      JsonStructure result = patch.apply(target);
+      return mapper.readTree(result.toString());
 
-    try {
-      JsonPatch patch = JsonPatch.fromJson(patchNode);
-      return patch.apply(template);
-    } catch (JsonPatchException | IOException e) {
+    } catch (Exception e) {
       throw new CliException(msg.patchIsInvalid(patchName), e);
     }
   }

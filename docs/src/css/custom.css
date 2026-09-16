@@ -1,0 +1,159 @@
+/**
+ * Theme aligned with streamx.com.
+ *
+ * Tokens taken from the site's stylesheet:
+ *   --kyanite-background        #0a0a0b   page background
+ *   --kyanite-body-color        #ecf5ff   body text
+ *   --kyanite-card-background   #232323   raised surfaces
+ *   brand accent                #7714ff   buttons, links, highlights
+ *   type                        "Be Vietnam Pro" 400/500/600/700
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap");
+
+:root {
+  --sx-purple: #7714ff;
+  --sx-purple-bright: #8f3dff;
+  --sx-ink: #0a0a0b;
+  --sx-surface: #232323;
+  --sx-paper: #ecf5ff;
+  --sx-muted: #b8baca;
+  --sx-slate: #2d4156;
+
+  --ifm-color-primary: #6a0fe3;
+  --ifm-color-primary-dark: #5f0dcc;
+  --ifm-color-primary-darker: #590cc1;
+  --ifm-color-primary-darkest: #4a0a9f;
+  --ifm-color-primary-light: #7a1ffb;
+  --ifm-color-primary-lighter: #8330fb;
+  --ifm-color-primary-lightest: #9a58fc;
+
+  --ifm-font-family-base: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-font-weight-bold: 600;
+
+  --ifm-code-font-size: 92%;
+  --ifm-code-border-radius: 6px;
+  --ifm-global-radius: 10px;
+  --ifm-navbar-height: 4rem;
+  --docusaurus-highlighted-code-line-bg: rgba(119, 20, 255, 0.12);
+}
+
+/* streamx.com is dark, so dark is the primary treatment. */
+[data-theme="dark"] {
+  --ifm-color-primary: #9a58fc;
+  --ifm-color-primary-dark: #8a3dfb;
+  --ifm-color-primary-darker: #8230fb;
+  --ifm-color-primary-darkest: #6a0fe3;
+  --ifm-color-primary-light: #aa73fd;
+  --ifm-color-primary-lighter: #b280fd;
+  --ifm-color-primary-lightest: #c9a5fe;
+
+  --ifm-background-color: var(--sx-ink);
+  --ifm-background-surface-color: var(--sx-surface);
+  --ifm-navbar-background-color: rgba(10, 10, 11, 0.85);
+  --ifm-footer-background-color: #000;
+  --ifm-font-color-base: var(--sx-paper);
+  --ifm-heading-color: var(--sx-paper);
+  --ifm-toc-border-color: #2a2a2a;
+  --ifm-code-background: #000;
+  --ifm-table-stripe-background: rgba(255, 255, 255, 0.02);
+  --docusaurus-highlighted-code-line-bg: rgba(154, 88, 252, 0.18);
+}
+
+[data-theme="light"] {
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f1f3f5;
+  --ifm-font-color-base: #1b1c20;
+  --ifm-heading-color: var(--sx-ink);
+  --ifm-toc-border-color: #e9edf2;
+}
+
+/* Navbar: translucent like the site header. */
+.navbar {
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] .navbar {
+  border-bottom: 1px solid #e9edf2;
+}
+
+.navbar__title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  opacity: 0.75;
+}
+
+/* The wordmark already says "StreamX", so the title beside it is just the product scope. */
+.navbar__logo {
+  height: 1.75rem;
+  margin-right: 0.6rem;
+}
+
+.navbar__brand:hover .navbar__title {
+  opacity: 1;
+}
+
+/* Command pages are dense with tables - make them readable. */
+.markdown table {
+  display: table;
+  width: 100%;
+  font-size: 0.94rem;
+}
+
+.markdown table th {
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.markdown table td:first-child {
+  white-space: nowrap;
+}
+
+.markdown table code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--ifm-color-primary-lighter);
+  font-weight: 500;
+}
+
+[data-theme="light"] .markdown table code {
+  color: var(--ifm-color-primary-darker);
+}
+
+/* The `streamx ...` H1 on every command page. */
+.markdown h1 code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.markdown h1 {
+  font-size: 2.1rem;
+  letter-spacing: -0.02em;
+}
+
+/* Synopsis blocks read as terminal output. */
+.theme-code-block {
+  border-radius: var(--ifm-global-radius);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="light"] .theme-code-block {
+  border-color: #e9edf2;
+}
+
+.menu__link--active {
+  font-weight: 600;
+}
+
+.pagination-nav__link {
+  border-radius: var(--ifm-global-radius);
+}
