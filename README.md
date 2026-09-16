@@ -8,7 +8,7 @@ This project provides utilities for managing the mesh:
 * It allows you to run a defined mesh from commands.
 * It allows you to ingest data into a mesh.
 
-For more information, see the [StreamX CLI Reference](https://www.streamx.dev/guides/main/streamx-command-line-interface-reference.html).
+For more information, see the [StreamX CLI Reference](https://streamx-com.github.io/streamx-cli).
 
 Please read the [contributing guidelines](./CONTRIBUTING.md) if you're a developer and wish to contribute to the project.
 

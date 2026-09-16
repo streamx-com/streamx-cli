@@ -12,7 +12,6 @@ project:
 
 platform:
   replacements:
-    osx-x86_64: macos-x86_64
     osx-aarch_64: macos-aarch64
 
 assemble:
@@ -36,8 +35,6 @@ assemble:
 
 distributions:
   streamx:
-    # TEMPORARY(native): disabled while native image does not build; remove this line to restore.
-    active: NEVER
     type: BINARY
     executable:
       name: streamx
@@ -50,8 +47,6 @@ distributions:
         platform: linux-aarch_64
       - path: artifacts/streamx-{{projectVersion}}-macos-aarch64.zip
         platform: osx-aarch_64
-      - path: artifacts/streamx-{{projectVersion}}-macos-x86_64.zip
-        platform: osx-x86_64
 
   streamx-jar:
     type: JAVA_BINARY
@@ -98,10 +93,8 @@ packagers:
     formulaName: streamx
     multiPlatform: true
 
-# TEMPORARY(native): restore when native image builds again.
-# files:
-#   artifacts:
-#     - path: artifacts/streamx-linux-x86_64
-#     - path: artifacts/streamx-linux-aarch64
-#     - path: artifacts/streamx-macos-aarch64
-#     - path: artifacts/streamx-macos-x86_64
+files:
+  artifacts:
+    - path: artifacts/streamx-linux-x86_64
+    - path: artifacts/streamx-linux-aarch64
+    - path: artifacts/streamx-macos-aarch64
