@@ -43,6 +43,6 @@ runs:
     - name: Set up JDK
       uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '25.0.1'
-        distribution: 'graalvm-community'
+        java-version: '21'
+        distribution: 'mandrel'
         github-token: ${{ inputs.github_token }}

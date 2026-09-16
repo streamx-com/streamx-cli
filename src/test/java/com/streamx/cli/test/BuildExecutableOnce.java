@@ -27,6 +27,7 @@ final class BuildExecutableOnce {
       }
       try {
         resolvedCommand = resolveExecutablePath();
+        System.out.println("StreamX CLI executable: " + resolveExecutablePath());
         success = true;
       } finally {
         done = true;
