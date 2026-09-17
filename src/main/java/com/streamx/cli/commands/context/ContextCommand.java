@@ -5,6 +5,7 @@ import com.streamx.cli.commands.context.current.CurrentCommand;
 import com.streamx.cli.commands.context.delete.DeleteCommand;
 import com.streamx.cli.commands.context.list.ListCommand;
 import com.streamx.cli.commands.context.org.OrgCommand;
+import com.streamx.cli.commands.context.project.ProjectCommand;
 import com.streamx.cli.commands.context.use.UseCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
 import picocli.CommandLine;
@@ -19,6 +20,7 @@ import picocli.CommandLine;
         UseCommand.class,
         CurrentCommand.class,
         OrgCommand.class,
+        ProjectCommand.class,
         DeleteCommand.class
     }
 )

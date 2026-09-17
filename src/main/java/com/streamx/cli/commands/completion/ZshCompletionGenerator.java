@@ -7,9 +7,11 @@ import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ContextNameCompletionCandidates;
 import com.streamx.cli.platform.ClusterIdCompletionCandidates;
+import com.streamx.cli.platform.ContextProjectIdCompletionCandidates;
 import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
+import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -222,6 +224,12 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof OrgIdCompletionCandidates) {
       return "($(streamx __complete-org-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ProjectIdCompletionCandidates) {
+      return "($(streamx __complete-project-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ContextProjectIdCompletionCandidates) {
+      return "($(streamx __complete-project-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof OrgMemberIdCompletionCandidates) {
       return "($(streamx __complete-org-member-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
