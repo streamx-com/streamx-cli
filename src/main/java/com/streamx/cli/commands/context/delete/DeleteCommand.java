@@ -38,7 +38,7 @@ public class DeleteCommand extends AbstractSilentCommand {
   public CommandResult<Void> runCommand() {
     Contexts.requireValidContextName(name);
     if (!Contexts.contextExists(name)) {
-      throw new CliException(msg.contextNotFound(name));
+      throw new CliException(msg.contextNotFound(name, name));
     }
     final boolean wasActive = name.equals(Contexts.getActiveContext());
     final boolean wasCurrent = name.equals(Contexts.readCurrentContextPointer());

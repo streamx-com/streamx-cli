@@ -73,7 +73,7 @@ public class StreamxHome {
       if (Contexts.DEFAULT_CONTEXT.equals(active)) {
         Contexts.bootstrapDefault();
       } else if (needsContext) {
-        throw new CliException(msg.contextNotFound(active));
+        throw new CliException(msg.contextNotFound(active, active));
       } else {
         clearAppliedSystemProperties();
         return;

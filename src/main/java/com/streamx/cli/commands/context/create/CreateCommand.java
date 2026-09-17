@@ -45,7 +45,7 @@ public class CreateCommand extends AbstractSilentCommand {
     if (from != null) {
       Contexts.requireValidContextName(from);
       if (!Contexts.contextExists(from)) {
-        throw new CliException(msg.contextNotFound(from));
+        throw new CliException(msg.contextNotFound(from, from));
       }
     }
 

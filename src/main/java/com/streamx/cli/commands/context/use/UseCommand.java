@@ -32,7 +32,7 @@ public class UseCommand extends AbstractSilentCommand {
   public CommandResult<Void> runCommand() {
     Contexts.requireValidContextName(name);
     if (!Contexts.contextExists(name)) {
-      throw new CliException(msg.contextNotFound(name));
+      throw new CliException(msg.contextNotFound(name, name));
     }
     try {
       Contexts.writeCurrentContextPointer(name);

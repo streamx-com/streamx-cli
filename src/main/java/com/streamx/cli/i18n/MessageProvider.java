@@ -599,8 +599,8 @@ public interface MessageProvider {
   String contextNameInvalid(String name);
 
   @Message(id = 356,
-      value = "Context '%1$s' does not exist. Create it with: streamx context create %1$s")
-  String contextNotFound(String name);
+      value = "Context '%s' does not exist. Create it with: streamx context create %s")
+  String contextNotFound(String name, String nameAgain);
 
   @Message(id = 357, value = "Context '%s' already exists")
   String contextAlreadyExists(String name);
