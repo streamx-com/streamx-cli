@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.context.list;
 
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
@@ -50,15 +50,15 @@ public class ListCommand extends AbstractCommand<List<ContextInfo>> {
 
   @Override
   public CommandResult<List<ContextInfo>> runCommand() {
-    String active = StreamxHome.getActiveContext();
-    List<ContextInfo> contexts = StreamxHome.listContextNames().stream()
+    String active = Contexts.getActiveContext();
+    List<ContextInfo> contexts = Contexts.listContextNames().stream()
         .map(name -> describe(name, name.equals(active)))
         .toList();
     return new CommandResult<>(contexts);
   }
 
   private static ContextInfo describe(String name, boolean active) {
-    Path configDir = StreamxHome.getConfigDirOf(name);
+    Path configDir = Contexts.getConfigDirOf(name);
     String platformUrl = null;
     Path settings = configDir.resolve("application.properties");
     if (Files.isRegularFile(settings)) {
