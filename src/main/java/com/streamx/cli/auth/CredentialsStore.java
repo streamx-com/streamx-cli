@@ -5,7 +5,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.CliException;
 import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -31,7 +31,7 @@ public class CredentialsStore {
   private static final String INSECURE = "insecure";
 
   public static Path getCredentialsPath() {
-    return StreamxHome.getConfigDir().resolve(CREDENTIALS_FILE);
+    return Contexts.getConfigDir().resolve(CREDENTIALS_FILE);
   }
 
   public static boolean exists() {

@@ -23,7 +23,6 @@ public class PlatformClients implements AutoCloseable {
       .registerModule(new JavaTimeModule())
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
   private static final long TIMEOUT_MS = 30_000;
-  private static final long COMPLETION_TIMEOUT_MS = 3_000;
 
   private final URI baseUri;
   private final boolean insecure;
@@ -41,10 +40,6 @@ public class PlatformClients implements AutoCloseable {
 
   public static PlatformClients fromConfig() {
     return create(TIMEOUT_MS);
-  }
-
-  public static PlatformClients completion() {
-    return create(COMPLETION_TIMEOUT_MS);
   }
 
   private static PlatformClients create(long timeoutMs) {
@@ -97,17 +92,6 @@ public class PlatformClients implements AutoCloseable {
 
   public void call(Supplier<Response> operation) {
     call(operation, null);
-  }
-
-  public <T> List<T> callList(Supplier<Response> operation, Class<T> type) {
-    JsonNode array = call(operation, JsonNode.class);
-    List<T> items = new ArrayList<>();
-    if (array != null && array.isArray()) {
-      for (JsonNode node : array) {
-        items.add(MAPPER.convertValue(node, type));
-      }
-    }
-    return items;
   }
 
   private Response invoke(Supplier<Response> operation) {
