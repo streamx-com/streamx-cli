@@ -2,12 +2,10 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.config.StreamxHome;
-import com.streamx.cli.platform.PlatformContext;
+import com.streamx.cli.config.Contexts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -32,28 +30,14 @@ public final class SynopsisHelper {
 
     usage.description(
         msg.currentContextHeader("@|bold " + currentContext() + "|@"),
-        msg.currentOrgHeader(boldOrDash(quiet(PlatformContext::effectiveOrg))),
-        msg.currentProjectHeader(boldOrDash(quiet(PlatformContext::effectiveProject))),
         "");
   }
 
   private static String currentContext() {
     try {
-      return StreamxHome.getActiveContext();
+      return Contexts.getActiveContext();
     } catch (RuntimeException corruptOrUnreadable) {
-      return StreamxHome.DEFAULT_CONTEXT;
-    }
-  }
-
-  private static String boldOrDash(String value) {
-    return value == null ? "-" : "@|bold " + value + "|@";
-  }
-
-  private static String quiet(Supplier<String> supplier) {
-    try {
-      return supplier.get();
-    } catch (RuntimeException corruptOrUnreadable) {
-      return null;
+      return Contexts.DEFAULT_CONTEXT;
     }
   }
 

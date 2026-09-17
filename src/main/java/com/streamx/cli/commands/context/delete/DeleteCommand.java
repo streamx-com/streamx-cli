@@ -3,7 +3,7 @@ package com.streamx.cli.commands.context.delete;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.ContextNameCompletionCandidates;
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -36,20 +36,16 @@ public class DeleteCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    StreamxHome.requireValidContextName(name);
-    if (!StreamxHome.contextExists(name)) {
-      throw new CliException(msg.contextDoesNotExist(name));
+    Contexts.requireValidContextName(name);
+    if (!Contexts.contextExists(name)) {
+      throw new CliException(msg.contextNotFound(name));
     }
-    if (name.equals(StreamxHome.getActiveContext())) {
-      throw new CliException(msg.contextCannotDeleteActive(name));
-    }
-    if (name.equals(StreamxHome.readCurrentContextPointer())) {
-      throw new CliException(msg.contextCannotDeleteCurrent(name));
-    }
+    final boolean wasActive = name.equals(Contexts.getActiveContext());
+    final boolean wasCurrent = name.equals(Contexts.readCurrentContextPointer());
 
-    Path contextDir = StreamxHome.getContextDirOf(name);
-    boolean hadLogin =
-        Files.isRegularFile(StreamxHome.getConfigDirOf(name).resolve("credentials.json"));
+    Path contextDir = Contexts.getContextDirOf(name);
+    final boolean hadLogin =
+        Files.isRegularFile(Contexts.getConfigDirOf(name).resolve("credentials.json"));
     try (Stream<Path> paths = Files.walk(contextDir)) {
       paths.sorted(Comparator.reverseOrder()).forEach(path -> {
         try {
@@ -62,9 +58,23 @@ public class DeleteCommand extends AbstractSilentCommand {
       throw new CliException(msg.contextDeleteFailed(name, e.getMessage()), e);
     }
 
+    if (wasCurrent) {
+      try {
+        Contexts.clearCurrentContextPointer();
+      } catch (IOException e) {
+        throw new CliException(msg.contextDeleteFailed(name, e.getMessage()), e);
+      }
+    }
+
     System.out.println(msg.contextDeleted(name));
     if (hadLogin) {
       System.err.println(msg.contextDeletedLoginNote());
+    }
+    if (wasActive) {
+      System.err.println(msg.contextDeletedWasActive(Contexts.getActiveContextSource()));
+    }
+    if (wasCurrent) {
+      System.err.println(msg.contextDeletedWasCurrent());
     }
     return new CommandResult<>(null);
   }
