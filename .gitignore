@@ -44,6 +44,8 @@ nb-configuration.xml
 streamx.log
 streamx.*
 streamx-*.log
+# Spec unpacked from the aggregated-openapi artifact at build time (not committed).
+src/main/openapi/
 
 # Docusaurus docs site
 docs/node_modules/
