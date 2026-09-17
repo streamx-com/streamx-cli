@@ -71,7 +71,7 @@ public class CreateCommand extends AbstractCommand<Project> {
     @CommandLine.Option(
         names = "--ssh-private-key",
         paramLabel = "<file>",
-        description = "SSH private key file for private repositories (sent base64-encoded)"
+        description = "SSH private key file for private repositories"
     )
     public Path sshPrivateKey;
   }
