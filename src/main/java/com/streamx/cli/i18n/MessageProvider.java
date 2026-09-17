@@ -38,6 +38,21 @@ public interface MessageProvider {
   )
   String somethingWentWrong();
 
+  @Message(id = 105, value = "No such settings property found: %s")
+  String noSettingsPropertyFound(String key);
+
+  @Message(id = 106, value = "Unable to get settings property: %s")
+  String unableToGetSettingsProperty(String reason);
+
+  @Message(id = 107, value = "Failed to load properties from: %s")
+  String failedToLoadPropertiesFrom(String path);
+
+  @Message(id = 108, value = "Unable to set settings property")
+  String unableToSetSettingsProperty();
+
+  @Message(id = 109, value = "Unable to get settings file path")
+  String unableToGetSettingsFilePath();
+
   @Message(
       id = 110,
       value = """
@@ -89,9 +104,6 @@ public interface MessageProvider {
   @Message(id = 122, value = "Stopping mesh...")
   String stoppingMesh();
 
-  @Message(id = 1220, value = "Error during stopping mesh: %s")
-  String errorDuringStoppingMesh(String reason);
-
   @Message(id = 123, value = """
       Unable to read mesh definition from %s
 
@@ -141,35 +153,17 @@ public interface MessageProvider {
   @Message(id = 136, value = "Expression cannot be null")
   String expressionCannotBeNull();
 
+  @Message(id = 137, value = "Unable to unset settings property %s: %s")
+  String unableToUnsetSettingsProperty(String key, String reason);
+
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
 
-  @Message(id = 139, value = """
-      StreamX settings properties:
-      =================================
-      """)
-  String listSettingsHeader();
+  @Message(id = 139, value = "Error during stopping mesh: %s")
+  String errorDuringStoppingMesh(String reason);
 
   @Message(id = 140, value = "No StreamX settings properties found")
   String listSettingsNoPropertiesFound();
-
-  @Message(id = 105, value = "No such settings property found: %s")
-  String noSettingsPropertyFound(String key);
-
-  @Message(id = 106, value = "Unable to get settings property: %s")
-  String unableToGetSettingsProperty(String reason);
-
-  @Message(id = 107, value = "Failed to load properties from: %s")
-  String failedToLoadPropertiesFrom(String path);
-
-  @Message(id = 108, value = "Unable to set settings property")
-  String unableToSetSettingsProperty();
-
-  @Message(id = 109, value = "Unable to get settings file path")
-  String unableToGetSettingsFilePath();
-
-  @Message(id = 1090, value = "Unable to unset settings property %s: %s")
-  String unableToUnsetSettingsProperty(String key, String reason);
 
   @Message(id = 141, value = "Running publish stream command")
   String runningPublishStreamCommand();
@@ -414,12 +408,6 @@ public interface MessageProvider {
   @Message(id = 213, value = "No event templates found.")
   String eventTemplatesNoTemplatesFound();
 
-  @Message(id = 214, value = """
-      Event templates:
-      ================
-      """)
-  String eventTemplatesListHeader();
-
   @Message(id = 215, value = "Failed to list event templates from %s: %s")
   String failedToListEventTemplates(String path, String reason);
 
@@ -434,25 +422,6 @@ public interface MessageProvider {
 
   @Message(id = 219, value = "An event template with ID '%s' already exists at %s")
   String eventTemplateAlreadyExists(String id, String path);
-
-  @Message(id = 233, value = "Please pick a different template ID.")
-  String eventTemplatePickDifferentId();
-
-  @Message(id = 234,
-      value = "This will delete %s and restore the bundled default templates. Proceed? [y/N]")
-  String eventTemplatesResetConfirm(String path);
-
-  @Message(id = 235, value = "Reset cancelled.")
-  String eventTemplatesResetCancelled();
-
-  @Message(id = 236, value = "Failed to delete %s: %s")
-  String eventTemplatesResetDeleteFailed(String path, String reason);
-
-  @Message(id = 237, value = "Failed to repopulate default event templates at %s")
-  String eventTemplatesResetFailed(String path);
-
-  @Message(id = 238, value = "Reset default event templates at %s (%d restored)")
-  String eventTemplatesResetSucceeded(String path, int count);
 
   @Message(id = 220, value = "Failed to create event template at %s: %s")
   String failedToCreateEventTemplate(String path, String reason);
@@ -490,6 +459,25 @@ public interface MessageProvider {
   @Message(id = 231, value = "Edited event template '%s' at %s")
   String eventTemplateEdited(String id, String path);
 
+  @Message(id = 233, value = "Please pick a different template ID.")
+  String eventTemplatePickDifferentId();
+
+  @Message(id = 234,
+      value = "This will delete %s and restore the bundled default templates. Proceed? [y/N]")
+  String eventTemplatesResetConfirm(String path);
+
+  @Message(id = 235, value = "Reset cancelled.")
+  String eventTemplatesResetCancelled();
+
+  @Message(id = 236, value = "Failed to delete %s: %s")
+  String eventTemplatesResetDeleteFailed(String path, String reason);
+
+  @Message(id = 237, value = "Failed to repopulate default event templates at %s")
+  String eventTemplatesResetFailed(String path);
+
+  @Message(id = 238, value = "Reset default event templates at %s (%d restored)")
+  String eventTemplatesResetSucceeded(String path, int count);
+
   @Message(id = 240, value = "Failed to delete %s: %s")
   String pathDeleteFailed(String path, String reason);
 
@@ -498,46 +486,6 @@ public interface MessageProvider {
 
   @Message(id = 242, value = "Re-opening in %s so you can fix the error...")
   String eventTemplateEditReopening(String editor);
-
-  @Message(id = 264, value = "ERROR: invalid JSON. Fix the file below "
-      + "and delete every line starting with `//` before saving "
-      + "(JSON does not support comments).")
-  String eventTemplateEditErrorBannerHeader();
-
-  @Message(id = 270,
-      value = "Absolute path of the event payload file passed to `publish event`.")
-  String placeholderDescriptionPayloadPath();
-
-  @Message(id = 271,
-      value = "Base64-encoded content of the payload file. "
-          + "Use this to embed binary or arbitrary text payloads inside a JSON event.")
-  String placeholderDescriptionPayloadContentBase64();
-
-  @Message(id = 272,
-      value = "Content of the payload file parsed as JSON and inlined directly into "
-          + "the event (the surrounding string node is replaced by the parsed JSON).")
-  String placeholderDescriptionPayloadContentJson();
-
-  @Message(id = 273,
-      value = "Path of the payload file relative to the event template's location. "
-          + "Supports the syntax ${relativePath:n}, where 'n' specifies how many "
-          + "additional parent directories above the template to include. "
-          + "Example: ${relativePath:0} resolves to the path relative to the template "
-          + "directory; ${relativePath:1} adds one extra parent level.")
-  String placeholderDescriptionRelativePath();
-
-  @Message(id = 274,
-      value = "Subject of the event. Resolves to the value passed as the third positional "
-          + "argument of `publish event`, or to ${payloadPath} when no subject is given.")
-  String placeholderDescriptionSubject();
-
-  @Message(id = 275,
-      value = "Universally unique identifier (UUID v4), regenerated for every published event.")
-  String placeholderDescriptionUuid();
-
-  @Message(id = 276,
-      value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
-  String placeholderDescriptionCurrentTime();
 
   @Message(id = 243, value = "Cannot delete a default template. "
       + "Use `streamx settings event-templates reset-default-templates` to restore defaults.")
@@ -604,4 +552,93 @@ public interface MessageProvider {
 
   @Message(id = 263, value = "(TAB for options)")
   String interactivePickerHint();
+
+  @Message(id = 264, value = "ERROR: invalid JSON. Fix the file below "
+      + "and delete every line starting with `//` before saving "
+      + "(JSON does not support comments).")
+  String eventTemplateEditErrorBannerHeader();
+
+  @Message(id = 270,
+      value = "Absolute path of the event payload file passed to `publish event`.")
+  String placeholderDescriptionPayloadPath();
+
+  @Message(id = 271,
+      value = "Base64-encoded content of the payload file. "
+          + "Use this to embed binary or arbitrary text payloads inside a JSON event.")
+  String placeholderDescriptionPayloadContentBase64();
+
+  @Message(id = 272,
+      value = "Content of the payload file parsed as JSON and inlined directly into "
+          + "the event (the surrounding string node is replaced by the parsed JSON).")
+  String placeholderDescriptionPayloadContentJson();
+
+  @Message(id = 273,
+      value = "Path of the payload file relative to the event template's location. "
+          + "Supports the syntax ${relativePath:n}, where 'n' specifies how many "
+          + "additional parent directories above the template to include. "
+          + "Example: ${relativePath:0} resolves to the path relative to the template "
+          + "directory; ${relativePath:1} adds one extra parent level.")
+  String placeholderDescriptionRelativePath();
+
+  @Message(id = 274,
+      value = "Subject of the event. Resolves to the value passed as the third positional "
+          + "argument of `publish event`, or to ${payloadPath} when no subject is given.")
+  String placeholderDescriptionSubject();
+
+  @Message(id = 275,
+      value = "Universally unique identifier (UUID v4), regenerated for every published event.")
+  String placeholderDescriptionUuid();
+
+  @Message(id = 276,
+      value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
+  String placeholderDescriptionCurrentTime();
+
+  @Message(id = 355,
+      value = "Invalid context name '%s'. Use 1-32 lowercase letters, digits or dashes, "
+          + "starting with a letter or digit")
+  String contextNameInvalid(String name);
+
+  @Message(id = 356,
+      value = "Context '%s' does not exist. Create it with: streamx context create %s")
+  String contextNotFound(String name, String nameAgain);
+
+  @Message(id = 357, value = "Context '%s' already exists")
+  String contextAlreadyExists(String name);
+
+  @Message(id = 358, value = "Context '%s' created")
+  String contextCreated(String name);
+
+  @Message(id = 359, value = "Switched to context '%s'")
+  String contextSwitched(String name);
+
+  @Message(id = 360, value = "Context '%s' deleted")
+  String contextDeleted(String name);
+
+  @Message(id = 361, value = "The context's stored login was removed locally but NOT revoked.%n"
+      + "Next time run 'streamx auth logout' in the context before deleting it.")
+  String contextDeletedLoginNote();
+
+  @Message(id = 362, value = "Warning: this removed the current context. "
+      + "Run 'streamx context use <name>' to select another one; "
+      + "until then the default context is used")
+  String contextDeletedWasCurrent();
+
+  @Message(id = 363, value = "Warning: this removed the active context, selected %s")
+  String contextDeletedWasActive(String source);
+
+  @Message(id = 364, value = "Current context: %s")
+  String currentContextHeader(String name);
+
+  @Message(id = 365, value = "Could not create context '%s': %s")
+  String contextCreateFailed(String name, String reason);
+
+  @Message(id = 366, value = "Could not switch to context '%s': %s")
+  String contextSwitchFailed(String name, String reason);
+
+  @Message(id = 367, value = "Could not delete context '%s': %s")
+  String contextDeleteFailed(String name, String reason);
+
+  @Message(id = 368, value = "Invalid context name '%s' in %s. "
+      + "Fix or delete that file, or pass --context to override")
+  String contextInvalidPointer(String name, String pointerFile);
 }

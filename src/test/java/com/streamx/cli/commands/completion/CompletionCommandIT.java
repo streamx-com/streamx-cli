@@ -37,6 +37,14 @@ class CompletionCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldEmitDynamicContextNameCompletion() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+    result.assertSuccess();
+    assertThat(result.stdout())
+        .contains("$(streamx __complete-context-names 2>/dev/null)");
+  }
+
+  @Test
   void shouldHideInternalCompleteTemplateIdsCommandFromZshSubcommands() throws Exception {
     ProcessResult result = exec("completion", "zsh");
     result.assertSuccess();

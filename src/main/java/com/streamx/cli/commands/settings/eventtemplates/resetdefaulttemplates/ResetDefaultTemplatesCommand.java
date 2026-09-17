@@ -17,32 +17,32 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "reset-default-templates",
-    header = "Delete and repopulate the <streamxHome>/event-templates/default folder",
-    description = "Wipes the bundled default templates from <streamxHome>/event-templates/default "
-        + "and restores them from the files embedded in the CLI jar. User-created templates in "
-        + "<streamxHome>/event-templates/custom and registered templates in settings are not "
+    header = "Delete and repopulate the <streamxHome>/default-event-templates folder",
+    description = "Wipes the bundled default templates from <streamxHome>/default-event-templates "
+        + "(shared by all contexts) and restores them from the files embedded in the CLI jar. "
+        + "The contexts' own event templates and registered templates in settings are not "
         + "touched.",
     footer = {
         "",
         "Examples:",
         "  streamx settings event-templates reset-default-templates",
-        "  streamx settings event-templates reset-default-templates --yes   # skip confirmation"
+        "  streamx settings event-templates reset-default-templates --force # skip confirmation"
     }
 )
 public class ResetDefaultTemplatesCommand
     extends AbstractCommand<ResetDefaultTemplatesCommandResult> {
 
   @CommandLine.Option(
-      names = {"-y", "--yes"},
+      names = {"-f", "--force"},
       description = "Skip the confirmation prompt (required in non-interactive environments)"
   )
-  public boolean yes;
+  public boolean force;
 
   @Override
   public CommandResult<ResetDefaultTemplatesCommandResult> runCommand() {
     Path dir = StreamxHome.getStreamxHome().resolve(DefaultEventTemplates.DIRECTORY);
 
-    if (!yes) {
+    if (!force) {
 
       String prompt = msg.eventTemplatesResetConfirm(dir.toAbsolutePath().toString());
       String answer = InteractivePicker.pick(prompt, null);

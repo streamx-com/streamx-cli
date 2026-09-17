@@ -2,12 +2,14 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.Contexts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 public final class SynopsisHelper {
 
@@ -16,6 +18,27 @@ public final class SynopsisHelper {
 
   public static void applyCustomSynopses(CommandLine commandLine) {
     applyRecursively(commandLine);
+  }
+
+  public static void applyRootUsageLayout(CommandLine commandLine) {
+    UsageMessageSpec usage = commandLine.getCommandSpec().usageMessage();
+
+    List<String> keys = new ArrayList<>(usage.sectionKeys());
+    keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS_HEADING);
+    keys.remove(UsageMessageSpec.SECTION_KEY_SYNOPSIS);
+    usage.sectionKeys(keys);
+
+    usage.description(
+        msg.currentContextHeader("@|bold " + currentContext() + "|@"),
+        "");
+  }
+
+  private static String currentContext() {
+    try {
+      return Contexts.getActiveContext();
+    } catch (RuntimeException corruptOrUnreadable) {
+      return Contexts.DEFAULT_CONTEXT;
+    }
   }
 
   private static void applyRecursively(CommandLine commandLine) {

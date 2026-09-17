@@ -5,6 +5,7 @@ import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.config.ContextNameCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 
 public final class ZshCompletionGenerator {
+
 
   private ZshCompletionGenerator() {
   }
@@ -169,7 +171,7 @@ public final class ZshCompletionGenerator {
       return "";
     }
     String label = opt.paramLabel();
-    String action = getCompletionAction(opt.type(), opt, null);
+    String action = getCompletionAction(opt.type(), opt, opt.completionCandidates());
     if (label == null || label.isEmpty()) {
       label = "value";
     }
@@ -210,6 +212,16 @@ public final class ZshCompletionGenerator {
     if (completionCandidates instanceof SettingsKeyCompletionCandidates) {
       return "($(streamx __complete-settings-keys 2>/dev/null))";
     }
+    if (completionCandidates instanceof ContextNameCompletionCandidates) {
+      return "($(streamx __complete-context-names 2>/dev/null))";
+    }
+    // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
+    if (completionCandidates != null) {
+      String values = renderCandidates(completionCandidates);
+      if (!values.isEmpty()) {
+        return values;
+      }
+    }
     if (type != null && type.isEnum()) {
       Object[] constants = type.getEnumConstants();
       StringBuilder values = new StringBuilder("(");
@@ -226,6 +238,19 @@ public final class ZshCompletionGenerator {
       return "_files";
     }
     return "";
+  }
+
+  private static String renderCandidates(Iterable<String> completionCandidates) {
+    StringBuilder values = new StringBuilder("(");
+    boolean empty = true;
+    for (String candidate : completionCandidates) {
+      if (!empty) {
+        values.append(" ");
+      }
+      values.append(escape(candidate));
+      empty = false;
+    }
+    return empty ? "" : values.append(")").toString();
   }
 
   private static String preferredOptionName(OptionSpec opt) {

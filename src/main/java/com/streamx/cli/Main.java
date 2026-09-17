@@ -27,7 +27,9 @@ public class Main implements QuarkusApplication {
           Object lastCommand = parsed.get(parsed.size() - 1).getCommand();
           if (lastCommand instanceof AbstractCommand<?> abstractCommand) {
             try {
-              abstractCommand.populateStreamxHome();
+              abstractCommand.populateStreamxHome(parsed);
+              // -H/--context are applied now; refresh the root help header to reflect them.
+              SynopsisHelper.applyRootUsageLayout(parsed.get(0));
             } catch (Exception e) {
               return abstractCommand.handleExecutionError(e);
             }
@@ -36,6 +38,7 @@ public class Main implements QuarkusApplication {
         });
 
     SynopsisHelper.applyCustomSynopses(commandLine);
+    SynopsisHelper.applyRootUsageLayout(commandLine);
 
     return commandLine.execute(args);
   }
