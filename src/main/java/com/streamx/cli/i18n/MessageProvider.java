@@ -754,6 +754,10 @@ public interface MessageProvider {
       + "or run: streamx context org use <orgId>")
   String noOrgContext();
 
+  @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
+      + "or run: streamx context project use <projectId>")
+  String noProjectContext();
+
   @Message(id = 387, value = "Current organization set to '%s'")
   String orgUseSet(String orgId);
 
