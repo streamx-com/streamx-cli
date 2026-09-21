@@ -968,10 +968,27 @@ public interface MessageProvider {
   @Message(id = 420, value = "You do not have permission to perform this action")
   String platformAccessDenied();
 
+  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
+  String authTokenCreated(String name);
+
+  @Message(id = 430, value = "Token revoked")
+  String authTokenRevoked();
+
+  @Message(id = 431, value = "No personal access tokens")
+  String authTokenListEmpty();
+
   @Message(id = 432, value = "Could not read the context the token belongs to")
   String authTokenIdentityUnavailable();
 
   @Message(id = 433, value = "Not authorized. The personal access token in "
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
+
+  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
+      + "Unset %s and run 'streamx auth login' first.")
+  String authTokenNeedsLoginSession(String variableName);
+
+  @Message(id = 435,
+      value = "Invalid expiry '%s'. Use a positive duration such as 20m, 2h or 30d.")
+  String authTokenInvalidExpiry(String value);
 }
