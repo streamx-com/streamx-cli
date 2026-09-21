@@ -23,7 +23,6 @@ public class PlatformClients implements AutoCloseable {
       .registerModule(new JavaTimeModule())
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
   private static final long TIMEOUT_MS = 30_000;
-  private static final long COMPLETION_TIMEOUT_MS = 3_000;
 
   private final URI baseUri;
   private final boolean insecure;
@@ -37,10 +36,6 @@ public class PlatformClients implements AutoCloseable {
     this.baseUri = URI.create(url.endsWith("/") ? url.substring(0, url.length() - 1) : url);
     this.insecure = insecure;
     this.timeoutMs = timeoutMs;
-  }
-
-  public static PlatformClients completion() {
-    return create(COMPLETION_TIMEOUT_MS);
   }
 
   public static PlatformClients fromConfig() {
@@ -85,29 +80,11 @@ public class PlatformClients implements AutoCloseable {
   }
 
   public <T> T call(Supplier<Response> operation, Class<T> type) {
-    Response response = invoke(operation);
-    // A personal access token cannot be refreshed, so retrying would just re-send the same
-    // rejected credential; only a login session is worth a second attempt.
-    if (response.getStatus() == 401 && !AccessTokens.usingPlatformToken()) {
-      AccessTokens.forceRefresh();
-      response = invoke(operation);
-    }
-    return handle(response, type);
+    return handle(invoke(operation), type);
   }
 
   public void call(Supplier<Response> operation) {
     call(operation, null);
-  }
-
-  public <T> List<T> callList(Supplier<Response> operation, Class<T> type) {
-    JsonNode array = call(operation, JsonNode.class);
-    List<T> items = new ArrayList<>();
-    if (array != null && array.isArray()) {
-      for (JsonNode node : array) {
-        items.add(MAPPER.convertValue(node, type));
-      }
-    }
-    return items;
   }
 
   private Response invoke(Supplier<Response> operation) {
@@ -150,8 +127,7 @@ public class PlatformClients implements AutoCloseable {
     return switch (status) {
       // Keep the server's explanation (e.g. "personal access tokens cannot manage tokens"),
       // and point at the credential actually in use rather than always at 'auth login'.
-      case 401 -> withDetail(AccessTokens.usingPlatformToken()
-          ? msg.platformTokenUnauthorized() : msg.platformUnauthorized(), detail);
+      case 401 -> withDetail(msg.platformTokenUnauthorized(), detail);
       case 403 -> withDetail(msg.platformAccessDenied(), detail);
       default -> detail == null
           ? msg.platformRequestFailedWithStatus(baseUri.toString(), status)

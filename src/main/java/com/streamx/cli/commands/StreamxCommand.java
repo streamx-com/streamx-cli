@@ -1,17 +1,14 @@
 package com.streamx.cli.commands;
 
-import com.streamx.cli.commands.auth.AuthCommand;
 import com.streamx.cli.commands.completion.CompleteContextNamesCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
 import com.streamx.cli.commands.completion.CompleteTemplateIdsCommand;
-import com.streamx.cli.commands.completion.CompleteTokenIdsCommand;
 import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.context.ContextCommand;
 import com.streamx.cli.commands.docs.GenerateDocsCommand;
-import com.streamx.cli.commands.info.InfoCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
@@ -22,12 +19,10 @@ import picocli.CommandLine;
     name = "streamx",
     header = "StreamX CLI. More info at https://streamx.com",
     subcommands = {
-        AuthCommand.class,
         ContextCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,
-        InfoCommand.class,
         CompletionCommand.class,
         CompleteTemplateIdsCommand.class,
         CompleteRegisteredTemplateIdsCommand.class,
@@ -35,7 +30,6 @@ import picocli.CommandLine;
         CompleteSettingsKeysCommand.class,
         CompleteSettingsSetKeysCommand.class,
         CompleteContextNamesCommand.class,
-        CompleteTokenIdsCommand.class,
         GenerateDocsCommand.class
     }
 )

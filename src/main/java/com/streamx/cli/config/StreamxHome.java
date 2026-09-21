@@ -28,22 +28,6 @@ public class StreamxHome {
     streamxHomeCliArg = null;
   }
 
-  /** Which precedence layer picked the streamx home, for diagnostics ({@code streamx info}). */
-  public static String getStreamxHomeSource() {
-    if (streamxHomeCliArg != null && !streamxHomeCliArg.isBlank()) {
-      return "from the --streamx-home flag";
-    }
-    String env = getStreamxHomeEnv();
-    if (env != null && !env.isBlank()) {
-      return "from the STREAMX_HOME environment variable";
-    }
-    String prop = System.getProperty("STREAMX_HOME");
-    if (prop != null && !prop.isBlank()) {
-      return "from the STREAMX_HOME system property";
-    }
-    return "default";
-  }
-
   public static Path getStreamxHome() {
     if (streamxHomeCliArg != null && !streamxHomeCliArg.isBlank()) {
       return Path.of(streamxHomeCliArg);
