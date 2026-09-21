@@ -1,6 +1,5 @@
 package com.streamx.cli.commands.context;
 
-import com.streamx.cli.commands.context.configure.ConfigureCommand;
 import com.streamx.cli.commands.context.create.CreateCommand;
 import com.streamx.cli.commands.context.current.CurrentCommand;
 import com.streamx.cli.commands.context.delete.DeleteCommand;
@@ -18,7 +17,6 @@ import picocli.CommandLine;
     subcommands = {
         ListCommand.class,
         CreateCommand.class,
-        ConfigureCommand.class,
         UseCommand.class,
         CurrentCommand.class,
         OrgCommand.class,

@@ -3,6 +3,7 @@ package com.streamx.cli.commands.org;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -11,7 +12,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
@@ -25,10 +25,6 @@ class OrgInvitationsCommandIT extends CliBaseIT {
 
   private StubPlatformServer platform;
 
-  private Path getCredentialsPath() {
-    return streamxHome.resolve("contexts/default/config/credentials.json");
-  }
-
   @BeforeEach
   void setUp() throws IOException {
     platform = new StubPlatformServer();
@@ -41,21 +37,15 @@ class OrgInvitationsCommandIT extends CliBaseIT {
       properties.store(out, null);
     }
 
-    Path credentials = getCredentialsPath();
-    Files.createDirectories(credentials.getParent());
-    Files.writeString(credentials, """
-        {"access_token":"test-access-token","refresh_token":"test-refresh-token",
-         "expires_at":%d,"issuer_url":"http://127.0.0.1:1/realms/streamx",
-         "client_id":"streamx-cli"}
-        """.formatted(Instant.now().plusSeconds(300).getEpochSecond()));
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, "test-access-token");
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() {
     if (platform != null) {
       platform.close();
     }
-    Files.deleteIfExists(getCredentialsPath());
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
   }
 
   @Test
