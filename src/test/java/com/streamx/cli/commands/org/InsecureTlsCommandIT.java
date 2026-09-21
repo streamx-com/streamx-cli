@@ -2,18 +2,18 @@ package com.streamx.cli.commands.org;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsServer;
+import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.KeyStore;
-import java.time.Instant;
 import java.util.Properties;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@QuarkusTest
 class InsecureTlsCommandIT extends CliBaseIT {
 
   private static final String ORGS = """
@@ -45,27 +46,22 @@ class InsecureTlsCommandIT extends CliBaseIT {
     server.start();
     baseUrl = "https://127.0.0.1:" + server.getAddress().getPort();
 
-    Path credentials = streamxHome.resolve("contexts/default/config/credentials.json");
-    Files.createDirectories(credentials.getParent());
-    Files.writeString(credentials, """
-        {"access_token":"test-access-token","refresh_token":"test-refresh-token",
-         "expires_at":%d,"issuer_url":"http://127.0.0.1:1/realms/streamx",
-         "client_id":"streamx-cli"}
-        """.formatted(Instant.now().plusSeconds(300).getEpochSecond()));
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, "test-access-token");
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() {
     if (server != null) {
       server.stop(0);
     }
-    Files.deleteIfExists(streamxHome.resolve("contexts/default/config/credentials.json"));
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
   }
 
   private void writeConfig(boolean insecure) throws IOException {
     Properties properties = new Properties();
     properties.setProperty(PlatformConfig.STREAMX_PLATFORM_URL, baseUrl);
     properties.setProperty(PlatformConfig.STREAMX_PLATFORM_INSECURE, String.valueOf(insecure));
+    Files.createDirectories(getConfigPath().getParent());
     try (OutputStream out = Files.newOutputStream(getConfigPath())) {
       properties.store(out, null);
     }

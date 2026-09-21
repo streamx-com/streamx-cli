@@ -1,26 +1,30 @@
 package com.streamx.cli.test;
 
+import com.streamx.cli.commands.StreamxCommand;
+import com.streamx.cli.framework.AbstractCommand;
+import io.quarkus.arc.Arc;
+import io.quarkus.arc.ArcContainer;
+import io.quarkus.arc.InjectableInstance;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+import picocli.CommandLine;
 
 public abstract class CliBaseIT {
 
@@ -29,33 +33,46 @@ public abstract class CliBaseIT {
   protected static final String CONFIG_FILE_PATH =
       "contexts/default/config/application.properties";
 
-  // Created by hand rather than with @TempDir: with @QuarkusTest and @Nested test classes the
-  // Quarkus extension runs @BeforeEach on an instance JUnit never injected the temp dir into.
-  public Path streamxHome;
+  @TempDir
+  public static Path streamxHome;
 
   private Process process;
   private final Map<String, String> envVars = new HashMap<>();
 
-  protected Path getConfigPath() {
+  private static boolean isNative() {
+    return "true".equals(System.getProperty("native.image"));
+  }
+
+  protected static Path getConfigPath() {
     return streamxHome.resolve(CONFIG_FILE_PATH);
   }
 
   @BeforeAll
   static void ensureBuilt() {
-    CliArtifact.ensureBuilt();
+    System.out.println("STREAMX_HOME path is " + streamxHome.toAbsolutePath());
+    if (isNative()) {
+      BuildExecutableOnce.ensureBuilt();
+    }
   }
 
   protected void setEnv(String key, String value) {
-    envVars.put(key, value);
+    if (isNative()) {
+      envVars.put(key, value);
+    } else {
+      System.setProperty(key, value);
+    }
   }
 
   protected void clearEnv(String key) {
-    envVars.remove(key);
+    if (isNative()) {
+      envVars.remove(key);
+    } else {
+      System.clearProperty(key);
+    }
   }
 
   @BeforeEach
-  void prepareStreamxHome() throws Exception {
-    streamxHome = Files.createTempDirectory("streamx-cli-test-");
+  void configureIngestionUrlIfMeshActive() throws Exception {
     if (MeshTestSupport.isMeshActive()) {
       exec("settings", "set", "streamx.ingestion.url",
           "http://localhost:" + MeshTestSupport.getProxyPort());
@@ -63,20 +80,23 @@ public abstract class CliBaseIT {
   }
 
   @AfterEach
-  void cleanupProcess() throws IOException {
+  void cleanupProcess() {
     if (process != null && process.isAlive()) {
       process.destroyForcibly();
     }
-    envVars.clear();
-    if (streamxHome != null) {
-      try (Stream<Path> paths = Files.walk(streamxHome)) {
-        paths.sorted(Comparator.reverseOrder()).forEach(path -> path.toFile().delete());
+    if (!isNative()) {
+      for (String key : envVars.keySet()) {
+        System.clearProperty(key);
       }
     }
+    envVars.clear();
   }
 
   protected ProcessResult execWithStdin(InputStream stdin, String... args) throws Exception {
-    return execSubprocess(stdin, DEFAULT_TIMEOUT_SECONDS, args);
+    if (isNative()) {
+      return execSubprocess(stdin, DEFAULT_TIMEOUT_SECONDS, args);
+    }
+    return execInProcess(stdin, args);
   }
 
   protected ProcessResult execWithStdin(String stdin, String... args) throws Exception {
@@ -91,23 +111,91 @@ public abstract class CliBaseIT {
       long timeoutSeconds,
       String... args
   ) throws Exception {
-    return execSubprocess(stdin, timeoutSeconds, args);
+    if (isNative()) {
+      return execSubprocess(stdin, timeoutSeconds, args);
+    }
+    return execInProcess(stdin, args);
   }
 
   protected ProcessResult exec(String... args) throws Exception {
     return execWithStdin(InputStream.nullInputStream(), args);
   }
 
-  private Process startProcess(String... args) throws IOException {
-    ArrayList<String> command = new ArrayList<>(CliArtifact.getExecutablePath());
-    command.addAll(List.of(args));
+  private ProcessResult execInProcess(InputStream stdin, String... args) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-    ProcessBuilder pb = new ProcessBuilder(command);
-    pb.redirectErrorStream(false);
-    pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
-    pb.environment().putAll(envVars);
-    process = pb.start();
-    return process;
+    InputStream originalIn = System.in;
+    PrintStream originalOut = System.out;
+    PrintStream originalErr = System.err;
+
+    try {
+      System.setIn(stdin);
+      System.setOut(new PrintStream(out));
+      System.setErr(new PrintStream(err));
+      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+
+      int exitCode = createCommandLine().execute(args);
+
+      return new ProcessResult(
+          exitCode,
+          out.toString(StandardCharsets.UTF_8),
+          err.toString(StandardCharsets.UTF_8)
+      );
+    } finally {
+      System.clearProperty("STREAMX_HOME");
+      System.setIn(originalIn);
+      System.setOut(originalOut);
+      System.setErr(originalErr);
+    }
+  }
+
+  protected CommandLine createCommandLine() {
+    ArcContainer container = Arc.container();
+    CommandLine cmd = new CommandLine(new StreamxCommand(), new CommandLine.IFactory() {
+      @Override
+      public <K> K create(Class<K> cls) throws Exception {
+        InjectableInstance<K> instance = container.select(cls);
+        if (instance.isResolvable()) {
+          return instance.get();
+        }
+        return CommandLine.defaultFactory().create(cls);
+      }
+    });
+
+    cmd.setExecutionStrategy(parseResult -> {
+      Assertions.assertNotNull(parseResult);
+      List<CommandLine> parsed = parseResult.asCommandLineList();
+      CommandLine last = parsed.getLast();
+      Object command = last.getCommand();
+
+      if (command instanceof AbstractCommand<?> abstractCommand) {
+        try {
+          abstractCommand.populateStreamxHome(parsed);
+          // -H/--context are applied now; refresh the root help header to reflect them.
+          com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(parsed.get(0));
+        } catch (Exception e) {
+          return abstractCommand.handleExecutionError(e);
+        }
+      }
+
+      CommandLine.ParseResult pr = parseResult;
+      while (pr != null) {
+        if (pr.isUsageHelpRequested() || pr.isVersionHelpRequested()) {
+          return new CommandLine.RunLast().execute(parseResult);
+        }
+
+        pr = pr.hasSubcommand() ? pr.subcommand() : null;
+      }
+
+      if (command instanceof AbstractCommand<?> abstractCommand) {
+        return abstractCommand.execute();
+      }
+      return new CommandLine.RunLast().execute(parseResult);
+    });
+
+    com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(cmd);
+    return cmd;
   }
 
   private ProcessResult execSubprocess(
@@ -115,7 +203,14 @@ public abstract class CliBaseIT {
       long timeoutSeconds,
       String... args
   ) throws Exception {
-    startProcess(args);
+    ArrayList<String> command = new ArrayList<>(BuildExecutableOnce.getExecutablePath());
+    command.addAll(List.of(args));
+
+    ProcessBuilder pb = new ProcessBuilder(command);
+    pb.redirectErrorStream(false);
+    pb.environment().put("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+    pb.environment().putAll(envVars);
+    process = pb.start();
 
     StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
     StreamCapture stderrCapture = captureAndForward(process.getErrorStream(), System.err);
@@ -129,11 +224,8 @@ public abstract class CliBaseIT {
     });
 
     boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
-    if (!finished) {
-      process.destroyForcibly();
-      Assertions.fail("Process timed out after %d seconds.\nSTDOUT: %s\nSTDERR: %s"
-          .formatted(timeoutSeconds, stdoutCapture.join(), stderrCapture.join()));
-    }
+    Assertions.assertTrue(finished,
+        "Process timed out after %d seconds".formatted(timeoutSeconds));
 
     stdinWriter.join();
     String stdout = stdoutCapture.join();
@@ -174,13 +266,6 @@ public abstract class CliBaseIT {
               .formatted(exitCode, stdout, stderr));
     }
 
-    /** A graceful stop is exit 0 (a handled signal) or 143 (the JVM default for SIGTERM). */
-    public void assertGracefulStop() {
-      Assertions.assertTrue(exitCode == 0 || exitCode == 143,
-          "Expected a graceful stop (exit 0 or 143) but got %d.\nSTDOUT: %s\nSTDERR: %s"
-              .formatted(exitCode, stdout, stderr));
-    }
-
     public void assertExitCode(int expected) {
       Assertions.assertEquals(expected, exitCode,
           "Expected exit code %d but got %d.\nSTDOUT: %s\nSTDERR: %s"
@@ -189,53 +274,81 @@ public abstract class CliBaseIT {
   }
 
   public record AsyncProcessHandle(
-      Process process,
-      StreamCapture stdout,
-      StreamCapture stderr
+      Thread thread,
+      ByteArrayOutputStream stdout,
+      ByteArrayOutputStream stderr,
+      AtomicInteger exitCode
   ) {
     public String getStdout() {
-      return stdout.buffer().toString(StandardCharsets.UTF_8);
+      return stdout.toString(StandardCharsets.UTF_8);
     }
 
     public String getStderr() {
-      return stderr.buffer().toString(StandardCharsets.UTF_8);
+      return stderr.toString(StandardCharsets.UTF_8);
     }
 
     public void interruptAndJoin(long timeoutMillis) throws InterruptedException {
-      process.destroy();
-      if (!process.waitFor(timeoutMillis, TimeUnit.MILLISECONDS)) {
-        process.destroyForcibly();
-        process.waitFor(timeoutMillis, TimeUnit.MILLISECONDS);
-      }
+      thread.interrupt();
+      thread.join(timeoutMillis);
     }
 
-    /** Joins the capture threads first: the final output lines arrive after process death. */
     public ProcessResult toResult() {
-      joinQuietly(stdout.thread());
-      joinQuietly(stderr.thread());
-      int exitCode = process.isAlive() ? -1 : process.exitValue();
-      return new ProcessResult(exitCode, getStdout(), getStderr());
-    }
-
-    private static void joinQuietly(Thread thread) {
-      try {
-        thread.join(5000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
+      return new ProcessResult(exitCode.get(), getStdout(), getStderr());
     }
   }
 
   protected AsyncProcessHandle execAsync(String... args) {
-    try {
-      startProcess(args);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
+    AtomicInteger exitCode = new AtomicInteger(-1);
 
-      StreamCapture stdoutCapture = captureAndForward(process.getInputStream(), System.out);
-      StreamCapture stderrCapture = captureAndForward(process.getErrorStream(), System.err);
-      return new AsyncProcessHandle(process, stdoutCapture, stderrCapture);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    PrintStream originalOut = System.out;
+    PrintStream originalErr = System.err;
+
+    PrintStream teeOut = new PrintStream(new TeeOutputStream(out, originalOut), true);
+    PrintStream teeErr = new PrintStream(new TeeOutputStream(err, originalErr), true);
+
+    Thread thread = Thread.ofVirtual().start(() -> {
+      System.setOut(teeOut);
+      System.setErr(teeErr);
+      System.setProperty("STREAMX_HOME", streamxHome.toAbsolutePath().toString());
+      try {
+        exitCode.set(createCommandLine().execute(args));
+      } finally {
+        System.clearProperty("STREAMX_HOME");
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+      }
+    });
+
+    return new AsyncProcessHandle(thread, out, err, exitCode);
   }
 
+  private static class TeeOutputStream extends OutputStream {
+    private final OutputStream buffer;
+    private final OutputStream console;
+
+    TeeOutputStream(OutputStream buffer, OutputStream console) {
+      this.buffer = buffer;
+      this.console = console;
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+      buffer.write(b);
+      console.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+      buffer.write(b, off, len);
+      console.write(b, off, len);
+    }
+
+    @Override
+    public void flush() throws IOException {
+      buffer.flush();
+      console.flush();
+    }
+  }
 }

@@ -3,18 +3,20 @@ package com.streamx.cli.commands.project;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
+import io.quarkus.test.junit.QuarkusTest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@QuarkusTest
 class ProjectClustersCommandIT extends CliBaseIT {
 
   private static final String ORG = "so-testorg";
@@ -23,10 +25,6 @@ class ProjectClustersCommandIT extends CliBaseIT {
       "/api/v1/organizations/" + ORG + "/projects/" + PROJECT + "/clusters";
 
   private StubProjectServer platform;
-
-  private Path getCredentialsPath() {
-    return streamxHome.resolve("contexts/default/config/credentials.json");
-  }
 
   @BeforeEach
   void setUp() throws IOException {
@@ -40,13 +38,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
       properties.store(out, null);
     }
 
-    Path credentials = getCredentialsPath();
-    Files.createDirectories(credentials.getParent());
-    Files.writeString(credentials, """
-        {"access_token":"test-access-token","refresh_token":"test-refresh-token",
-         "expires_at":%d,"issuer_url":"http://127.0.0.1:1/realms/streamx",
-         "client_id":"streamx-cli"}
-        """.formatted(Instant.now().plusSeconds(300).getEpochSecond()));
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, "test-access-token");
   }
 
   @AfterEach
@@ -54,7 +46,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
     if (platform != null) {
       platform.close();
     }
-    Files.deleteIfExists(getCredentialsPath());
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
     Files.deleteIfExists(streamxHome.resolve("contexts/default/current-org"));
     Files.deleteIfExists(streamxHome.resolve("contexts/default/current-project"));
   }

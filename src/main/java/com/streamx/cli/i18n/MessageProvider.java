@@ -593,82 +593,14 @@ public interface MessageProvider {
       value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
   String placeholderDescriptionCurrentTime();
 
-  @Message(
-      id = 277,
-      value = "StreamX auth server URL is not configured.%n"
-          + "Set it with: streamx settings set %s <url>"
-  )
-  String authServerUrlNotConfigured(String key);
-
-  @Message(id = 278, value = "%s does not support the device authorization flow")
-  String authDeviceFlowUnsupported(String issuerUrl);
-
-  @Message(
-      id = 279,
-      value = "To finish signing in, open:%n  %s%nand enter the code:%n  %s%n%nWaiting..."
-  )
-  String authLoginInstructions(String verificationUri, String userCode);
-
-  @Message(id = 280, value = "Or open this link directly:%n  %s")
-  String authLoginDirectLink(String verificationUriComplete);
-
-  @Message(id = 281, value = "Logged in successfully")
-  String authLoginSuccess();
-
-  @Message(id = 282, value = "Login was denied")
-  String authLoginDenied();
-
-  @Message(id = 283, value = "Login timed out before it was confirmed. Run 'streamx auth login'"
-      + " again")
-  String authLoginExpired();
-
-  @Message(id = 284, value = "Login failed: %s")
-  String authLoginFailed(String error);
-
-  @Message(id = 285, value = "Login was interrupted")
-  String authLoginInterrupted();
-
-  @Message(id = 286, value = "Request to %s failed: %s")
-  String authRequestFailed(String url, String reason);
-
-  @Message(id = 287, value = "Request to %s failed with status %d")
-  String authRequestFailedWithStatus(String url, int statusCode);
-
-  @Message(id = 288, value = "Response from %s was not valid JSON")
-  String authResponseNotJson(String url);
-
-  @Message(id = 289, value = "Unable to save credentials to %s: %s")
-  String authCredentialsNotSaved(String path, String reason);
-
-  @Message(id = 290, value = "Unable to read credentials from %s: %s")
-  String authCredentialsUnreadable(String path, String reason);
-
-  @Message(id = 291, value = "Unable to delete credentials at %s: %s")
-  String authCredentialsNotDeleted(String path, String reason);
-
-  @Message(id = 292, value = "Logged out successfully")
-  String authLogoutSuccess();
-
-  @Message(id = 293, value = "Not logged in")
-  String authLogoutNotLoggedIn();
-
-  @Message(id = 294, value = "Unable to disable TLS verification: %s")
-  String authInsecureTlsFailed(String reason);
-
-  @Message(id = 295, value = "Your session has expired. Run 'streamx auth login' again")
-  String authSessionExpired();
-
-  @Message(id = 296, value = "Not logged in. Run 'streamx auth login' first")
-  String platformNotLoggedIn();
+  @Message(id = 296, value = "Not logged in. Set %s to a personal access token")
+  String platformTokenNotConfigured(String variableName);
 
   @Message(
       id = 297,
       value = "StreamX platform URL is not configured.%nSet it with: streamx settings set %s <url>"
   )
   String platformUrlNotConfigured(String key);
-
-  @Message(id = 298, value = "Not authorized. Run 'streamx auth login' again")
-  String platformUnauthorized();
 
   @Message(id = 301, value = "Request to %s failed: %s")
   String platformRequestFailed(String url, String reason);
@@ -687,9 +619,6 @@ public interface MessageProvider {
 
   @Message(id = 308, value = "Organization '%s' deleted")
   String orgDeleted(String orgId);
-
-  @Message(id = 309, value = "Stored access token is not a readable JWT")
-  String authTokenMalformed();
 
   @Message(id = 310, value = "No members found")
   String orgMembersListEmpty();
@@ -717,9 +646,6 @@ public interface MessageProvider {
 
   @Message(id = 318, value = "No clusters found")
   String orgClustersListEmpty();
-
-  @Message(id = 319, value = "Identity provider returned a token response without an access token")
-  String authTokenResponseIncomplete();
 
   @Message(id = 321, value = "Invitation token is required")
   String orgInvitationTokenRequired();
@@ -760,44 +686,6 @@ public interface MessageProvider {
 
   @Message(id = 330, value = "No pending changes")
   String projectPendingChangesEmpty();
-
-  @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
-  String authLoginOpeningBrowser();
-
-  @Message(id = 332, value = "No browser available; falling back to device code sign-in.")
-  String authBrowserFallbackToDevice();
-
-  @Message(
-      id = 333,
-      value = "The identity provider does not advertise an authorization endpoint. "
-          + "Retry with --no-browser to use the device flow."
-  )
-  String authCodeFlowUnsupported();
-
-  @Message(id = 334, value = "Could not start the local login listener: %s")
-  String authLoopbackFailed(String reason);
-
-  @Message(id = 335, value = "Signed in. You can close this tab and return to the terminal.")
-  String authLoopbackSuccess();
-
-  @Message(id = 336, value = "Sign-in failed. Return to the terminal and try again.")
-  String authLoopbackDenied();
-
-  @Message(id = 337, value = "Unable to generate a PKCE challenge: %s")
-  String authPkceFailed(String reason);
-
-  @Message(id = 338, value = "Configured issuer '%s' does not match discovery document issuer '%s'")
-  String authIssuerMismatch(String configured, String documentIssuer);
-
-  @Message(id = 339, value = "Token request rejected (%d): %s")
-  String authTokenRequestRejected(int statusCode, String detail);
-
-  @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
-  String authRevocationUnsupported();
-
-  @Message(id = 353, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
-      + "Use an https:// auth server URL (http:// is allowed only for localhost)")
-  String authCleartextHttpBlocked(String url);
 
   @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
       + "Use an https:// platform URL (http:// is allowed only for localhost)")
@@ -852,41 +740,6 @@ public interface MessageProvider {
       + "Fix or delete that file, or pass --context to override")
   String contextInvalidPointer(String name, String pointerFile);
 
-  @Message(id = 370, value = "Auth server URL")
-  String contextConfigurePromptAuthUrl();
-
-  @Message(id = 371, value = "Platform API URL")
-  String contextConfigurePromptPlatformUrl();
-
-  @Message(id = 372,
-      value = "Ingestion URL (per-project on the cloud platform; leave empty to skip)")
-  String contextConfigurePromptIngestionUrl();
-
-  @Message(id = 373,
-      value = "Verify TLS certificates for %s (answer no for self-signed dev certs)?")
-  String contextConfigurePromptVerifyTls(String target);
-
-  @Message(id = 374, value = "A value for '%s' is required")
-  String contextConfigureValueRequired(String key);
-
-  @Message(id = 375, value = "Invalid URL '%s'. Use http:// or https://")
-  String contextConfigureInvalidUrl(String value);
-
-  @Message(id = 376, value = "Invalid answer '%s'")
-  String contextConfigureInvalidAnswer(String value);
-
-  @Message(id = 377, value = "Context '%s' configured")
-  String contextConfigureSaved(String name);
-
-  @Message(id = 378, value = "Log in now?")
-  String contextConfigurePromptLogin();
-
-  @Message(id = 379, value = "Login method")
-  String contextConfigurePromptLoginMethod();
-
-  @Message(id = 380, value = "Run 'streamx context configure' to set its endpoints")
-  String contextCreateConfigureHint();
-
   @Message(id = 381, value = "This permanently deletes '%s'. Type the ID to confirm")
   String deleteConfirmPrompt(String id);
 
@@ -920,15 +773,6 @@ public interface MessageProvider {
   @Message(id = 391,
       value = "Cleared current project '%s' (it belonged to the previous organization)")
   String orgUseClearedProject(String projectId);
-
-  @Message(id = 392, value = "Current organization (Enter to skip)")
-  String contextConfigurePromptOrg();
-
-  @Message(id = 393, value = "Current project (Enter to skip)")
-  String contextConfigurePromptProject();
-
-  @Message(id = 394, value = "Skipping organization/project selection: %s")
-  String contextConfigureContextSkipped(String reason);
 
   @Message(id = 395, value = "Current organization cleared")
   String orgUnset();
@@ -1011,27 +855,7 @@ public interface MessageProvider {
   @Message(id = 420, value = "You do not have permission to perform this action")
   String platformAccessDenied();
 
-  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
-  String authTokenCreated(String name);
-
-  @Message(id = 430, value = "Token revoked")
-  String authTokenRevoked();
-
-  @Message(id = 431, value = "No personal access tokens")
-  String authTokenListEmpty();
-
-  @Message(id = 432, value = "Could not read the context the token belongs to")
-  String authTokenIdentityUnavailable();
-
   @Message(id = 433, value = "Not authorized. The personal access token in "
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
-
-  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
-      + "Unset %s and run 'streamx auth login' first.")
-  String authTokenNeedsLoginSession(String variableName);
-
-  @Message(id = 435,
-      value = "Invalid expiry '%s'. Use a positive duration such as 20m, 2h or 30d.")
-  String authTokenInvalidExpiry(String value);
 }

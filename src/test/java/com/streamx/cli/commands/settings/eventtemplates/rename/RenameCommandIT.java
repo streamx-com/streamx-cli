@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.test.CliBaseIT;
+import io.quarkus.test.junit.QuarkusTest;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +18,7 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@QuarkusTest
 class RenameCommandIT extends CliBaseIT {
 
   private static final ObjectMapper JSON = new ObjectMapper();
