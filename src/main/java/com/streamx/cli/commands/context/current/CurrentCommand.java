@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.context.current;
 
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
 import picocli.CommandLine;
@@ -18,7 +18,7 @@ public class CurrentCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    System.out.println(StreamxHome.getActiveContext());
+    System.out.println(Contexts.getActiveContext());
     return new CommandResult<>(null);
   }
 }

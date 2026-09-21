@@ -2,7 +2,7 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.platform.PlatformContext;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +33,7 @@ public final class SynopsisHelper {
     usage.description(
         msg.currentContextHeader("@|bold " + currentContext() + "|@"),
         msg.currentOrgHeader(boldOrDash(quiet(PlatformContext::effectiveOrg))),
-        msg.currentProjectHeader(boldOrDash(quiet(PlatformContext::effectiveProject))),
         "");
-  }
-
-  private static String currentContext() {
-    try {
-      return StreamxHome.getActiveContext();
-    } catch (RuntimeException corruptOrUnreadable) {
-      return StreamxHome.DEFAULT_CONTEXT;
-    }
   }
 
   private static String boldOrDash(String value) {
@@ -54,6 +45,14 @@ public final class SynopsisHelper {
       return supplier.get();
     } catch (RuntimeException corruptOrUnreadable) {
       return null;
+    }
+  }
+
+  private static String currentContext() {
+    try {
+      return Contexts.getActiveContext();
+    } catch (RuntimeException corruptOrUnreadable) {
+      return Contexts.DEFAULT_CONTEXT;
     }
   }
 
