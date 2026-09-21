@@ -23,7 +23,7 @@ class StreamxHomeTest {
   void cleanup() {
     System.clearProperty("STREAMX_HOME");
     StreamxHome.clearStreamxHomeCliArg();
-    StreamxHome.clearContextCliArg();
+    Contexts.clearContextCliArg();
   }
 
   @Test

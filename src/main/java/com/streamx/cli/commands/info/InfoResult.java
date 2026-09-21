@@ -22,11 +22,7 @@ public record InfoResult(
       String active,
       String source,
       boolean exists,
-      String settingsFile,
-      String currentOrg,
-      String currentOrgSource,
-      String currentProject,
-      String currentProjectSource) {
+      String settingsFile) {
   }
 
   @RegisterForReflection
