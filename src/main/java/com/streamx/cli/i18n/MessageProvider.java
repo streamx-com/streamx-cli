@@ -691,11 +691,57 @@ public interface MessageProvider {
   @Message(id = 309, value = "Stored access token is not a readable JWT")
   String authTokenMalformed();
 
+  @Message(id = 310, value = "No members found")
+  String orgMembersListEmpty();
+
+  @Message(id = 311, value = "Member '%s' added with role '%s'")
+  String orgMemberAdded(String name, String role);
+
+  @Message(id = 312, value = "Member '%s' removed")
+  String orgMemberRemoved(String userId);
+
+  @Message(id = 313, value = "Role of '%s' changed to '%s'")
+  String orgMemberRoleChanged(String userId, String role);
+
+  @Message(id = 314, value = "No invitations found")
+  String orgInvitationsListEmpty();
+
+  @Message(id = 315, value = "Invitation sent to '%s' with role '%s'")
+  String orgInvitationCreated(String email, String role);
+
+  @Message(id = 316, value = "Invitation accepted")
+  String orgInvitationAccepted();
+
+  @Message(id = 317, value = "Invitation for '%s' cancelled")
+  String orgInvitationCancelled(String email);
+
   @Message(id = 318, value = "No clusters found")
   String orgClustersListEmpty();
 
   @Message(id = 319, value = "Identity provider returned a token response without an access token")
   String authTokenResponseIncomplete();
+
+  @Message(id = 321, value = "Invitation token is required")
+  String orgInvitationTokenRequired();
+
+  @Message(id = 322, value = "'%s' is not a member of organization '%s'")
+  String orgMemberNotFound(String userId, String orgId);
+
+  @Message(
+      id = 323,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Cancel it with: streamx org invitations cancel %s %s"
+  )
+  String orgMemberNotActiveForRemoval(String userId, String status, String orgId, String email);
+
+  @Message(
+      id = 324,
+      value = "'%s' is a pending invitation (%s), not an active member.%n"
+          + "Changing its role would grant membership without the invitation being accepted.%n"
+          + "Wait for the invitation to be accepted, or add the account directly with:%n"
+          + "  streamx org members add %s %s --role <role>"
+  )
+  String orgMemberNotActiveForRoleChange(String userId, String status, String orgId, String email);
 
   @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
   String authLoginOpeningBrowser();
