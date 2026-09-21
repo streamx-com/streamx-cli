@@ -8,17 +8,19 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
 
 public abstract class CliBaseIT {
 
@@ -27,7 +29,8 @@ public abstract class CliBaseIT {
   protected static final String CONFIG_FILE_PATH =
       "contexts/default/config/application.properties";
 
-  @TempDir
+  // Created by hand rather than with @TempDir: with @QuarkusTest and @Nested test classes the
+  // Quarkus extension runs @BeforeEach on an instance JUnit never injected the temp dir into.
   public Path streamxHome;
 
   private Process process;
@@ -51,7 +54,8 @@ public abstract class CliBaseIT {
   }
 
   @BeforeEach
-  void configureIngestionUrlIfMeshActive() throws Exception {
+  void prepareStreamxHome() throws Exception {
+    streamxHome = Files.createTempDirectory("streamx-cli-test-");
     if (MeshTestSupport.isMeshActive()) {
       exec("settings", "set", "streamx.ingestion.url",
           "http://localhost:" + MeshTestSupport.getProxyPort());
@@ -59,11 +63,16 @@ public abstract class CliBaseIT {
   }
 
   @AfterEach
-  void cleanupProcess() {
+  void cleanupProcess() throws IOException {
     if (process != null && process.isAlive()) {
       process.destroyForcibly();
     }
     envVars.clear();
+    if (streamxHome != null) {
+      try (Stream<Path> paths = Files.walk(streamxHome)) {
+        paths.sorted(Comparator.reverseOrder()).forEach(path -> path.toFile().delete());
+      }
+    }
   }
 
   protected ProcessResult execWithStdin(InputStream stdin, String... args) throws Exception {
