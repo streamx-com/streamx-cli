@@ -3,7 +3,7 @@ package com.streamx.cli.commands.org;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.streamx.cli.commands.auth.StubOidcServer;
+import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,20 +19,6 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class OrgCommandIT extends CliBaseIT {
   private StubPlatformServer platform;
-
-  private Path getCredentialsPath() {
-    return streamxHome.resolve("contexts/default/config/credentials.json");
-  }
-
-  private void writeCredentials(Instant expiresAt) throws IOException {
-    Path path = getCredentialsPath();
-    Files.createDirectories(path.getParent());
-    Files.writeString(path, """
-        {"access_token":"test-access-token","refresh_token":"test-refresh-token",
-         "expires_at":%d,"issuer_url":"http://127.0.0.1:1/realms/streamx",
-         "client_id":"streamx-cli"}
-        """.formatted(expiresAt.getEpochSecond()));
-  }
 
   @BeforeEach
   void setUp() throws IOException {
@@ -47,7 +32,7 @@ class OrgCommandIT extends CliBaseIT {
       properties.store(out, null);
     }
 
-    writeCredentials(Instant.now().plusSeconds(300));
+    setEnv(AccessTokens.STREAMX_PLATFORM_TOKEN, "test-access-token");
   }
 
   @AfterEach
@@ -55,7 +40,7 @@ class OrgCommandIT extends CliBaseIT {
     if (platform != null) {
       platform.close();
     }
-    Files.deleteIfExists(getCredentialsPath());
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
     Files.deleteIfExists(streamxHome.resolve("contexts/default/current-org"));
     Files.deleteIfExists(streamxHome.resolve("contexts/default/current-project"));
   }
@@ -87,7 +72,7 @@ class OrgCommandIT extends CliBaseIT {
 
   @Test
   void completeOrgIdsIsSilentWhenNotLoggedIn() throws Exception {
-    Files.deleteIfExists(getCredentialsPath());
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
 
     ProcessResult result = exec("__complete-org-ids");
 
@@ -176,32 +161,13 @@ class OrgCommandIT extends CliBaseIT {
 
   @Test
   void shouldFailWhenNotLoggedIn() throws Exception {
-    Files.deleteIfExists(getCredentialsPath());
+    clearEnv(AccessTokens.STREAMX_PLATFORM_TOKEN);
 
     ProcessResult result = exec("org", "list");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.platformNotLoggedIn());
-  }
-
-  @Test
-  void refreshesTokenAndRetriesOnce401() throws Exception {
-    try (StubOidcServer oidc = new StubOidcServer("streamx", 0)) {
-      Files.writeString(getCredentialsPath(), """
-          {"access_token":"stale-token","refresh_token":"%s",
-           "expires_at":%d,"issuer_url":"%s/realms/streamx","client_id":"streamx-cli"}
-          """.formatted(StubOidcServer.REFRESH_TOKEN,
-          Instant.now().plusSeconds(300).getEpochSecond(), oidc.getServerUrl()));
-      platform.failFirstRequestWith(401);
-
-      ProcessResult result = exec("org", "list", "-q");
-
-      result.assertSuccess();
-      assertThat(result.stdout().strip().lines()).containsExactly("acme", "globex");
-      assertThat(platform.getRequests()).hasSize(2);
-      assertThat(platform.getAuthorizationHeaders()).containsExactly(
-          "Bearer stale-token", "Bearer " + StubOidcServer.ACCESS_TOKEN);
-    }
+    assertThat(result.stderr())
+        .contains(msg.platformTokenNotConfigured(AccessTokens.STREAMX_PLATFORM_TOKEN));
   }
 
   @Test
@@ -247,17 +213,6 @@ class OrgCommandIT extends CliBaseIT {
     result.assertExitCode(1);
     assertThat(result.stderr()).contains("Validation failed");
     assertThat(result.stderr()).contains("name: must not be blank");
-  }
-
-  @Test
-  void shouldRefuseToUseAnExpiredSessionThatCannotBeRefreshed() throws Exception {
-    writeCredentials(Instant.now().minusSeconds(60));
-
-    ProcessResult result = exec("org", "list");
-
-    result.assertExitCode(1);
-    assertThat(result.stderr()).isNotEmpty();
-    assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test
