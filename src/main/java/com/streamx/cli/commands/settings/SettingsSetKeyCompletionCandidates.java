@@ -1,6 +1,5 @@
 package com.streamx.cli.commands.settings;
 
-import com.streamx.cli.auth.AuthConfig;
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.platform.PlatformConfig;
@@ -16,10 +15,6 @@ public class SettingsSetKeyCompletionCandidates implements Iterable<String> {
       IngestionClientConfig.STREAMX_INGESTION_URL,
       IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN,
       IngestionClientConfig.STREAMX_INGESTION_INSECURE,
-      AuthConfig.STREAMX_AUTH_SERVER_URL,
-      AuthConfig.STREAMX_AUTH_REALM,
-      AuthConfig.STREAMX_AUTH_CLIENT_ID,
-      AuthConfig.STREAMX_AUTH_INSECURE,
       PlatformConfig.STREAMX_PLATFORM_URL,
       PlatformConfig.STREAMX_PLATFORM_INSECURE,
       StreamxBaseConfig.PN_OBSERVABILITY_ENABLED,
