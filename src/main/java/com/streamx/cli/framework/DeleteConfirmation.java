@@ -2,6 +2,8 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import org.apache.commons.lang3.StringUtils;
+
 public final class DeleteConfirmation {
 
   private DeleteConfirmation() {
@@ -12,7 +14,7 @@ public final class DeleteConfirmation {
       return;
     }
     String answer = InteractivePicker.pick(msg.deleteConfirmPrompt(id), null);
-    if (answer == null || answer.isBlank()) {
+    if (StringUtils.isBlank(answer)) {
       throw new CliException(msg.deleteConfirmRequired());
     }
     if (!answer.strip().equals(id)) {

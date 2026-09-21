@@ -3,6 +3,7 @@ package com.streamx.cli.commands.publish.event;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.CliException;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public final class EventTemplateCatalog {
   public static Path resolveRelativeToContextDir(String pathAsString) {
     Path path = Paths.get(pathAsString);
     if (!path.isAbsolute()) {
-      path = StreamxHome.getContextDir().resolve(path);
+      path = Contexts.getContextDir().resolve(path);
     }
     return path.toAbsolutePath();
   }

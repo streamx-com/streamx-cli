@@ -3,7 +3,7 @@ package com.streamx.cli.commands.context.use;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.ContextNameCompletionCandidates;
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -30,14 +30,14 @@ public class UseCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    StreamxHome.requireValidContextName(name);
-    if (!StreamxHome.contextExists(name)) {
-      throw new CliException(msg.contextNotFound(name));
+    Contexts.requireValidContextName(name);
+    if (!Contexts.contextExists(name)) {
+      throw new CliException(msg.contextNotFound(name, name));
     }
     try {
-      StreamxHome.writeCurrentContextPointer(name);
+      Contexts.writeCurrentContextPointer(name);
     } catch (IOException e) {
-      throw new CliException(msg.contextSwitchFailed(e.getMessage()), e);
+      throw new CliException(msg.contextSwitchFailed(name, e.getMessage()), e);
     }
     System.out.println(msg.contextSwitched(name));
     return new CommandResult<>(null);
