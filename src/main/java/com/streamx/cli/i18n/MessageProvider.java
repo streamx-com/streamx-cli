@@ -919,6 +919,39 @@ public interface MessageProvider {
   @Message(id = 405, value = "Could not read SSH private key file '%s': %s")
   String projectSshKeyFileUnreadable(String path, String reason);
 
+  @Message(id = 406, value = "Repository connected to project '%s'")
+  String projectRepoConnected(String projectId);
+
+  @Message(id = 407, value = "Repository settings updated for project '%s'")
+  String projectRepoUpdated(String projectId);
+
+  @Message(id = 408, value = "Repository disconnected from project '%s'")
+  String projectRepoRemoved(String projectId);
+
+  @Message(id = 409,
+      value = "Project '%1$s' has no repository connected. "
+          + "Connect one with: streamx project repo set --uri <uri> --branch <branch>")
+  String projectRepoNotConnected(String projectId);
+
+  @Message(id = 410, value = "SSH key set for project '%s'")
+  String projectSshKeySet(String projectId);
+
+  @Message(id = 411, value = "SSH key removed for project '%s'")
+  String projectSshKeyRemoved(String projectId);
+
+  @Message(id = 412, value = "Project '%s' has no SSH key configured")
+  String projectSshKeyMissing(String projectId);
+
+  @Message(id = 413, value = "SSH key pair written: '%s' (private) and '%s' (public). "
+      + "Add the public key to the Git hosting's deploy keys")
+  String projectSshKeyPairWritten(String privatePath, String publicPath);
+
+  @Message(id = 414, value = "Refusing to overwrite existing file '%s'")
+  String projectSshKeyFileExists(String path);
+
+  @Message(id = 415, value = "Could not write '%s': %s")
+  String projectSshKeyFileWriteFailed(String path, String reason);
+
   @Message(id = 416, value = "specified")
   String sshKeySpecified();
 
