@@ -1,6 +1,7 @@
 package com.streamx.cli.commands.context;
 
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
+import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.auth.StubOidcServer;

@@ -4,6 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.auth.AuthConfig;
 import com.streamx.cli.commands.auth.login.LoginCommand;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
@@ -72,7 +73,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
 
       storeSettings(settings);
       StreamxHome.applySettingsToSystemProperties();
-      System.out.println(msg.contextConfigureSaved(StreamxHome.getActiveContext()));
+      System.out.println(msg.contextConfigureSaved(Contexts.getActiveContext()));
 
       login = promptYesNo(session, msg.contextConfigurePromptLogin(), true);
       if (login) {
