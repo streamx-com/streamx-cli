@@ -14,30 +14,6 @@ public interface MessageProvider {
   @Message(id = 100, value = "Unsupported output format")
   String unsupportedOutputFormat();
 
-  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
-  String authTokenCreated(String name);
-
-  @Message(id = 430, value = "Token revoked")
-  String authTokenRevoked();
-
-  @Message(id = 431, value = "No personal access tokens")
-  String authTokenListEmpty();
-
-  @Message(id = 432, value = "Could not read the context the token belongs to")
-  String authTokenIdentityUnavailable();
-
-  @Message(id = 433, value = "Not authorized. The personal access token in "
-      + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
-  String platformTokenUnauthorized();
-
-  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
-      + "Unset %s and run 'streamx auth login' first.")
-  String authTokenNeedsLoginSession(String variableName);
-
-  @Message(id = 435,
-      value = "Invalid expiry '%s'. Use a positive duration such as 20m, 2h or 30d.")
-  String authTokenInvalidExpiry(String value);
-
   @Message(id = 101, value = "Try '%s%s' for more information on the available options%n")
   String tryForMoreInformationOnAvailableOptions(
       String qualifiedCommandName,
@@ -61,6 +37,21 @@ public interface MessageProvider {
           """
   )
   String somethingWentWrong();
+
+  @Message(id = 105, value = "No such settings property found: %s")
+  String noSettingsPropertyFound(String key);
+
+  @Message(id = 106, value = "Unable to get settings property: %s")
+  String unableToGetSettingsProperty(String reason);
+
+  @Message(id = 107, value = "Failed to load properties from: %s")
+  String failedToLoadPropertiesFrom(String path);
+
+  @Message(id = 108, value = "Unable to set settings property")
+  String unableToSetSettingsProperty();
+
+  @Message(id = 109, value = "Unable to get settings file path")
+  String unableToGetSettingsFilePath();
 
   @Message(
       id = 110,
@@ -113,9 +104,6 @@ public interface MessageProvider {
   @Message(id = 122, value = "Stopping mesh...")
   String stoppingMesh();
 
-  @Message(id = 1220, value = "Error during stopping mesh: %s")
-  String errorDuringStoppingMesh(String reason);
-
   @Message(id = 123, value = """
       Unable to read mesh definition from %s
 
@@ -165,29 +153,17 @@ public interface MessageProvider {
   @Message(id = 136, value = "Expression cannot be null")
   String expressionCannotBeNull();
 
+  @Message(id = 137, value = "Unable to unset settings property %s: %s")
+  String unableToUnsetSettingsProperty(String key, String reason);
+
   @Message(id = 138, value = "Mesh file not found at: %s")
   String meshFileNotFound(String path);
 
+  @Message(id = 139, value = "Error during stopping mesh: %s")
+  String errorDuringStoppingMesh(String reason);
+
   @Message(id = 140, value = "No StreamX settings properties found")
   String listSettingsNoPropertiesFound();
-
-  @Message(id = 105, value = "No such settings property found: %s")
-  String noSettingsPropertyFound(String key);
-
-  @Message(id = 106, value = "Unable to get settings property: %s")
-  String unableToGetSettingsProperty(String reason);
-
-  @Message(id = 107, value = "Failed to load properties from: %s")
-  String failedToLoadPropertiesFrom(String path);
-
-  @Message(id = 108, value = "Unable to set settings property")
-  String unableToSetSettingsProperty();
-
-  @Message(id = 109, value = "Unable to get settings file path")
-  String unableToGetSettingsFilePath();
-
-  @Message(id = 1090, value = "Unable to unset settings property %s: %s")
-  String unableToUnsetSettingsProperty(String key, String reason);
 
   @Message(id = 141, value = "Running publish stream command")
   String runningPublishStreamCommand();
@@ -447,25 +423,6 @@ public interface MessageProvider {
   @Message(id = 219, value = "An event template with ID '%s' already exists at %s")
   String eventTemplateAlreadyExists(String id, String path);
 
-  @Message(id = 233, value = "Please pick a different template ID.")
-  String eventTemplatePickDifferentId();
-
-  @Message(id = 234,
-      value = "This will delete %s and restore the bundled default templates. Proceed? [y/N]")
-  String eventTemplatesResetConfirm(String path);
-
-  @Message(id = 235, value = "Reset cancelled.")
-  String eventTemplatesResetCancelled();
-
-  @Message(id = 236, value = "Failed to delete %s: %s")
-  String eventTemplatesResetDeleteFailed(String path, String reason);
-
-  @Message(id = 237, value = "Failed to repopulate default event templates at %s")
-  String eventTemplatesResetFailed(String path);
-
-  @Message(id = 238, value = "Reset default event templates at %s (%d restored)")
-  String eventTemplatesResetSucceeded(String path, int count);
-
   @Message(id = 220, value = "Failed to create event template at %s: %s")
   String failedToCreateEventTemplate(String path, String reason);
 
@@ -502,6 +459,25 @@ public interface MessageProvider {
   @Message(id = 231, value = "Edited event template '%s' at %s")
   String eventTemplateEdited(String id, String path);
 
+  @Message(id = 233, value = "Please pick a different template ID.")
+  String eventTemplatePickDifferentId();
+
+  @Message(id = 234,
+      value = "This will delete %s and restore the bundled default templates. Proceed? [y/N]")
+  String eventTemplatesResetConfirm(String path);
+
+  @Message(id = 235, value = "Reset cancelled.")
+  String eventTemplatesResetCancelled();
+
+  @Message(id = 236, value = "Failed to delete %s: %s")
+  String eventTemplatesResetDeleteFailed(String path, String reason);
+
+  @Message(id = 237, value = "Failed to repopulate default event templates at %s")
+  String eventTemplatesResetFailed(String path);
+
+  @Message(id = 238, value = "Reset default event templates at %s (%d restored)")
+  String eventTemplatesResetSucceeded(String path, int count);
+
   @Message(id = 240, value = "Failed to delete %s: %s")
   String pathDeleteFailed(String path, String reason);
 
@@ -510,46 +486,6 @@ public interface MessageProvider {
 
   @Message(id = 242, value = "Re-opening in %s so you can fix the error...")
   String eventTemplateEditReopening(String editor);
-
-  @Message(id = 264, value = "ERROR: invalid JSON. Fix the file below "
-      + "and delete every line starting with `//` before saving "
-      + "(JSON does not support comments).")
-  String eventTemplateEditErrorBannerHeader();
-
-  @Message(id = 270,
-      value = "Absolute path of the event payload file passed to `publish event`.")
-  String placeholderDescriptionPayloadPath();
-
-  @Message(id = 271,
-      value = "Base64-encoded content of the payload file. "
-          + "Use this to embed binary or arbitrary text payloads inside a JSON event.")
-  String placeholderDescriptionPayloadContentBase64();
-
-  @Message(id = 272,
-      value = "Content of the payload file parsed as JSON and inlined directly into "
-          + "the event (the surrounding string node is replaced by the parsed JSON).")
-  String placeholderDescriptionPayloadContentJson();
-
-  @Message(id = 273,
-      value = "Path of the payload file relative to the event template's location. "
-          + "Supports the syntax ${relativePath:n}, where 'n' specifies how many "
-          + "additional parent directories above the template to include. "
-          + "Example: ${relativePath:0} resolves to the path relative to the template "
-          + "directory; ${relativePath:1} adds one extra parent level.")
-  String placeholderDescriptionRelativePath();
-
-  @Message(id = 274,
-      value = "Subject of the event. Resolves to the value passed as the third positional "
-          + "argument of `publish event`, or to ${payloadPath} when no subject is given.")
-  String placeholderDescriptionSubject();
-
-  @Message(id = 275,
-      value = "Universally unique identifier (UUID v4), regenerated for every published event.")
-  String placeholderDescriptionUuid();
-
-  @Message(id = 276,
-      value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
-  String placeholderDescriptionCurrentTime();
 
   @Message(id = 243, value = "Cannot delete a default template. "
       + "Use `streamx settings event-templates reset-default-templates` to restore defaults.")
@@ -617,6 +553,46 @@ public interface MessageProvider {
   @Message(id = 263, value = "(TAB for options)")
   String interactivePickerHint();
 
+  @Message(id = 264, value = "ERROR: invalid JSON. Fix the file below "
+      + "and delete every line starting with `//` before saving "
+      + "(JSON does not support comments).")
+  String eventTemplateEditErrorBannerHeader();
+
+  @Message(id = 270,
+      value = "Absolute path of the event payload file passed to `publish event`.")
+  String placeholderDescriptionPayloadPath();
+
+  @Message(id = 271,
+      value = "Base64-encoded content of the payload file. "
+          + "Use this to embed binary or arbitrary text payloads inside a JSON event.")
+  String placeholderDescriptionPayloadContentBase64();
+
+  @Message(id = 272,
+      value = "Content of the payload file parsed as JSON and inlined directly into "
+          + "the event (the surrounding string node is replaced by the parsed JSON).")
+  String placeholderDescriptionPayloadContentJson();
+
+  @Message(id = 273,
+      value = "Path of the payload file relative to the event template's location. "
+          + "Supports the syntax ${relativePath:n}, where 'n' specifies how many "
+          + "additional parent directories above the template to include. "
+          + "Example: ${relativePath:0} resolves to the path relative to the template "
+          + "directory; ${relativePath:1} adds one extra parent level.")
+  String placeholderDescriptionRelativePath();
+
+  @Message(id = 274,
+      value = "Subject of the event. Resolves to the value passed as the third positional "
+          + "argument of `publish event`, or to ${payloadPath} when no subject is given.")
+  String placeholderDescriptionSubject();
+
+  @Message(id = 275,
+      value = "Universally unique identifier (UUID v4), regenerated for every published event.")
+  String placeholderDescriptionUuid();
+
+  @Message(id = 276,
+      value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
+  String placeholderDescriptionCurrentTime();
+
   @Message(
       id = 277,
       value = "StreamX auth server URL is not configured.%n"
@@ -679,10 +655,6 @@ public interface MessageProvider {
   @Message(id = 294, value = "Unable to disable TLS verification: %s")
   String authInsecureTlsFailed(String reason);
 
-  @Message(id = 353, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
-      + "Use an https:// auth server URL (http:// is allowed only for localhost)")
-  String authCleartextHttpBlocked(String url);
-
   @Message(id = 295, value = "Your session has expired. Run 'streamx auth login' again")
   String authSessionExpired();
 
@@ -707,51 +679,6 @@ public interface MessageProvider {
   @Message(id = 303, value = "Request rejected (%d): %s")
   String platformRequestRejected(int statusCode, String detail);
 
-  @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
-      + "Use an https:// platform URL (http:// is allowed only for localhost)")
-  String platformCleartextHttpBlocked(String url);
-
-  @Message(id = 309, value = "Stored access token is not a readable JWT")
-  String authTokenMalformed();
-
-  @Message(id = 319, value = "Identity provider returned a token response without an access token")
-  String authTokenResponseIncomplete();
-
-  @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
-  String authLoginOpeningBrowser();
-
-  @Message(id = 332, value = "No browser available; falling back to device code sign-in.")
-  String authBrowserFallbackToDevice();
-
-  @Message(
-      id = 333,
-      value = "The identity provider does not advertise an authorization endpoint. "
-          + "Retry with --no-browser to use the device flow."
-  )
-  String authCodeFlowUnsupported();
-
-  @Message(id = 334, value = "Could not start the local login listener: %s")
-  String authLoopbackFailed(String reason);
-
-  @Message(id = 335, value = "Signed in. You can close this tab and return to the terminal.")
-  String authLoopbackSuccess();
-
-  @Message(id = 336, value = "Sign-in failed. Return to the terminal and try again.")
-  String authLoopbackDenied();
-
-  @Message(id = 337, value = "Unable to generate a PKCE challenge: %s")
-  String authPkceFailed(String reason);
-
-  @Message(id = 338, value = "Configured issuer '%s' does not match discovery document issuer '%s'")
-  String authIssuerMismatch(String configured, String documentIssuer);
-
-  @Message(id = 339, value = "Token request rejected (%d): %s")
-  String authTokenRequestRejected(int statusCode, String detail);
-
-  @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
-  String authRevocationUnsupported();
-
-
   @Message(id = 306, value = "No organizations found")
   String orgListEmpty();
 
@@ -760,6 +687,9 @@ public interface MessageProvider {
 
   @Message(id = 308, value = "Organization '%s' deleted")
   String orgDeleted(String orgId);
+
+  @Message(id = 309, value = "Stored access token is not a readable JWT")
+  String authTokenMalformed();
 
   @Message(id = 310, value = "No members found")
   String orgMembersListEmpty();
@@ -788,8 +718,8 @@ public interface MessageProvider {
   @Message(id = 318, value = "No clusters found")
   String orgClustersListEmpty();
 
-  @Message(id = 320, value = "Paste the invitation token")
-  String orgInvitationTokenPrompt();
+  @Message(id = 319, value = "Identity provider returned a token response without an access token")
+  String authTokenResponseIncomplete();
 
   @Message(id = 321, value = "Invitation token is required")
   String orgInvitationTokenRequired();
@@ -831,13 +761,56 @@ public interface MessageProvider {
   @Message(id = 330, value = "No pending changes")
   String projectPendingChangesEmpty();
 
+  @Message(id = 331, value = "Opening your browser to sign in. If it does not open, visit:")
+  String authLoginOpeningBrowser();
+
+  @Message(id = 332, value = "No browser available; falling back to device code sign-in.")
+  String authBrowserFallbackToDevice();
+
+  @Message(
+      id = 333,
+      value = "The identity provider does not advertise an authorization endpoint. "
+          + "Retry with --no-browser to use the device flow."
+  )
+  String authCodeFlowUnsupported();
+
+  @Message(id = 334, value = "Could not start the local login listener: %s")
+  String authLoopbackFailed(String reason);
+
+  @Message(id = 335, value = "Signed in. You can close this tab and return to the terminal.")
+  String authLoopbackSuccess();
+
+  @Message(id = 336, value = "Sign-in failed. Return to the terminal and try again.")
+  String authLoopbackDenied();
+
+  @Message(id = 337, value = "Unable to generate a PKCE challenge: %s")
+  String authPkceFailed(String reason);
+
+  @Message(id = 338, value = "Configured issuer '%s' does not match discovery document issuer '%s'")
+  String authIssuerMismatch(String configured, String documentIssuer);
+
+  @Message(id = 339, value = "Token request rejected (%d): %s")
+  String authTokenRequestRejected(int statusCode, String detail);
+
+  @Message(id = 352, value = "The identity provider does not advertise a revocation endpoint")
+  String authRevocationUnsupported();
+
+  @Message(id = 353, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// auth server URL (http:// is allowed only for localhost)")
+  String authCleartextHttpBlocked(String url);
+
+  @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// platform URL (http:// is allowed only for localhost)")
+  String platformCleartextHttpBlocked(String url);
+
   @Message(id = 355,
-      value = "Invalid context name '%s'. Use 1-32 lowercase letters, digits or dashes")
+      value = "Invalid context name '%s'. Use 1-32 lowercase letters, digits or dashes, "
+          + "starting with a letter or digit")
   String contextNameInvalid(String name);
 
   @Message(id = 356,
-      value = "Context '%1$s' does not exist. Create it with: streamx context create %1$s")
-  String contextNotFound(String name);
+      value = "Context '%s' does not exist. Create it with: streamx context create %s")
+  String contextNotFound(String name, String nameAgain);
 
   @Message(id = 357, value = "Context '%s' already exists")
   String contextAlreadyExists(String name);
@@ -855,12 +828,13 @@ public interface MessageProvider {
       + "Next time run 'streamx auth logout' in the context before deleting it.")
   String contextDeletedLoginNote();
 
-  @Message(id = 362,
-      value = "Context '%s' is set as the current context. Switch to another context first")
-  String contextCannotDeleteCurrent(String name);
+  @Message(id = 362, value = "Warning: this removed the current context. "
+      + "Run 'streamx context use <name>' to select another one; "
+      + "until then the default context is used")
+  String contextDeletedWasCurrent();
 
-  @Message(id = 363, value = "Context '%s' is active. Switch to another context first")
-  String contextCannotDeleteActive(String name);
+  @Message(id = 363, value = "Warning: this removed the active context, selected %s")
+  String contextDeletedWasActive(String source);
 
   @Message(id = 364, value = "Current context: %s")
   String currentContextHeader(String name);
@@ -868,18 +842,15 @@ public interface MessageProvider {
   @Message(id = 365, value = "Could not create context '%s': %s")
   String contextCreateFailed(String name, String reason);
 
-  @Message(id = 366, value = "Could not switch context: %s")
-  String contextSwitchFailed(String reason);
+  @Message(id = 366, value = "Could not switch to context '%s': %s")
+  String contextSwitchFailed(String name, String reason);
 
   @Message(id = 367, value = "Could not delete context '%s': %s")
   String contextDeleteFailed(String name, String reason);
 
-  @Message(id = 368, value = "Invalid context name '%1$s' in %2$s. "
+  @Message(id = 368, value = "Invalid context name '%s' in %s. "
       + "Fix or delete that file, or pass --context to override")
   String contextInvalidPointer(String name, String pointerFile);
-
-  @Message(id = 369, value = "Context '%s' does not exist")
-  String contextDoesNotExist(String name);
 
   @Message(id = 370, value = "Auth server URL")
   String contextConfigurePromptAuthUrl();
@@ -1039,4 +1010,28 @@ public interface MessageProvider {
 
   @Message(id = 420, value = "You do not have permission to perform this action")
   String platformAccessDenied();
+
+  @Message(id = 429, value = "Token '%s' created. Copy it now - it will not be shown again.")
+  String authTokenCreated(String name);
+
+  @Message(id = 430, value = "Token revoked")
+  String authTokenRevoked();
+
+  @Message(id = 431, value = "No personal access tokens")
+  String authTokenListEmpty();
+
+  @Message(id = 432, value = "Could not read the context the token belongs to")
+  String authTokenIdentityUnavailable();
+
+  @Message(id = 433, value = "Not authorized. The personal access token in "
+      + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
+  String platformTokenUnauthorized();
+
+  @Message(id = 434, value = "A personal access token cannot manage personal access tokens. "
+      + "Unset %s and run 'streamx auth login' first.")
+  String authTokenNeedsLoginSession(String variableName);
+
+  @Message(id = 435,
+      value = "Invalid expiry '%s'. Use a positive duration such as 20m, 2h or 30d.")
+  String authTokenInvalidExpiry(String value);
 }

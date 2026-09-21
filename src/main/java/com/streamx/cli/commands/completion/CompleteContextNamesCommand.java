@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.completion;
 
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import java.util.List;
@@ -20,7 +20,7 @@ public class CompleteContextNamesCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    return new CommandResult<>(StreamxHome.listContextNames());
+    return new CommandResult<>(Contexts.listContextNames());
   }
 
   @Override

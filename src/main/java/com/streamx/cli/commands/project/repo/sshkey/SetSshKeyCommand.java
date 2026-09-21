@@ -27,7 +27,7 @@ public class SetSshKeyCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<file>",
-      description = "SSH private key file (sent base64-encoded)"
+      description = "SSH private key file"
   )
   public Path keyFile;
 
