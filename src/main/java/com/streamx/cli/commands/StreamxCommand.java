@@ -1,6 +1,5 @@
 package com.streamx.cli.commands;
 
-import com.streamx.cli.commands.auth.AuthCommand;
 import com.streamx.cli.commands.completion.CompleteClusterIdsCommand;
 import com.streamx.cli.commands.completion.CompleteContextNamesCommand;
 import com.streamx.cli.commands.completion.CompleteInvitedEmailsCommand;
@@ -14,7 +13,6 @@ import com.streamx.cli.commands.completion.CompleteTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.context.ContextCommand;
 import com.streamx.cli.commands.docs.GenerateDocsCommand;
-import com.streamx.cli.commands.info.InfoCommand;
 import com.streamx.cli.commands.local.LocalCommand;
 import com.streamx.cli.commands.org.OrgCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
@@ -26,13 +24,11 @@ import picocli.CommandLine;
     name = "streamx",
     header = "StreamX CLI. More info at https://streamx.com",
     subcommands = {
-        AuthCommand.class,
         ContextCommand.class,
         OrgCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,
-        InfoCommand.class,
         CompletionCommand.class,
         CompleteTemplateIdsCommand.class,
         CompleteRegisteredTemplateIdsCommand.class,
