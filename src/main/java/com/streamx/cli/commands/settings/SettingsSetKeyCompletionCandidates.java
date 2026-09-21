@@ -2,6 +2,7 @@ package com.streamx.cli.commands.settings;
 
 import com.streamx.cli.commands.publish.event.EventTemplateLoader;
 import com.streamx.cli.ingestion.IngestionClientConfig;
+import com.streamx.cli.platform.PlatformConfig;
 import com.streamx.runner.config.StreamxBaseConfig;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,8 @@ public class SettingsSetKeyCompletionCandidates implements Iterable<String> {
       IngestionClientConfig.STREAMX_INGESTION_URL,
       IngestionClientConfig.STREAMX_INGESTION_AUTH_TOKEN,
       IngestionClientConfig.STREAMX_INGESTION_INSECURE,
+      PlatformConfig.STREAMX_PLATFORM_URL,
+      PlatformConfig.STREAMX_PLATFORM_INSECURE,
       StreamxBaseConfig.PN_OBSERVABILITY_ENABLED,
       StreamxBaseConfig.PN_OBSERVABILITY_WAIT_FOR_STARTUP,
       StreamxBaseConfig.PN_CONTAINER_STARTUP_TIMEOUT_SECONDS,
