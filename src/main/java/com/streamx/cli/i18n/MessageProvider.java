@@ -679,8 +679,20 @@ public interface MessageProvider {
   @Message(id = 303, value = "Request rejected (%d): %s")
   String platformRequestRejected(int statusCode, String detail);
 
+  @Message(id = 306, value = "No organizations found")
+  String orgListEmpty();
+
+  @Message(id = 307, value = "Organization '%s' created")
+  String orgCreated(String name);
+
+  @Message(id = 308, value = "Organization '%s' deleted")
+  String orgDeleted(String orgId);
+
   @Message(id = 309, value = "Stored access token is not a readable JWT")
   String authTokenMalformed();
+
+  @Message(id = 318, value = "No clusters found")
+  String orgClustersListEmpty();
 
   @Message(id = 319, value = "Identity provider returned a token response without an access token")
   String authTokenResponseIncomplete();
@@ -775,6 +787,43 @@ public interface MessageProvider {
   @Message(id = 368, value = "Invalid context name '%s' in %s. "
       + "Fix or delete that file, or pass --context to override")
   String contextInvalidPointer(String name, String pointerFile);
+
+  @Message(id = 381, value = "This permanently deletes '%s'. Type the ID to confirm")
+  String deleteConfirmPrompt(String id);
+
+  @Message(id = 382, value = "Deletion cancelled: the entered value did not match '%s'")
+  String deleteConfirmMismatch(String id);
+
+  @Message(id = 383,
+      value = "Deletion needs confirmation. Re-run with --force in non-interactive environments")
+  String deleteConfirmRequired();
+
+  @Message(id = 384, value = "No organization given. Pass <orgId>, set STREAMX_ORG, "
+      + "or run: streamx context org use <orgId>")
+  String noOrgContext();
+
+  @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
+      + "or run: streamx context project use <projectId>")
+  String noProjectContext();
+
+  @Message(id = 387, value = "Current organization set to '%s'")
+  String orgUseSet(String orgId);
+
+  @Message(id = 388, value = "No current organization set. Run: streamx context org use <orgId>")
+  String noCurrentOrg();
+
+  @Message(id = 391,
+      value = "Cleared current project '%s' (it belonged to the previous organization)")
+  String orgUseClearedProject(String projectId);
+
+  @Message(id = 395, value = "Current organization cleared")
+  String orgUnset();
+
+  @Message(id = 396, value = "Current project cleared")
+  String projectUnset();
+
+  @Message(id = 397, value = "Current organization: %s")
+  String currentOrgHeader(String orgId);
 
   @Message(id = 419, value = "Not found, or you do not have access to it")
   String platformNotFound();
