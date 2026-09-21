@@ -1,7 +1,6 @@
 package com.streamx.cli.commands.context;
 
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
-import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.auth.StubOidcServer;
@@ -48,14 +47,13 @@ class ContextCommandIT extends CliBaseIT {
   }
 
   @Test
-  void createSwitchesToNewContextAndSuggestsConfigure() throws Exception {
+  void createSwitchesToNewContext() throws Exception {
     ProcessResult created = exec("context", "create", "prod");
 
     created.assertSuccess();
     assertThat(created.stdout())
         .contains("Context 'prod' created")
         .contains("Switched to context 'prod'");
-    assertThat(created.stderr()).contains("streamx context configure");
     assertThat(exec("context", "current").stdout().strip()).isEqualTo("prod");
   }
 
@@ -310,15 +308,38 @@ class ContextCommandIT extends CliBaseIT {
   }
 
   @Test
-  void deleteRefusesActiveAndCurrentContext() throws Exception {
+  void deleteMissingContextFails() throws Exception {
+    assertThat(exec("context", "delete", "missing").stderr()).contains("does not exist");
+  }
+
+  @Test
+  void deleteCurrentContextWarnsAndFallsBackToDefault() throws Exception {
     exec("context", "create", "prod").assertSuccess();
     exec("context", "use", "prod").assertSuccess();
 
-    assertThat(exec("context", "delete", "missing").stderr()).contains("does not exist");
-    assertThat(exec("context", "delete", "prod").stderr()).contains("is active");
-    assertThat(exec("context", "delete", "prod", "--context", "default").stderr())
-        .contains("is set as the current context");
-    assertThat(streamxHome.resolve("contexts/prod")).isDirectory();
+    ProcessResult deleted = exec("context", "delete", "prod");
+    deleted.assertSuccess();
+    assertThat(deleted.stderr())
+        .contains("removed the active context")
+        .contains("removed the current context");
+    assertThat(streamxHome.resolve("contexts/prod")).doesNotExist();
+    assertThat(streamxHome.resolve("current-context")).doesNotExist();
+    assertThat(exec("context", "current").stdout().strip()).isEqualTo("default");
+  }
+
+  @Test
+  void deleteContextSelectedByFlagWarnsButKeepsThePointer() throws Exception {
+    exec("context", "create", "prod").assertSuccess();
+    exec("context", "create", "staging").assertSuccess();
+    exec("context", "use", "prod").assertSuccess();
+
+    ProcessResult deleted = exec("context", "delete", "staging", "--context", "staging");
+    deleted.assertSuccess();
+    assertThat(deleted.stderr())
+        .contains("removed the active context, selected from the --context flag")
+        .doesNotContain("removed the current context");
+    assertThat(streamxHome.resolve("contexts/staging")).doesNotExist();
+    assertThat(exec("context", "current").stdout().strip()).isEqualTo("prod");
   }
 
   @Test

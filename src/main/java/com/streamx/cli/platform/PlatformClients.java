@@ -39,12 +39,12 @@ public class PlatformClients implements AutoCloseable {
     this.timeoutMs = timeoutMs;
   }
 
-  public static PlatformClients fromConfig() {
-    return create(TIMEOUT_MS);
-  }
-
   public static PlatformClients completion() {
     return create(COMPLETION_TIMEOUT_MS);
+  }
+
+  public static PlatformClients fromConfig() {
+    return create(TIMEOUT_MS);
   }
 
   private static PlatformClients create(long timeoutMs) {

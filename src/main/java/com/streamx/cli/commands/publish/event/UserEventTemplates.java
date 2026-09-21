@@ -1,6 +1,6 @@
 package com.streamx.cli.commands.publish.event;
 
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import java.nio.file.Path;
 
 /** Custom event templates of the active context. */
@@ -12,7 +12,7 @@ public final class UserEventTemplates {
   }
 
   public static Path getDirectory() {
-    return StreamxHome.getEventTemplatesDir();
+    return Contexts.getEventTemplatesDir();
   }
 
   public static Path resolve(String templateName) {

@@ -3,7 +3,7 @@ package com.streamx.cli.commands.context.create;
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
 import com.streamx.cli.config.ContextNameCompletionCandidates;
-import com.streamx.cli.config.StreamxHome;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
@@ -38,28 +38,28 @@ public class CreateCommand extends AbstractSilentCommand {
 
   @Override
   public CommandResult<Void> runCommand() {
-    StreamxHome.requireValidContextName(name);
-    if (StreamxHome.contextExists(name)) {
+    Contexts.requireValidContextName(name);
+    if (Contexts.contextExists(name)) {
       throw new CliException(msg.contextAlreadyExists(name));
     }
     if (from != null) {
-      StreamxHome.requireValidContextName(from);
-      if (!StreamxHome.contextExists(from)) {
-        throw new CliException(msg.contextNotFound(from));
+      Contexts.requireValidContextName(from);
+      if (!Contexts.contextExists(from)) {
+        throw new CliException(msg.contextNotFound(from, from));
       }
     }
 
     try {
-      Files.createDirectories(StreamxHome.getConfigDirOf(name));
-      Files.createDirectories(StreamxHome.getEventTemplatesDirOf(name));
+      Files.createDirectories(Contexts.getConfigDirOf(name));
+      Files.createDirectories(Contexts.getEventTemplatesDirOf(name));
       if (from != null) {
-        Path source = StreamxHome.getConfigDirOf(from).resolve("application.properties");
+        Path source = Contexts.getConfigDirOf(from).resolve("application.properties");
         if (Files.isRegularFile(source)) {
-          Files.copy(source, StreamxHome.getConfigDirOf(name).resolve("application.properties"));
+          Files.copy(source, Contexts.getConfigDirOf(name).resolve("application.properties"));
         }
         copyTree(
-            StreamxHome.getEventTemplatesDirOf(from),
-            StreamxHome.getEventTemplatesDirOf(name));
+            Contexts.getEventTemplatesDirOf(from),
+            Contexts.getEventTemplatesDirOf(name));
       }
     } catch (IOException e) {
       throw new CliException(msg.contextCreateFailed(name, e.getMessage()), e);
@@ -67,12 +67,11 @@ public class CreateCommand extends AbstractSilentCommand {
 
     System.out.println(msg.contextCreated(name));
     try {
-      StreamxHome.writeCurrentContextPointer(name);
+      Contexts.writeCurrentContextPointer(name);
       System.out.println(msg.contextSwitched(name));
     } catch (IOException e) {
-      throw new CliException(msg.contextSwitchFailed(e.getMessage()), e);
+      throw new CliException(msg.contextSwitchFailed(name, e.getMessage()), e);
     }
-    System.err.println(msg.contextCreateConfigureHint());
     return new CommandResult<>(null);
   }
 

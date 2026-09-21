@@ -2,6 +2,7 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.util.VersionProvider;
 import io.quarkus.runtime.Quarkus;
@@ -146,7 +147,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   public void populateStreamxHome(List<CommandLine> parsedChain) {
     // Reset first: these per-invocation statics would otherwise leak between in-JVM executions.
     StreamxHome.clearStreamxHomeCliArg();
-    StreamxHome.clearContextCliArg();
+    Contexts.clearContextCliArg();
     // -H/--context may sit at any level of the invocation (streamx --context x sub cmd);
     // collect across the chain, last occurrence wins.
     for (CommandLine commandLine : parsedChain) {
@@ -155,7 +156,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
           StreamxHome.setStreamxHomeCliArg(command.helpOptions.streamxHome);
         }
         if (command.helpOptions.context != null) {
-          StreamxHome.setContextCliArg(command.helpOptions.context);
+          Contexts.setContextCliArg(command.helpOptions.context);
         }
       }
     }
