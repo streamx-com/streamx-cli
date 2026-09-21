@@ -8,6 +8,7 @@ import com.streamx.cli.auth.CredentialsStore;
 import com.streamx.cli.auth.OidcClient;
 import com.streamx.cli.commands.info.InfoResult.Probe;
 import com.streamx.cli.commands.info.InfoResult.Setting;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
@@ -92,16 +93,16 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
     String active = null;
     try {
-      active = StreamxHome.getActiveContext();
+      active = Contexts.getActiveContext();
     } catch (CliException e) {
       warnings.add(e.getMessage());
     }
-    boolean exists = active != null && StreamxHome.contextExists(active);
+    boolean exists = active != null && Contexts.contextExists(active);
     InfoResult.Context context = new InfoResult.Context(
         active,
-        StreamxHome.getActiveContextSource(),
+        Contexts.getActiveContextSource(),
         exists,
-        active == null ? null : StreamxHome.getConfigDirOf(active)
+        active == null ? null : Contexts.getConfigDirOf(active)
             .resolve("application.properties").toString(),
         quiet(PlatformContext::effectiveOrg),
         quiet(PlatformContext::effectiveOrgSource),
@@ -502,7 +503,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
   private static Properties loadSettings(String context) {
     Properties properties = new Properties();
-    Path path = StreamxHome.getConfigDirOf(context).resolve("application.properties");
+    Path path = Contexts.getConfigDirOf(context).resolve("application.properties");
     if (!Files.isRegularFile(path)) {
       return properties;
     }
