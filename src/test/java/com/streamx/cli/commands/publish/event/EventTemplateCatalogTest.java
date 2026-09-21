@@ -3,6 +3,7 @@ package com.streamx.cli.commands.publish.event;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.streamx.cli.commands.publish.event.EventTemplateCatalog.TemplateLocation;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -44,7 +45,7 @@ class EventTemplateCatalogTest {
   @BeforeEach
   void redirectStreamxHome() {
     StreamxHome.setStreamxHomeCliArg(home.toString());
-    StreamxHome.clearContextCliArg();
+    Contexts.clearContextCliArg();
   }
 
   @AfterEach

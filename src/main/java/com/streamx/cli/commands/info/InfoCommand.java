@@ -8,6 +8,7 @@ import com.streamx.cli.auth.CredentialsStore;
 import com.streamx.cli.auth.OidcClient;
 import com.streamx.cli.commands.info.InfoResult.Probe;
 import com.streamx.cli.commands.info.InfoResult.Setting;
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
@@ -17,7 +18,6 @@ import com.streamx.cli.framework.Urls;
 import com.streamx.cli.ingestion.IngestionClientConfig;
 import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformConfig;
-import com.streamx.cli.platform.PlatformContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -92,21 +92,17 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
     String active = null;
     try {
-      active = StreamxHome.getActiveContext();
+      active = Contexts.getActiveContext();
     } catch (CliException e) {
       warnings.add(e.getMessage());
     }
-    boolean exists = active != null && StreamxHome.contextExists(active);
+    boolean exists = active != null && Contexts.contextExists(active);
     InfoResult.Context context = new InfoResult.Context(
         active,
-        StreamxHome.getActiveContextSource(),
+        Contexts.getActiveContextSource(),
         exists,
-        active == null ? null : StreamxHome.getConfigDirOf(active)
-            .resolve("application.properties").toString(),
-        quiet(PlatformContext::effectiveOrg),
-        quiet(PlatformContext::effectiveOrgSource),
-        quiet(PlatformContext::effectiveProject),
-        quiet(PlatformContext::effectiveProjectSource));
+        active == null ? null : Contexts.getConfigDirOf(active)
+            .resolve("application.properties").toString());
     if (active != null && !exists) {
       warnings.add("Context '" + active + "' does not exist yet");
     }
@@ -502,7 +498,7 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
 
   private static Properties loadSettings(String context) {
     Properties properties = new Properties();
-    Path path = StreamxHome.getConfigDirOf(context).resolve("application.properties");
+    Path path = Contexts.getConfigDirOf(context).resolve("application.properties");
     if (!Files.isRegularFile(path)) {
       return properties;
     }
@@ -531,12 +527,6 @@ public class InfoCommand extends AbstractCommand<InfoResult> {
         + "  (" + info.context().source() + ")");
     row(sb, "exists", info.context().exists() ? "yes" : "no");
     row(sb, "settings file", valueOrDash(info.context().settingsFile()));
-    row(sb, "current org", valueOrDash(info.context().currentOrg())
-        + (info.context().currentOrgSource() == null
-            ? "" : "  (" + info.context().currentOrgSource() + ")"));
-    row(sb, "current project", valueOrDash(info.context().currentProject())
-        + (info.context().currentProjectSource() == null
-            ? "" : "  (" + info.context().currentProjectSource() + ")"));
 
     sb.append("\nSettings\n");
     sb.append(TextTable.render(
