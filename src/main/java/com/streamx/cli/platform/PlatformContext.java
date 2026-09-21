@@ -19,36 +19,13 @@ import com.streamx.cli.framework.CliException;
 public final class PlatformContext {
 
   public static final String STREAMX_ORG = "STREAMX_ORG";
-  public static final String STREAMX_PROJECT = "STREAMX_PROJECT";
 
   private PlatformContext() {
-  }
-
-  public record OrgProject(String org, String project) {
   }
 
   public static String effectiveOrg() {
     String env = override(STREAMX_ORG);
     return env != null ? env : StreamxHome.readCurrentOrg();
-  }
-
-  public static String effectiveProject() {
-    String env = override(STREAMX_PROJECT);
-    return env != null ? env : StreamxHome.readCurrentProject();
-  }
-
-  public static String effectiveOrgSource() {
-    if (override(STREAMX_ORG) != null) {
-      return "from the STREAMX_ORG environment variable";
-    }
-    return StreamxHome.readCurrentOrg() != null ? "from the current-org file" : null;
-  }
-
-  public static String effectiveProjectSource() {
-    if (override(STREAMX_PROJECT) != null) {
-      return "from the STREAMX_PROJECT environment variable";
-    }
-    return StreamxHome.readCurrentProject() != null ? "from the current-project file" : null;
   }
 
   public static String requireOrg(String orgArg) {
@@ -62,14 +39,6 @@ public final class PlatformContext {
     return effective;
   }
 
-  public static OrgProject orgAndProject(String orgArg, String projectArg) {
-    String project = projectArg != null ? projectArg : effectiveProject();
-    if (project == null) {
-      throw new CliException(msg.noProjectContext());
-    }
-    return new OrgProject(requireOrg(orgArg), project);
-  }
-
   public static String setCurrentOrg(String orgId) {
     try {
       String previousOrg = StreamxHome.readCurrentOrg();
@@ -80,17 +49,6 @@ public final class PlatformContext {
         return currentProject;
       }
       return null;
-    } catch (java.io.IOException e) {
-      throw new CliException(e.getMessage(), e);
-    }
-  }
-
-  public static void setCurrentProject(String projectId) {
-    if (StreamxHome.readCurrentOrg() == null) {
-      throw new CliException(msg.noCurrentOrg());
-    }
-    try {
-      StreamxHome.writeCurrentProject(projectId);
     } catch (java.io.IOException e) {
       throw new CliException(e.getMessage(), e);
     }
