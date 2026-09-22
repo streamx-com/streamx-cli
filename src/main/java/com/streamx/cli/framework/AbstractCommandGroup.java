@@ -21,9 +21,6 @@ public class AbstractCommandGroup extends AbstractCommand<Void> {
 
   @Override
   public List<String> getHiddenOptions() {
-    return List.of(
-      CommonOptions.OUTPUT_LONG,
-      CommonOptions.VERBOSE_LONG
-    );
+    return List.of(CommonOptions.OUTPUT_LONG);
   }
 }
