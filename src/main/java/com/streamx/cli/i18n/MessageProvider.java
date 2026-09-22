@@ -655,19 +655,19 @@ public interface MessageProvider {
 
   @Message(
       id = 323,
-      value = "'%s' is a pending invitation (%s), not an active member.%n"
-          + "Cancel it with: streamx org invitations cancel %s %s"
+      value = "'%1$s' is a pending invitation (%2$s), not an active member.%n"
+          + "Cancel it with: streamx org invitations cancel --org %3$s %1$s"
   )
-  String orgMemberNotActiveForRemoval(String userId, String status, String orgId, String email);
+  String orgMemberNotActiveForRemoval(String userId, String status, String orgId);
 
   @Message(
       id = 324,
-      value = "'%s' is a pending invitation (%s), not an active member.%n"
+      value = "'%1$s' is a pending invitation (%2$s), not an active member.%n"
           + "Changing its role would grant membership without the invitation being accepted.%n"
           + "Wait for the invitation to be accepted, or add the account directly with:%n"
-          + "  streamx org members add %s %s --role <role>"
+          + "  streamx org members add --org %3$s %1$s --role <role>"
   )
-  String orgMemberNotActiveForRoleChange(String userId, String status, String orgId, String email);
+  String orgMemberNotActiveForRoleChange(String userId, String status, String orgId);
 
   @Message(id = 325, value = "No projects found")
   String projectListEmpty();

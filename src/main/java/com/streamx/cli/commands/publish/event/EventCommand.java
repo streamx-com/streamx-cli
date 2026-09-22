@@ -82,14 +82,14 @@ public class EventCommand extends AbstractCommand<EventCommandResult> {
   public CommandResult<EventCommandResult> runCommand() {
     PayloadPathValidator.validate(eventPayloadPath);
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.runningPublishEventCommand());
       System.err.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.initializingStreamxClient());
       System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
