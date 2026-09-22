@@ -188,7 +188,7 @@ class ProjectCommandIT extends CliBaseIT {
         "--repository-uri", "git@github.com:acme/web.git",
         "--repository-branch", "main",
         "--ssh-private-key", keyFile.toString(),
-        "--cluster", "eu-central", "--cluster", "us-east");
+        "--clusters", "eu-central,us-east");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -265,7 +265,7 @@ class ProjectCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("DELETE /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c");
-    assertThat(result.stdout()).contains(msg.projectDeleted("so-org-web-a1b2c"));
+    assertThat(result.stderr()).contains(msg.projectDeleted("so-org-web-a1b2c"));
   }
 
   @Test
@@ -340,12 +340,12 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
-  void projectUseCurrentLifecycle() throws Exception {
+  void projectUseStoresTheProjectAndProjectCurrentPrintsItBack() throws Exception {
     exec("context", "org", "use", ORG).assertSuccess();
 
     ProcessResult use = exec("context", "project", "use", "so-org-web-a1b2c");
     use.assertSuccess();
-    assertThat(use.stdout()).contains(msg.projectUseSet("so-org-web-a1b2c"));
+    assertThat(use.stderr()).contains(msg.projectUseSet("so-org-web-a1b2c"));
 
     ProcessResult current = exec("context", "project", "current");
     current.assertSuccess();
@@ -448,7 +448,7 @@ class ProjectCommandIT extends CliBaseIT {
     ProcessResult result = exec("context", "project", "unset");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.projectUnset());
+    assertThat(result.stderr()).contains(msg.projectUnset());
     assertThat(streamxHome.resolve("contexts/default/current-project")).doesNotExist();
     assertThat(exec("context", "org", "current").stdout().strip()).isEqualTo(ORG);
     assertThat(exec("context", "project", "current").exitCode()).isEqualTo(1);

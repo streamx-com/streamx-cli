@@ -12,7 +12,6 @@ import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.generated.model.Invitation;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -43,7 +42,6 @@ public class ListCommand extends AbstractCommand<List<Invitation>> {
     if (quiet) {
       return invitations.stream()
           .map(Invitation::getEmail)
-          .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 

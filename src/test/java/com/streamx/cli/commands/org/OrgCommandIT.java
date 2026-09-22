@@ -136,7 +136,7 @@ class OrgCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getCreatedNames()).containsExactly("my-org");
-    assertThat(result.stdout()).contains(msg.orgCreated("my-org"));
+    assertThat(result.stdout()).contains(msg.orgCreated("my-org", "so-my-org-a1b2c"));
   }
 
   @Test
@@ -145,7 +145,7 @@ class OrgCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getDeletedIds()).containsExactly("acme");
-    assertThat(result.stdout()).contains(msg.orgDeleted("acme"));
+    assertThat(result.stderr()).contains(msg.orgDeleted("acme"));
   }
 
   @Test
@@ -274,10 +274,10 @@ class OrgCommandIT extends CliBaseIT {
   }
 
   @Test
-  void orgUseCurrentLifecycle() throws Exception {
+  void orgUseStoresTheOrgAndOrgCurrentPrintsItBack() throws Exception {
     ProcessResult use = exec("context", "org", "use", "acme");
     use.assertSuccess();
-    assertThat(use.stdout()).contains(msg.orgUseSet("acme"));
+    assertThat(use.stderr()).contains(msg.orgUseSet("acme"));
     assertThat(streamxHome.resolve("contexts/default/current-org")).content()
         .isEqualToIgnoringNewLines("acme");
 
@@ -383,7 +383,7 @@ class OrgCommandIT extends CliBaseIT {
     ProcessResult result = exec("context", "org", "unset");
 
     result.assertSuccess();
-    assertThat(result.stdout())
+    assertThat(result.stderr())
         .contains(msg.orgUnset())
         .contains(msg.projectUnset());
     assertThat(streamxHome.resolve("contexts/default/current-org")).doesNotExist();
@@ -392,7 +392,7 @@ class OrgCommandIT extends CliBaseIT {
 
     ProcessResult again = exec("context", "org", "unset");
     again.assertSuccess();
-    assertThat(again.stdout()).contains(msg.orgUnset()).doesNotContain(msg.projectUnset());
+    assertThat(again.stderr()).contains(msg.orgUnset()).doesNotContain(msg.projectUnset());
   }
 
 }

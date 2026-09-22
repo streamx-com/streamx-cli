@@ -55,7 +55,7 @@ public class GenerateSshKeyCommand extends AbstractSilentCommand {
     }
     writePrivateKey(keyFile, pair.getPrivateKey());
     writePublicKey(publicKeyFile, pair.getPublicKey());
-    System.out.println(
+    System.err.println(
         msg.projectSshKeyPairWritten(keyFile.toString(), publicKeyFile.toString()));
     return new CommandResult<>(null);
   }

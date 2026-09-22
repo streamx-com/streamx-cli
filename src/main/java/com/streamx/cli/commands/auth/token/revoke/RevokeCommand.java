@@ -30,7 +30,7 @@ public class RevokeCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new ProfileTokensApi(client).revoke(id);
     }
-    System.out.println(msg.authTokenRevoked());
+    System.err.println(msg.authTokenRevoked());
     return new CommandResult<>(null);
   }
 }

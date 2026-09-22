@@ -6,6 +6,7 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.DetailsView;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectRepositoryApi;
@@ -29,24 +30,17 @@ public class GetCommand extends AbstractCommand<ProjectRepository> {
     Boolean ready = status == null ? null : status.getReady();
     List<String> errors = status == null || status.getErrorMessages() == null
         ? List.of() : status.getErrorMessages();
-    return """
-        uri       = %s
-        branch    = %s
-        commit    = %s
-        ready     = %s
-        ssh key   = %s%s"""
-        .formatted(
-            orDash(repository.getUri()),
-            orDash(repository.getBranch()),
-            orDash(repository.getCommitId()),
-            ready == null ? "-" : ready,
-            Boolean.TRUE.equals(repository.getSshKeyProvided())
-                ? msg.sshKeySpecified() : msg.sshKeyNotSpecified(),
-            errors.isEmpty() ? "" : "\nerrors    = " + String.join("; ", errors));
-  }
-
-  private static String orDash(String value) {
-    return value == null ? "-" : value;
+    DetailsView details = new DetailsView()
+        .row("uri", repository.getUri())
+        .row("branch", repository.getBranch())
+        .row("commit", repository.getCommitId())
+        .row("ready", ready == null ? null : ready.toString())
+        .row("ssh key", Boolean.TRUE.equals(repository.getSshKeyProvided())
+            ? msg.sshKeySpecified() : msg.sshKeyNotSpecified());
+    if (!errors.isEmpty()) {
+      details.row("errors", String.join("; ", errors));
+    }
+    return details.render();
   }
 
   @Override
