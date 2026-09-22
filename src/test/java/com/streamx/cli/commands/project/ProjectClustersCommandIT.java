@@ -86,7 +86,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
         "PATCH " + CLUSTERS_PATH);
     assertThat(platform.getRequestBodies().get(1))
         .isEqualTo("[\"processing-eu-central\",\"edge-us-east\"]");
-    assertThat(result.stdout()).contains(
+    assertThat(result.stderr()).contains(
         msg.projectClustersSet(PROJECT, "processing-eu-central, edge-us-east"));
   }
 
@@ -122,7 +122,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
         "PATCH " + CLUSTERS_PATH);
     assertThat(platform.getRequestBodies().get(1))
         .isEqualTo("[\"processing-eu-central\",\"edge-us-east\"]");
-    assertThat(result.stdout()).contains(msg.projectClusterEnabled("edge-us-east", PROJECT));
+    assertThat(result.stderr()).contains(msg.projectClusterEnabled("edge-us-east", PROJECT));
   }
 
   @Test
@@ -132,7 +132,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stdout())
+    assertThat(result.stderr())
         .contains(msg.projectClusterAlreadyEnabled("processing-eu-central", PROJECT));
   }
 
@@ -146,7 +146,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
         "GET " + CLUSTERS_PATH,
         "PATCH " + CLUSTERS_PATH);
     assertThat(platform.getRequestBodies().get(1)).isEqualTo("[]");
-    assertThat(result.stdout())
+    assertThat(result.stderr())
         .contains(msg.projectClusterDisabled("processing-eu-central", PROJECT));
   }
 
@@ -157,7 +157,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stdout())
+    assertThat(result.stderr())
         .contains(msg.projectClusterAlreadyDisabled("edge-us-east", PROJECT));
   }
 

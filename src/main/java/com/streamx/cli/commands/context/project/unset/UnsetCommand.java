@@ -24,7 +24,7 @@ public class UnsetCommand extends AbstractSilentCommand {
     } catch (IOException e) {
       throw new CliException(e.getMessage(), e);
     }
-    System.out.println(msg.projectUnset());
+    System.err.println(msg.projectUnset());
     return new CommandResult<>(null);
   }
 }

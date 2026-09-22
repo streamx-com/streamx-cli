@@ -7,7 +7,6 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.generated.model.User;
 import java.util.List;
-import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -22,9 +21,7 @@ public class CompleteOrgMemberIdsCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
-        ? PlatformContext.effectiveOrg()
-        : orgId;
+    String org = PlatformContext.completionOrg(orgId);
     if (org == null) {
       return new CommandResult<>(List.of());
     }
@@ -32,7 +29,6 @@ public class CompleteOrgMemberIdsCommand extends AbstractCommand<List<String>> {
       return new CommandResult<>(new OrganizationUsersApi(client).list(org).stream()
           .filter(user -> user.getStatus() == User.StatusEnum.ACTIVE)
           .map(User::getId)
-          .filter(Objects::nonNull)
           .sorted()
           .toList());
     } catch (RuntimeException anyFailure) {

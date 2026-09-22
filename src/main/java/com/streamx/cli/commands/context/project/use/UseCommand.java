@@ -27,7 +27,7 @@ public class UseCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     PlatformContext.setCurrentProject(projectId.strip());
-    System.out.println(msg.projectUseSet(projectId.strip()));
+    System.err.println(msg.projectUseSet(projectId.strip()));
     return new CommandResult<>(null);
   }
 }

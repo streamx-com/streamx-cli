@@ -102,6 +102,11 @@ public class StubPlatformServer implements AutoCloseable {
              "status":"PENDING"}
           ]
           """);
+    } else if ("POST".equals(method)) {
+      respond(exchange, 201, """
+          {"email":"invited@streamx.com","role":{"name":"edit","displayName":"Editor"},
+           "status":"PENDING"}
+          """);
     } else {
       respond(exchange, 204, "");
     }
@@ -220,8 +225,12 @@ public class StubPlatformServer implements AutoCloseable {
           """.formatted(id));
     } else if ("POST".equals(method)) {
       String body = new String(readBody(exchange), StandardCharsets.UTF_8);
-      createdNames.add(body.replaceAll(".*\"name\"\\s*:\\s*\"([^\"]+)\".*", "$1"));
-      respond(exchange, 204, "");
+      String createdName = body.replaceAll(".*\"name\"\\s*:\\s*\"([^\"]+)\".*", "$1");
+      createdNames.add(createdName);
+      respond(exchange, 200, """
+          {"id":"so-%s-a1b2c","name":"%s","projectsNumber":"0",
+           "role":{"name":"owner","displayName":"Owner"},"state":"ready"}
+          """.formatted(createdName, createdName));
     } else if ("DELETE".equals(method)) {
       deletedIds.add(id);
       respond(exchange, 204, "");

@@ -59,7 +59,7 @@ public class SetRoleCommand extends AbstractSilentCommand {
 
       users.editRole(orgId, userId, role);
     }
-    System.out.println(msg.orgMemberRoleChanged(userId, role));
+    System.err.println(msg.orgMemberRoleChanged(userId, role));
     return new CommandResult<>(null);
   }
 }

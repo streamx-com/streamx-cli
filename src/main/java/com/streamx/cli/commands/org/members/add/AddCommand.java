@@ -48,7 +48,7 @@ public class AddCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationUsersApi(client).add(orgId, email, role);
     }
-    System.out.println(msg.orgMemberAdded(email, role));
+    System.err.println(msg.orgMemberAdded(email, role));
     return new CommandResult<>(null);
   }
 }
