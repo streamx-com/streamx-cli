@@ -77,7 +77,7 @@ class ProjectRepoCommandIT extends CliBaseIT {
     assertThat(platform.getRequestBodies().get(1))
         .contains("\"uri\":\"git@github.com:acme/web.git\"")
         .contains("\"branch\":\"main\"");
-    assertThat(result.stdout()).contains(msg.projectRepoConnected(PROJECT));
+    assertThat(result.stderr()).contains(msg.projectRepoConnected(PROJECT));
   }
 
   @Test
@@ -88,7 +88,7 @@ class ProjectRepoCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("GET " + REPO_PATH, "PATCH " + REPO_PATH);
-    assertThat(result.stdout()).contains(msg.projectRepoUpdated(PROJECT));
+    assertThat(result.stderr()).contains(msg.projectRepoUpdated(PROJECT));
   }
 
   @Test
@@ -97,10 +97,10 @@ class ProjectRepoCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .contains("uri       = git@github.com:acme/web.git")
-        .contains("branch    = main")
-        .contains("commit    = abc1234")
-        .contains("ready     = true");
+        .contains("uri     = git@github.com:acme/web.git")
+        .contains("branch  = main")
+        .contains("commit  = abc1234")
+        .contains("ready   = true");
   }
 
   @Test
@@ -119,7 +119,7 @@ class ProjectRepoCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly("DELETE " + REPO_PATH);
-    assertThat(result.stdout()).contains(msg.projectRepoRemoved(PROJECT));
+    assertThat(result.stderr()).contains(msg.projectRepoRemoved(PROJECT));
   }
 
   @Test
@@ -137,7 +137,7 @@ class ProjectRepoCommandIT extends CliBaseIT {
         "POST " + REPO_PATH + "/ssh-key");
     assertThat(platform.getRequestBodies().get(1))
         .contains("\"privateKeyBase64\":\"" + expected + "\"");
-    assertThat(result.stdout()).contains(msg.projectSshKeySet(PROJECT));
+    assertThat(result.stderr()).contains(msg.projectSshKeySet(PROJECT));
   }
 
   @Test
@@ -180,7 +180,7 @@ class ProjectRepoCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly("DELETE " + REPO_PATH + "/ssh-key");
-    assertThat(result.stdout()).contains(msg.projectSshKeyRemoved(PROJECT));
+    assertThat(result.stderr()).contains(msg.projectSshKeyRemoved(PROJECT));
   }
 
   @Test
@@ -198,9 +198,9 @@ class ProjectRepoCommandIT extends CliBaseIT {
     assertThat(publicKeyFile).content().isEqualTo("ssh-ed25519 GENERATED-PUBLIC\n");
     assertThat(Files.getPosixFilePermissions(keyFile))
         .isEqualTo(PosixFilePermissions.fromString("rw-------"));
-    assertThat(result.stdout())
-        .contains(msg.projectSshKeyPairWritten(keyFile.toString(), publicKeyFile.toString()))
-        .doesNotContain("GENERATED-PRIVATE");
+    assertThat(result.stderr())
+        .contains(msg.projectSshKeyPairWritten(keyFile.toString(), publicKeyFile.toString()));
+    assertThat(result.stdout()).doesNotContain("GENERATED-PRIVATE");
   }
 
   @Test

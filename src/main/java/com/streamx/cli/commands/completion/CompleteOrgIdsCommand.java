@@ -6,7 +6,6 @@ import com.streamx.cli.platform.OrganizationsApi;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.generated.model.Organization;
 import java.util.List;
-import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -21,7 +20,6 @@ public class CompleteOrgIdsCommand extends AbstractCommand<List<String>> {
     try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationsApi(client).list().stream()
           .map(Organization::getId)
-          .filter(Objects::nonNull)
           .toList());
     } catch (RuntimeException anyFailure) {
       return new CommandResult<>(List.of());

@@ -23,9 +23,9 @@ public class UnsetCommand extends AbstractSilentCommand {
       final boolean hadProject = StreamxHome.readCurrentProject() != null;
       StreamxHome.clearCurrentOrg();
       StreamxHome.clearCurrentProject();
-      System.out.println(msg.orgUnset());
+      System.err.println(msg.orgUnset());
       if (hadProject) {
-        System.out.println(msg.projectUnset());
+        System.err.println(msg.projectUnset());
       }
     } catch (IOException e) {
       throw new CliException(e.getMessage(), e);

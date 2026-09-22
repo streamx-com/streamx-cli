@@ -88,7 +88,7 @@ class OrgInvitationsCommandIT extends CliBaseIT {
     assertThat(platform.getRequests())
         .containsExactly("PATCH /api/v1/organizations/" + ORG + "/invitations");
     assertThat(platform.getRequestBodies().get(0)).contains("\"token\":\"token-abc\"");
-    assertThat(result.stdout()).contains(msg.orgInvitationAccepted());
+    assertThat(result.stderr()).contains(msg.orgInvitationAccepted());
   }
 
   @Test
@@ -123,6 +123,6 @@ class OrgInvitationsCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("DELETE /api/v1/organizations/" + ORG + "/invitations/" + expected);
-    assertThat(result.stdout()).contains(msg.orgInvitationCancelled(email));
+    assertThat(result.stderr()).contains(msg.orgInvitationCancelled(email));
   }
 }

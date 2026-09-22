@@ -41,7 +41,7 @@ public class SetSshKeyCommand extends AbstractSilentCommand {
       boolean create = !api.sshKeyExists(context.org(), context.project());
       api.setSshKey(context.org(), context.project(), keyBase64, create);
     }
-    System.out.println(msg.projectSshKeySet(context.project()));
+    System.err.println(msg.projectSshKeySet(context.project()));
     return new CommandResult<>(null);
   }
 

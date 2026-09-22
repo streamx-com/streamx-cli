@@ -32,6 +32,10 @@ public final class PlatformContext {
     return env != null ? env : StreamxHome.readCurrentOrg();
   }
 
+  public static String completionOrg(String orgArg) {
+    return orgArg == null || orgArg.isBlank() ? effectiveOrg() : orgArg;
+  }
+
   public static String effectiveProject() {
     String env = override(STREAMX_PROJECT);
     return env != null ? env : StreamxHome.readCurrentProject();

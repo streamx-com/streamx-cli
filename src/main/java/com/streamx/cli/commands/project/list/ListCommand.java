@@ -13,7 +13,6 @@ import com.streamx.cli.platform.ProjectsApi;
 import com.streamx.cli.platform.RepositoryView;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -51,7 +50,6 @@ public class ListCommand extends AbstractCommand<List<ProjectView>> {
     if (quiet) {
       return projects.stream()
           .map(ProjectView::id)
-          .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 

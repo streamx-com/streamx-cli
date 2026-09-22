@@ -683,8 +683,8 @@ public interface MessageProvider {
   @Message(id = 306, value = "No organizations found")
   String orgListEmpty();
 
-  @Message(id = 307, value = "Organization '%s' created")
-  String orgCreated(String name);
+  @Message(id = 307, value = "Organization '%s' created (ID: %s)")
+  String orgCreated(String name, String id);
 
   @Message(id = 308, value = "Organization '%s' deleted")
   String orgDeleted(String orgId);

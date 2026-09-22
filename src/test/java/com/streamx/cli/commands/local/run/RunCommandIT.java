@@ -4,6 +4,7 @@ import static com.streamx.cli.i18n.MessageProvider.msg;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
@@ -11,8 +12,11 @@ import com.streamx.cli.test.CliBaseIT;
 import com.streamx.cli.test.MeshTestSupport;
 import com.streamx.cli.test.annotation.DisabledIfDockerUnavailable;
 import com.streamx.runner.docker.DockerClientFactory;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -45,21 +49,29 @@ public class RunCommandIT extends CliBaseIT {
     removeMeshContainers();
   }
 
-  private int meshContainerCount() throws Exception {
-    Process p = new ProcessBuilder("sh", "-c",
-        "docker ps -aq --filter name=" + meshPrefix + " | wc -l").start();
-    p.waitFor();
-    return Integer.parseInt(new String(p.getInputStream().readAllBytes()).trim());
+  private int meshContainerCount() {
+    try (DockerClient docker = DockerClientFactory.create()) {
+      return meshContainers(docker).size();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private void removeMeshContainers() {
-    try {
-      new ProcessBuilder("sh", "-c",
-          "docker ps -aq --filter name=" + meshPrefix + " | xargs docker rm -f")
-          .start().waitFor();
+    try (DockerClient docker = DockerClientFactory.create()) {
+      for (Container container : meshContainers(docker)) {
+        docker.removeContainerCmd(container.getId()).withForce(true).exec();
+      }
     } catch (Exception ignored) {
       // best-effort cleanup
     }
+  }
+
+  private List<Container> meshContainers(DockerClient docker) {
+    return docker.listContainersCmd()
+        .withShowAll(true)
+        .withNameFilter(List.of(meshPrefix))
+        .exec();
   }
 
   @Test

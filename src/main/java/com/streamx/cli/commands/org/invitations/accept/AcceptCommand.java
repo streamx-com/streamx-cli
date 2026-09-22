@@ -51,7 +51,7 @@ public class AcceptCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationInvitationsApi(client).accept(orgId, token);
     }
-    System.out.println(msg.orgInvitationAccepted());
+    System.err.println(msg.orgInvitationAccepted());
     return new CommandResult<>(null);
   }
 
