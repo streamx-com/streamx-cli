@@ -42,7 +42,7 @@ public class LoginCommand extends AbstractSilentCommand {
     CredentialsStore.save(credentials);
     previous.ifPresent(LoginCommand::revokePrevious);
 
-    System.out.println(msg.authLoginSuccess());
+    System.err.println(msg.authLoginSuccess());
     return new CommandResult<>(null);
   }
 

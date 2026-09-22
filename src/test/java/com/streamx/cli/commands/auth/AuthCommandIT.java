@@ -62,7 +62,7 @@ class AuthCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stderr()).contains(StubOidcServer.USER_CODE);
-    assertThat(result.stdout()).contains(msg.authLoginSuccess());
+    assertThat(result.stderr()).contains(msg.authLoginSuccess());
 
     assertThat(getCredentialsPath()).exists();
     String credentials = Files.readString(getCredentialsPath());
@@ -217,7 +217,7 @@ class AuthCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "logout");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.authLogoutSuccess());
+    assertThat(result.stderr()).contains(msg.authLogoutSuccess());
     assertThat(getCredentialsPath()).doesNotExist();
     assertThat(oidcServer.getRevokedTokens()).containsExactly(StubOidcServer.REFRESH_TOKEN);
   }
@@ -229,7 +229,7 @@ class AuthCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "logout");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.authLogoutNotLoggedIn());
+    assertThat(result.stderr()).contains(msg.authLogoutNotLoggedIn());
   }
 
   @Test
@@ -257,7 +257,7 @@ class AuthCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "logout");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.authLogoutSuccess());
+    assertThat(result.stderr()).contains(msg.authLogoutSuccess());
     assertThat(credentials).doesNotExist();
   }
 }

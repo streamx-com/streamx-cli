@@ -10,6 +10,7 @@ import com.streamx.cli.auth.Identity;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.DetailsView;
 import com.streamx.cli.platform.AccessTokens;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.ProfileApi;
@@ -30,28 +31,17 @@ public class WhoamiCommand extends AbstractCommand<Identity> {
     String expires = identity.expiresAt() == null
         ? "-"
         : identity.expiresAt() + (identity.expired() ? " (expired)" : "");
-    return """
-        username = %s
-        name     = %s
-        email    = %s
-        subject  = %s
-        issuer   = %s
-        expires  = %s
-        auth     = %s
-        token id = %s"""
-        .formatted(
-            orDash(identity.username()),
-            orDash(identity.name()),
-            orDash(identity.email()),
-            orDash(identity.subject()),
-            orDash(identity.issuer()),
-            expires,
-            AccessTokens.usingPlatformToken() ? "personal access token" : "login session",
-            orDash(identity.tokenId()));
-  }
-
-  private static String orDash(String value) {
-    return value == null ? "-" : value;
+    return new DetailsView()
+        .row("username", identity.username())
+        .row("name", identity.name())
+        .row("email", identity.email())
+        .row("subject", identity.subject())
+        .row("issuer", identity.issuer())
+        .row("expires", expires)
+        .row("auth", AccessTokens.usingPlatformToken()
+            ? "personal access token" : "login session")
+        .row("token id", identity.tokenId())
+        .render();
   }
 
   private static Identity identityFromPlatform() {
