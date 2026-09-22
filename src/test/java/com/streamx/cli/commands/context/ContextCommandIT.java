@@ -189,7 +189,7 @@ class ContextCommandIT extends CliBaseIT {
     ProcessResult result = execWithStdin("\n\n\n\n\nn\n", "context", "configure");
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains("Context 'default' configured");
+    assertThat(result.stderr()).contains("Context 'default' configured");
     Path settings = streamxHome.resolve("contexts/default/config/application.properties");
     assertThat(settings).content()
         .contains("streamx.auth.server-url=" + authDefault.replace(":", "\\:"))
@@ -434,7 +434,7 @@ class ContextCommandIT extends CliBaseIT {
       ProcessResult result = execWithStdin(stdin, "context", "configure");
 
       result.assertSuccess();
-      assertThat(result.stdout())
+      assertThat(result.stderr())
           .contains(msg.orgUseSet("acme"))
           .contains(msg.projectUseSet("so-acme-shop-a1b2c"));
       assertThat(streamxHome.resolve("contexts/default/current-org")).content()

@@ -73,7 +73,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
 
       storeSettings(settings);
       StreamxHome.applySettingsToSystemProperties();
-      System.out.println(msg.contextConfigureSaved(Contexts.getActiveContext()));
+      System.err.println(msg.contextConfigureSaved(Contexts.getActiveContext()));
 
       login = promptYesNo(session, msg.contextConfigurePromptLogin(), true);
       if (login) {
@@ -113,7 +113,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
       if (clearedProject != null) {
         System.err.println(msg.orgUseClearedProject(clearedProject));
       }
-      System.out.println(msg.orgUseSet(org));
+      System.err.println(msg.orgUseSet(org));
 
       List<String> projectIds = new ProjectsApi(client).list(org).stream()
           .map(Project::getId)
@@ -125,7 +125,7 @@ public class ConfigureCommand extends AbstractSilentCommand {
         return;
       }
       PlatformContext.setCurrentProject(project.strip());
-      System.out.println(msg.projectUseSet(project.strip()));
+      System.err.println(msg.projectUseSet(project.strip()));
     } catch (RuntimeException fetchFailed) {
       System.err.println(
           msg.contextConfigureContextSkipped(String.valueOf(fetchFailed.getMessage())));
