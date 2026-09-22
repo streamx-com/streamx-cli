@@ -130,7 +130,7 @@ class OrgCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getDeletedIds()).containsExactly("acme");
-    assertThat(result.stdout()).contains(msg.orgDeleted("acme"));
+    assertThat(result.stderr()).contains(msg.orgDeleted("acme"));
   }
 
   @Test
@@ -219,7 +219,7 @@ class OrgCommandIT extends CliBaseIT {
   void orgUseStoresTheOrgAndOrgCurrentPrintsItBack() throws Exception {
     ProcessResult use = exec("context", "org", "use", "acme");
     use.assertSuccess();
-    assertThat(use.stdout()).contains(msg.orgUseSet("acme"));
+    assertThat(use.stderr()).contains(msg.orgUseSet("acme"));
     assertThat(streamxHome.resolve("contexts/default/current-org")).content()
         .isEqualToIgnoringNewLines("acme");
 
