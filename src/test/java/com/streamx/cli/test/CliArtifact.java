@@ -55,7 +55,6 @@ final class CliArtifact {
     }
   }
 
-  /** The uber-jar (*-runner.jar); falls back to the fast-jar layout. */
   private static Path findJar() {
     try (Stream<Path> files = Files.list(TARGET)) {
       return files
