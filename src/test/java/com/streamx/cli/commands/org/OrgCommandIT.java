@@ -121,7 +121,7 @@ class OrgCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getCreatedNames()).containsExactly("my-org");
-    assertThat(result.stdout()).contains(msg.orgCreated("my-org"));
+    assertThat(result.stdout()).contains(msg.orgCreated("my-org", "so-my-org-a1b2c"));
   }
 
   @Test
@@ -216,7 +216,7 @@ class OrgCommandIT extends CliBaseIT {
   }
 
   @Test
-  void orgUseCurrentLifecycle() throws Exception {
+  void orgUseStoresTheOrgAndOrgCurrentPrintsItBack() throws Exception {
     ProcessResult use = exec("context", "org", "use", "acme");
     use.assertSuccess();
     assertThat(use.stdout()).contains(msg.orgUseSet("acme"));

@@ -66,7 +66,7 @@ public class DeleteCommand extends AbstractSilentCommand {
       }
     }
 
-    System.out.println(msg.contextDeleted(name));
+    System.err.println(msg.contextDeleted(name));
     if (hadLogin) {
       System.err.println(msg.contextDeletedLoginNote());
     }

@@ -2,6 +2,10 @@ package com.streamx.cli.framework;
 
 import java.util.List;
 
+/**
+ * The reusable table view.
+ * Use {@link DetailsView} to display a single object details.
+ */
 public final class TextTable {
 
   private static final String COLUMN_SEPARATOR = "  ";
