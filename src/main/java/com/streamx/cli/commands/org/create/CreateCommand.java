@@ -2,7 +2,6 @@ package com.streamx.cli.commands.org.create;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.commands.org.OrganizationDetails;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrganizationsApi;
@@ -20,15 +19,13 @@ public class CreateCommand extends AbstractCommand<Organization> {
 
   @Override
   public String getTextOutput(CommandResult<Organization> result) {
-    return OrganizationDetails.describe(result.getData());
+    return msg.orgCreated(name, result.getData().getId());
   }
 
   @Override
   public CommandResult<Organization> runCommand() {
     try (PlatformClients client = PlatformClients.fromConfig()) {
-      Organization organization = new OrganizationsApi(client).create(name);
-      System.err.println(msg.orgCreated(name));
-      return new CommandResult<>(organization);
+      return new CommandResult<>(new OrganizationsApi(client).create(name));
     }
   }
 }
