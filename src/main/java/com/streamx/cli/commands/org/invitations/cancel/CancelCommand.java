@@ -38,7 +38,7 @@ public class CancelCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationInvitationsApi(client).cancel(orgId, email);
     }
-    System.out.println(msg.orgInvitationCancelled(email));
+    System.err.println(msg.orgInvitationCancelled(email));
     return new CommandResult<>(null);
   }
 }

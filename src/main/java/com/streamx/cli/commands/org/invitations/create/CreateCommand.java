@@ -2,20 +2,21 @@ package com.streamx.cli.commands.org.invitations.create;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationInvitationsApi;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.Roles;
+import com.streamx.cli.platform.generated.model.Invitation;
 import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "create",
     header = "Invite a user to an organization"
 )
-public class CreateCommand extends AbstractSilentCommand {
+public class CreateCommand extends AbstractCommand<Invitation> {
 
   @CommandLine.Option(
       names = "--org",
@@ -40,12 +41,16 @@ public class CreateCommand extends AbstractSilentCommand {
   public String role;
 
   @Override
-  public CommandResult<Void> runCommand() {
+  public String getTextOutput(CommandResult<Invitation> result) {
+    return msg.orgInvitationCreated(email, role);
+  }
+
+  @Override
+  public CommandResult<Invitation> runCommand() {
     orgId = PlatformContext.requireOrg(orgId);
     try (PlatformClients client = PlatformClients.fromConfig()) {
-      new OrganizationInvitationsApi(client).create(orgId, email, role);
+      return new CommandResult<>(
+          new OrganizationInvitationsApi(client).create(orgId, email, role));
     }
-    System.out.println(msg.orgInvitationCreated(email, role));
-    return new CommandResult<>(null);
   }
 }

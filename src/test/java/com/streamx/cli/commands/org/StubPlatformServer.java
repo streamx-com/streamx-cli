@@ -102,6 +102,11 @@ public class StubPlatformServer implements AutoCloseable {
              "status":"PENDING"}
           ]
           """);
+    } else if ("POST".equals(method)) {
+      respond(exchange, 201, """
+          {"email":"invited@streamx.com","role":{"name":"edit","displayName":"Editor"},
+           "status":"PENDING"}
+          """);
     } else {
       respond(exchange, 204, "");
     }

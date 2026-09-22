@@ -226,10 +226,10 @@ public final class ZshCompletionGenerator {
       return "($(streamx __complete-org-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof OrgMemberIdCompletionCandidates) {
-      return "($(streamx __complete-org-member-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
+      return "($(streamx __complete-org-member-ids " + ORG_OPTION_VALUE + " 2>/dev/null))";
     }
     if (completionCandidates instanceof InvitedEmailCompletionCandidates) {
-      return "($(streamx __complete-invited-emails " + ORG_FROM_WORDS + " 2>/dev/null))";
+      return "($(streamx __complete-invited-emails " + ORG_OPTION_VALUE + " 2>/dev/null))";
     }
     if (completionCandidates instanceof ClusterIdCompletionCandidates) {
       return "($(streamx __complete-cluster-ids " + ORG_OPTION_VALUE + " 2>/dev/null))";

@@ -11,7 +11,6 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.generated.model.User;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -42,7 +41,6 @@ public class ListCommand extends AbstractCommand<List<User>> {
     if (quiet) {
       return users.stream()
           .map(User::getId)
-          .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 

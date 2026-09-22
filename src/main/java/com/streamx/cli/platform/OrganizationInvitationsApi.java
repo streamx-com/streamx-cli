@@ -25,9 +25,9 @@ public class OrganizationInvitationsApi {
         .toList();
   }
 
-  public void create(String orgId, String email, String role) {
-    clients.call(() -> api.createInvitation(
-        orgId, new InvitationRequest().email(email).role(role), null, null));
+  public Invitation create(String orgId, String email, String role) {
+    return clients.call(() -> api.createInvitation(
+        orgId, new InvitationRequest().email(email).role(role), null, null), Invitation.class);
   }
 
   public void accept(String orgId, String token) {
