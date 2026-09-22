@@ -1,5 +1,6 @@
 package com.streamx.cli.commands.org.get;
 
+import com.streamx.cli.commands.org.OrganizationDetails;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
@@ -24,23 +25,7 @@ public class GetCommand extends AbstractCommand<Organization> {
 
   @Override
   public String getTextOutput(CommandResult<Organization> result) {
-    Organization organization = result.getData();
-    return """
-        id             = %s
-        name           = %s
-        role           = %s
-        projectsNumber = %s
-        state          = %s"""
-        .formatted(
-            orDash(organization.getId()),
-            orDash(organization.getName()),
-            orDash(organization.getRole() == null ? null : organization.getRole().getName()),
-            orDash(organization.getProjectsNumber()),
-            orDash(organization.getState()));
-  }
-
-  private static String orDash(String value) {
-    return value == null ? "-" : value;
+    return OrganizationDetails.describe(result.getData());
   }
 
   @Override

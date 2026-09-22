@@ -13,9 +13,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "delete",
-    header = "Delete an organization",
-    description = "Asks to type the organization ID back as confirmation; "
-        + "--force deletes without asking."
+    header = "Delete an organization"
 )
 public class DeleteCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(

@@ -10,7 +10,6 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.generated.model.Organization;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -33,7 +32,6 @@ public class ListCommand extends AbstractCommand<List<Organization>> {
     if (quiet) {
       return organizations.stream()
           .map(Organization::getId)
-          .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 

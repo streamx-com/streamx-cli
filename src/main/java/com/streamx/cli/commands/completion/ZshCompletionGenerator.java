@@ -20,7 +20,9 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 
 public final class ZshCompletionGenerator {
 
-  private static final String ORG_FROM_WORDS = "\"${words[${words[(i)--org]}+1]}\"";
+  // Zsh-specific expression which stores the value typed after --org.
+  // Passed to other completions that depend on the --org value.
+  private static final String ORG_OPTION_VALUE = "\"${words[${words[(i)--org]}+1]}\"";
 
   private ZshCompletionGenerator() {
   }
@@ -222,7 +224,7 @@ public final class ZshCompletionGenerator {
       return "($(streamx __complete-org-ids 2>/dev/null))";
     }
     if (completionCandidates instanceof ClusterIdCompletionCandidates) {
-      return "($(streamx __complete-cluster-ids " + ORG_FROM_WORDS + " 2>/dev/null))";
+      return "($(streamx __complete-cluster-ids " + ORG_OPTION_VALUE + " 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {
