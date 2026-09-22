@@ -37,7 +37,7 @@ public class DeleteCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationsApi(client).delete(orgId);
     }
-    System.out.println(msg.orgDeleted(orgId));
+    System.err.println(msg.orgDeleted(orgId));
     return new CommandResult<>(null);
   }
 }
