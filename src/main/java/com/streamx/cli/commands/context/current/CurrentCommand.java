@@ -1,7 +1,7 @@
 package com.streamx.cli.commands.context.current;
 
 import com.streamx.cli.config.Contexts;
-import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import picocli.CommandLine;
 
@@ -9,7 +9,7 @@ import picocli.CommandLine;
     name = "current",
     header = "Print the active context name"
 )
-public class CurrentCommand extends AbstractSilentCommand {
+public class CurrentCommand extends AbstractCommand<String> {
 
   @Override
   public boolean needsContext() {
@@ -17,8 +17,12 @@ public class CurrentCommand extends AbstractSilentCommand {
   }
 
   @Override
-  public CommandResult<Void> runCommand() {
-    System.out.println(Contexts.getActiveContext());
-    return new CommandResult<>(null);
+  public CommandResult<String> runCommand() {
+    return new CommandResult<>(Contexts.getActiveContext());
+  }
+
+  @Override
+  public String getTextOutput(CommandResult<String> result) {
+    return result.getData();
   }
 }
