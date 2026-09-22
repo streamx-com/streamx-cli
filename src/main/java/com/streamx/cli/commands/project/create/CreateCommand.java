@@ -21,9 +21,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "create",
-    header = "Create a project",
-    description = "Optionally connects a Git repository and enables clusters in the same call. "
-        + "The endpoint is transactional: if any part fails, nothing is created."
+    header = "Create a project"
 )
 public class CreateCommand extends AbstractCommand<Project> {
 
@@ -71,15 +69,16 @@ public class CreateCommand extends AbstractCommand<Project> {
     @CommandLine.Option(
         names = "--ssh-private-key",
         paramLabel = "<file>",
-        description = "SSH private key file for private repositories (sent base64-encoded)"
+        description = "SSH private key file for private repositories"
     )
     public Path sshPrivateKey;
   }
 
   @CommandLine.Option(
-      names = "--cluster",
+      names = "--clusters",
+      split = ",",
       paramLabel = "<clusterId>",
-      description = "Cluster to enable for the project (repeatable)",
+      description = "Comma-separated cluster IDs to enable for the project",
       completionCandidates = ClusterIdCompletionCandidates.class
   )
   public List<String> clusters;

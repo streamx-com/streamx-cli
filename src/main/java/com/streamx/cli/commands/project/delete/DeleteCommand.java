@@ -14,9 +14,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "delete",
-    header = "Delete a project",
-    description = "Asks to type the project ID back as confirmation; "
-        + "--force deletes without asking."
+    header = "Delete a project"
 )
 public class DeleteCommand extends AbstractSilentCommand {
 

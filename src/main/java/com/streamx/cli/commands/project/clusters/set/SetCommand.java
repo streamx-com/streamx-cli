@@ -26,10 +26,11 @@ import picocli.CommandLine;
 public class SetCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
-      index = "0..*",
-      arity = "1..*",
+      index = "0",
+      arity = "1",
+      split = ",",
       paramLabel = "<clusterId>",
-      description = "Cluster IDs, as shown by 'streamx org clusters list'",
+      description = "Comma-separated cluster IDs, as shown by 'streamx org clusters list'",
       completionCandidates = ClusterIdCompletionCandidates.class
   )
   public List<String> clusterIds;

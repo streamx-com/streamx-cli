@@ -78,7 +78,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
   @Test
   void shouldSetProjectClustersAfterValidatingAgainstAvailable() throws Exception {
     ProcessResult result = exec("project", "clusters", "set",
-        "processing-eu-central", "edge-us-east", "--org", ORG, "--project", PROJECT);
+        "processing-eu-central,edge-us-east", "--org", ORG, "--project", PROJECT);
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(

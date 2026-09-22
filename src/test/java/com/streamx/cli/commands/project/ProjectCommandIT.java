@@ -190,7 +190,7 @@ class ProjectCommandIT extends CliBaseIT {
         "--repository-uri", "git@github.com:acme/web.git",
         "--repository-branch", "main",
         "--ssh-private-key", keyFile.toString(),
-        "--cluster", "eu-central", "--cluster", "us-east");
+        "--clusters", "eu-central,us-east");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -342,7 +342,7 @@ class ProjectCommandIT extends CliBaseIT {
   }
 
   @Test
-  void projectUseCurrentLifecycle() throws Exception {
+  void projectUseStoresTheProjectAndProjectCurrentPrintsItBack() throws Exception {
     exec("context", "org", "use", ORG).assertSuccess();
 
     ProcessResult use = exec("context", "project", "use", "so-org-web-a1b2c");
