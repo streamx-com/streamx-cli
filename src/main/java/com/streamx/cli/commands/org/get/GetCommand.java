@@ -1,8 +1,8 @@
 package com.streamx.cli.commands.org.get;
 
-import com.streamx.cli.commands.org.OrganizationDetails;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.DetailsView;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrganizationsApi;
 import com.streamx.cli.platform.PlatformClients;
@@ -25,7 +25,14 @@ public class GetCommand extends AbstractCommand<Organization> {
 
   @Override
   public String getTextOutput(CommandResult<Organization> result) {
-    return OrganizationDetails.describe(result.getData());
+    Organization organization = result.getData();
+    return new DetailsView()
+        .row("id", organization.getId())
+        .row("name", organization.getName())
+        .row("role", organization.getRole() == null ? null : organization.getRole().getName())
+        .row("projectsNumber", organization.getProjectsNumber())
+        .row("state", organization.getState())
+        .render();
   }
 
   @Override
