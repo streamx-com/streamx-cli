@@ -173,7 +173,7 @@ public abstract class CliBaseIT {
         try {
           abstractCommand.populateStreamxHome(parsed);
           // -H/--context are applied now; refresh the root help header to reflect them.
-          com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(parsed.get(0));
+          com.streamx.cli.framework.StreamxHelp.applyRootUsageLayout(parsed.get(0));
         } catch (Exception e) {
           return abstractCommand.handleExecutionError(e);
         }
@@ -194,7 +194,7 @@ public abstract class CliBaseIT {
       return new CommandLine.RunLast().execute(parseResult);
     });
 
-    com.streamx.cli.framework.SynopsisHelper.applyRootUsageLayout(cmd);
+    com.streamx.cli.framework.StreamxHelp.applyRootUsageLayout(cmd);
     return cmd;
   }
 
