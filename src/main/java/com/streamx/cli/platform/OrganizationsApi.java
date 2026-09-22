@@ -26,8 +26,9 @@ public class OrganizationsApi {
     return clients.call(() -> api.getOrganization(orgId, null, null), Organization.class);
   }
 
-  public void create(String name) {
-    clients.call(() -> api.createOrganization(new Name().name(name), null, null));
+  public Organization create(String name) {
+    return clients.call(
+        () -> api.createOrganization(new Name().name(name), null, null), Organization.class);
   }
 
   public void delete(String orgId) {

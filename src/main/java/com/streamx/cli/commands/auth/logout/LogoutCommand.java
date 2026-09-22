@@ -18,7 +18,7 @@ public class LogoutCommand extends AbstractSilentCommand {
   @Override
   public CommandResult<Void> runCommand() {
     if (!CredentialsStore.exists()) {
-      System.out.println(msg.authLogoutNotLoggedIn());
+      System.err.println(msg.authLogoutNotLoggedIn());
       return new CommandResult<>(null);
     }
 
@@ -29,7 +29,7 @@ public class LogoutCommand extends AbstractSilentCommand {
 
     CredentialsStore.delete();
 
-    System.out.println(msg.authLogoutSuccess());
+    System.err.println(msg.authLogoutSuccess());
     return new CommandResult<>(null);
   }
 
