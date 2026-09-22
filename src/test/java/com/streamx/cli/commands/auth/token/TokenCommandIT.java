@@ -113,7 +113,7 @@ class TokenCommandIT extends CliBaseIT {
     ProcessResult result = exec("auth", "token", "revoke", StubTokensServer.TOKEN_ID);
 
     result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.authTokenRevoked());
+    assertThat(result.stderr()).contains(msg.authTokenRevoked());
     assertThat(platform.getRequests())
         .contains("DELETE /api/v1/profile/tokens/" + StubTokensServer.TOKEN_ID);
   }
