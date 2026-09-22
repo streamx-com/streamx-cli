@@ -40,13 +40,8 @@ public class RemoveCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       OrganizationUsersApi users = new OrganizationUsersApi(client);
 
-      User member = users.find(orgId, userId)
-          .orElseThrow(() -> new CliException(msg.orgMemberNotFound(userId, orgId)));
-      if (member.getStatus() != User.StatusEnum.ACTIVE) {
-        String status = member.getStatus() == null ? "" : member.getStatus().value();
-        throw new CliException(
-            msg.orgMemberNotActiveForRemoval(userId, status, orgId, userId));
-      }
+      users.requireActiveMember(orgId, userId,
+          (id, status) -> msg.orgMemberNotActiveForRemoval(id, status, orgId));
 
       users.remove(orgId, userId);
     }

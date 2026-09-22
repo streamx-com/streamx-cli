@@ -84,14 +84,14 @@ public class StreamCommand extends AbstractCommand<StreamCommandResult> {
       SourceValidator.validate(source);
     }
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.runningPublishStreamCommand());
       System.err.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.initializingStreamxClient());
       System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
