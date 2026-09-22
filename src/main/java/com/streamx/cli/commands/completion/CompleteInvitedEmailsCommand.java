@@ -28,7 +28,6 @@ public class CompleteInvitedEmailsCommand extends AbstractCommand<List<String>> 
     try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationInvitationsApi(client).list(org).stream()
           .map(Invitation::getEmail)
-          .sorted()
           .toList());
     } catch (RuntimeException anyFailure) {
       return new CommandResult<>(List.of());

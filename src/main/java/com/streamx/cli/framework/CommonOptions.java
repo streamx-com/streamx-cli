@@ -48,4 +48,10 @@ public class CommonOptions {
       description = "Print version information and exit"
   )
   boolean version;
+
+  @CommandLine.Option(
+      names = {VERBOSE_SHORT, VERBOSE_LONG},
+      description = "Print more debug information"
+  )
+  boolean verbose;
 }

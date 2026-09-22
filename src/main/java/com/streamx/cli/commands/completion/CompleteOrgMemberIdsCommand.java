@@ -29,7 +29,6 @@ public class CompleteOrgMemberIdsCommand extends AbstractCommand<List<String>> {
       return new CommandResult<>(new OrganizationUsersApi(client).list(org).stream()
           .filter(user -> user.getStatus() == User.StatusEnum.ACTIVE)
           .map(User::getId)
-          .sorted()
           .toList());
     } catch (RuntimeException anyFailure) {
       return new CommandResult<>(List.of());
