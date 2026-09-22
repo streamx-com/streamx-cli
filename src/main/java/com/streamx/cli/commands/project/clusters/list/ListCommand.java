@@ -13,7 +13,6 @@ import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -52,7 +51,6 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
     if (quiet) {
       return clusters.stream()
           .map(Cluster::id)
-          .filter(Objects::nonNull)
           .collect(Collectors.joining("\n"));
     }
 

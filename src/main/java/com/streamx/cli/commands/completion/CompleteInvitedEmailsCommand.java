@@ -7,7 +7,6 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.generated.model.Invitation;
 import java.util.List;
-import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -22,16 +21,13 @@ public class CompleteInvitedEmailsCommand extends AbstractCommand<List<String>> 
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
-        ? PlatformContext.effectiveOrg()
-        : orgId;
+    String org = PlatformContext.completionOrg(orgId);
     if (org == null) {
       return new CommandResult<>(List.of());
     }
     try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new OrganizationInvitationsApi(client).list(org).stream()
           .map(Invitation::getEmail)
-          .filter(Objects::nonNull)
           .sorted()
           .toList());
     } catch (RuntimeException anyFailure) {

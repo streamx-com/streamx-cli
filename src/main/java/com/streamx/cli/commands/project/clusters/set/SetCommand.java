@@ -13,7 +13,6 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
@@ -26,10 +25,11 @@ import picocli.CommandLine;
 public class SetCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
-      index = "0..*",
-      arity = "1..*",
+      index = "0",
+      arity = "1",
+      split = ",",
       paramLabel = "<clusterId>",
-      description = "Cluster IDs, as shown by 'streamx org clusters list'",
+      description = "Comma-separated cluster IDs, as shown by 'streamx org clusters list'",
       completionCandidates = ClusterIdCompletionCandidates.class
   )
   public List<String> clusterIds;
@@ -58,7 +58,6 @@ public class SetCommand extends AbstractSilentCommand {
 
       Set<String> available = clusters.listForProject(context.org(), context.project()).stream()
           .map(Cluster::id)
-          .filter(Objects::nonNull)
           .collect(Collectors.toSet());
       for (String clusterId : clusterIds) {
         if (!available.contains(clusterId)) {
@@ -69,7 +68,7 @@ public class SetCommand extends AbstractSilentCommand {
 
       clusters.setForProject(context.org(), context.project(), clusterIds);
     }
-    System.out.println(
+    System.err.println(
         msg.projectClustersSet(context.project(), String.join(", ", clusterIds)));
     return new CommandResult<>(null);
   }

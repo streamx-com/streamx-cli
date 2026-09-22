@@ -39,7 +39,7 @@ public class UseCommand extends AbstractSilentCommand {
     } catch (IOException e) {
       throw new CliException(msg.contextSwitchFailed(name, e.getMessage()), e);
     }
-    System.out.println(msg.contextSwitched(name));
+    System.err.println(msg.contextSwitched(name));
     return new CommandResult<>(null);
   }
 }

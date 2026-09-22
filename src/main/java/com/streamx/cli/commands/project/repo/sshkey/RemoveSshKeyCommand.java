@@ -29,7 +29,7 @@ public class RemoveSshKeyCommand extends AbstractSilentCommand {
     } catch (PlatformClients.NotFoundException e) {
       throw new CliException(msg.projectSshKeyMissing(context.project()), e);
     }
-    System.out.println(msg.projectSshKeyRemoved(context.project()));
+    System.err.println(msg.projectSshKeyRemoved(context.project()));
     return new CommandResult<>(null);
   }
 }

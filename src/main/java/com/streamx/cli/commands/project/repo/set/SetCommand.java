@@ -46,10 +46,10 @@ public class SetCommand extends AbstractSilentCommand {
       ProjectRepositoryApi api = new ProjectRepositoryApi(client);
       if (repositoryExists(api, context)) {
         api.update(context.org(), context.project(), uri, branch);
-        System.out.println(msg.projectRepoUpdated(context.project()));
+        System.err.println(msg.projectRepoUpdated(context.project()));
       } else {
         api.connect(context.org(), context.project(), uri, branch);
-        System.out.println(msg.projectRepoConnected(context.project()));
+        System.err.println(msg.projectRepoConnected(context.project()));
       }
     }
     return new CommandResult<>(null);

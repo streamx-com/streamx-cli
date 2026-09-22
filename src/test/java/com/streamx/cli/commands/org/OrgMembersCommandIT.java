@@ -83,7 +83,7 @@ class OrgMembersCommandIT extends CliBaseIT {
         .containsExactly("POST /api/v1/organizations/" + ORG + "/users");
     assertThat(platform.getRequestBodies().get(0))
         .contains("\"name\":\"existing@streamx.com\"", "\"role\":\"edit\"");
-    assertThat(result.stdout()).contains(msg.orgMemberAdded("existing@streamx.com", "edit"));
+    assertThat(result.stderr()).contains(msg.orgMemberAdded("existing@streamx.com", "edit"));
   }
 
   @Test
@@ -94,7 +94,7 @@ class OrgMembersCommandIT extends CliBaseIT {
     assertThat(platform.getRequests()).containsExactly(
         "GET /api/v1/organizations/" + ORG + "/users",
         "DELETE /api/v1/organizations/" + ORG + "/users/active@streamx.com");
-    assertThat(result.stdout()).contains(msg.orgMemberRemoved("active@streamx.com"));
+    assertThat(result.stderr()).contains(msg.orgMemberRemoved("active@streamx.com"));
   }
 
   /** The server rejects removing a principal that is not an active member; say so up front. */
@@ -118,7 +118,7 @@ class OrgMembersCommandIT extends CliBaseIT {
         "GET /api/v1/organizations/" + ORG + "/users",
         "PUT /api/v1/organizations/" + ORG + "/users/active@streamx.com");
     assertThat(platform.getRequestBodies().get(1)).contains("\"newRoleId\":\"owner\"");
-    assertThat(result.stdout()).contains(msg.orgMemberRoleChanged("active@streamx.com", "owner"));
+    assertThat(result.stderr()).contains(msg.orgMemberRoleChanged("active@streamx.com", "owner"));
   }
 
   /** Server-side the role change is remove-then-add, which would activate a pending invitation. */

@@ -30,7 +30,7 @@ public class RemoveCommand extends AbstractSilentCommand {
     } catch (PlatformClients.NotFoundException e) {
       throw new CliException(msg.projectRepoNotConnected(context.project()), e);
     }
-    System.out.println(msg.projectRepoRemoved(context.project()));
+    System.err.println(msg.projectRepoRemoved(context.project()));
     return new CommandResult<>(null);
   }
 }

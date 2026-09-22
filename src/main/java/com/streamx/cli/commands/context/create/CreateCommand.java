@@ -65,10 +65,10 @@ public class CreateCommand extends AbstractSilentCommand {
       throw new CliException(msg.contextCreateFailed(name, e.getMessage()), e);
     }
 
-    System.out.println(msg.contextCreated(name));
+    System.err.println(msg.contextCreated(name));
     try {
       Contexts.writeCurrentContextPointer(name);
-      System.out.println(msg.contextSwitched(name));
+      System.err.println(msg.contextSwitched(name));
     } catch (IOException e) {
       throw new CliException(msg.contextSwitchFailed(name, e.getMessage()), e);
     }
