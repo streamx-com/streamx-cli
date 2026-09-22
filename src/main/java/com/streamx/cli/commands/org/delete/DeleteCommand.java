@@ -13,9 +13,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "delete",
-    header = "Delete an organization",
-    description = "Asks to type the organization ID back as confirmation; "
-        + "--force deletes without asking."
+    header = "Delete an organization"
 )
 public class DeleteCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(
@@ -39,7 +37,7 @@ public class DeleteCommand extends AbstractSilentCommand {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       new OrganizationsApi(client).delete(orgId);
     }
-    System.out.println(msg.orgDeleted(orgId));
+    System.err.println(msg.orgDeleted(orgId));
     return new CommandResult<>(null);
   }
 }

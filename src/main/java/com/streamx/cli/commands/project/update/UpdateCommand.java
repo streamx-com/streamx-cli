@@ -2,7 +2,7 @@ package com.streamx.cli.commands.project.update;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.framework.AbstractSilentCommand;
+import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
@@ -17,7 +17,7 @@ import picocli.CommandLine;
     name = "update",
     header = "Update a project's name or description"
 )
-public class UpdateCommand extends AbstractSilentCommand {
+public class UpdateCommand extends AbstractCommand<Project> {
 
   @CommandLine.Option(
       names = "--org",
@@ -42,7 +42,12 @@ public class UpdateCommand extends AbstractSilentCommand {
   public String description;
 
   @Override
-  public CommandResult<Void> runCommand() {
+  public String getTextOutput(CommandResult<Project> result) {
+    return msg.projectUpdated(projectId);
+  }
+
+  @Override
+  public CommandResult<Project> runCommand() {
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
     orgId = context.org();
     projectId = context.project();
@@ -57,9 +62,7 @@ public class UpdateCommand extends AbstractSilentCommand {
       String newName = name != null ? name : current.getName();
       String newDescription = description != null ? description : current.getDescription();
 
-      projects.update(orgId, projectId, newName, newDescription);
+      return new CommandResult<>(projects.update(orgId, projectId, newName, newDescription));
     }
-    System.out.println(msg.projectUpdated(projectId));
-    return new CommandResult<>(null);
   }
 }

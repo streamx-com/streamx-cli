@@ -33,7 +33,7 @@ public class UseCommand extends AbstractSilentCommand {
     if (clearedProject != null) {
       System.err.println(msg.orgUseClearedProject(clearedProject));
     }
-    System.out.println(msg.orgUseSet(orgId.strip()));
+    System.err.println(msg.orgUseSet(orgId.strip()));
     return new CommandResult<>(null);
   }
 }

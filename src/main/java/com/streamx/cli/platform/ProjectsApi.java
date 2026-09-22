@@ -11,7 +11,6 @@ import com.streamx.cli.platform.generated.model.ProjectRequest;
 import com.streamx.cli.platform.generated.model.ProjectStatus;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 public class ProjectsApi {
 
@@ -45,7 +44,6 @@ public class ProjectsApi {
         .listForProject(orgId, project.getId()).stream()
         .filter(Cluster::enabled)
         .map(Cluster::id)
-        .filter(Objects::nonNull)
         .toList();
     RepositoryView repository = null;
     try {

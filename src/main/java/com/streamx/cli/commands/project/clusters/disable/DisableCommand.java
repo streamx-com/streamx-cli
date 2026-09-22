@@ -59,7 +59,7 @@ public class DisableCommand extends AbstractSilentCommand {
           .orElseThrow(() -> new CliException(msg.projectClusterUnknown(clusterId,
               current.stream().map(Cluster::id).sorted().collect(Collectors.joining(", ")))));
       if (!target.enabled()) {
-        System.out.println(msg.projectClusterAlreadyDisabled(clusterId, context.project()));
+        System.err.println(msg.projectClusterAlreadyDisabled(clusterId, context.project()));
         return new CommandResult<>(null);
       }
 
@@ -70,7 +70,7 @@ public class DisableCommand extends AbstractSilentCommand {
           .toList();
       clusters.setForProject(context.org(), context.project(), enabled);
     }
-    System.out.println(msg.projectClusterDisabled(clusterId, context.project()));
+    System.err.println(msg.projectClusterDisabled(clusterId, context.project()));
     return new CommandResult<>(null);
   }
 }

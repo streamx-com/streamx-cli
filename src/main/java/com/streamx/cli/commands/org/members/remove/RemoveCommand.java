@@ -50,7 +50,7 @@ public class RemoveCommand extends AbstractSilentCommand {
 
       users.remove(orgId, userId);
     }
-    System.out.println(msg.orgMemberRemoved(userId));
+    System.err.println(msg.orgMemberRemoved(userId));
     return new CommandResult<>(null);
   }
 }

@@ -7,7 +7,6 @@ import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectsApi;
 import com.streamx.cli.platform.generated.model.Project;
 import java.util.List;
-import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -22,16 +21,13 @@ public class CompleteProjectIdsCommand extends AbstractCommand<List<String>> {
 
   @Override
   public CommandResult<List<String>> runCommand() {
-    String org = orgId == null || orgId.isBlank() || orgId.startsWith("-")
-        ? PlatformContext.effectiveOrg()
-        : orgId;
+    String org = PlatformContext.completionOrg(orgId);
     if (org == null) {
       return new CommandResult<>(List.of());
     }
     try (PlatformClients client = PlatformClients.completion()) {
       return new CommandResult<>(new ProjectsApi(client).list(org).stream()
           .map(Project::getId)
-          .filter(Objects::nonNull)
           .toList());
     } catch (RuntimeException anyFailure) {
       return new CommandResult<>(List.of());

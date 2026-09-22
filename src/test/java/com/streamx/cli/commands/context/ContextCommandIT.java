@@ -39,14 +39,14 @@ class ContextCommandIT extends CliBaseIT {
     ProcessResult created = exec("context", "create", "prod");
 
     created.assertSuccess();
-    assertThat(created.stdout())
+    assertThat(created.stderr())
         .contains("Context 'prod' created")
         .contains("Switched to context 'prod'");
     assertThat(exec("context", "current").stdout().strip()).isEqualTo("prod");
   }
 
   @Test
-  void createUseCurrentLifecycle() throws Exception {
+  void createdContextBecomesCurrentAndAppearsInTheList() throws Exception {
     exec("context", "create", "prod").assertSuccess();
     exec("context", "use", "prod").assertSuccess();
 
