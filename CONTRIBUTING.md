@@ -23,6 +23,15 @@ Otherwise, CI will fail because at this moment Docker isn't supported on macOS a
 
 - Use `e` button to edit CLI arguments.
 
+### Native build configuration
+Native build requires additional configuration like registering classes for reflection or registering resources to be included
+in native artifact. This project uses `quarkus.native.resources.includes` property in
+[application.properties](src/main/resources/application.properties) for resources registration and
+`com/streamx/cli/ReflectionConfiguration.java` for reflection registration. More details about configuring native build can
+be found in:
+* https://quarkus.io/guides/writing-native-applications-tips
+* https://quarkus.io/guides/native-reference
+
 ## Manual testing for PR reviews
 
 It's often a good idea to test features and bugfixes during PR reviews.
@@ -38,16 +47,6 @@ It's often a good idea to test features and bugfixes during PR reviews.
 ### Testing autocompletion
 
 - In addition to the point above, run `source <(streamx completion zsh)` to make autocompletion in your current Zsh session.
-
-### Native build configuration
-Native build requires additional configuration like registering classes for reflection or registering resources to be included
-in native artifact. This project uses `quarkus.native.resources.includes` property in
-[application.properties](src/main/resources/application.properties) for resources registration and
-`com/streamx/cli/ReflectionConfiguration.java` for reflection registration. More details about configuring native build can
-be found in:
-* https://quarkus.io/guides/writing-native-applications-tips
-* https://quarkus.io/guides/native-reference
-
 
 ## Running tests
 
