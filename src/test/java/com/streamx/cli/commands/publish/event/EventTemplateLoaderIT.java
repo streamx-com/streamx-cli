@@ -35,7 +35,7 @@ public class EventTemplateLoaderIT extends CliBaseIT {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   /** Relative registration paths resolve against the active (default) context's dir. */
-  private static Path contextDir() throws Exception {
+  private Path contextDir() throws Exception {
     Path dir = streamxHome.resolve("contexts/default");
     Files.createDirectories(dir);
     return dir;
