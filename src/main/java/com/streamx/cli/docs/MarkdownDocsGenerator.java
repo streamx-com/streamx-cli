@@ -1,5 +1,6 @@
 package com.streamx.cli.docs;
 
+import com.streamx.cli.framework.StreamxHelp;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
+import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -100,7 +102,7 @@ public final class MarkdownDocsGenerator {
     // (local, set, unset) are shell builtins that a bash grammar would colour as keywords.
     md.append("```text\n").append(synopsis(spec, command, children)).append("\n```\n\n");
 
-    // The root's description is injected at runtime by SynopsisHelper (active context, current
+    // The root's description is injected at runtime by StreamxHelp (active context, current
     // org and project), so it is machine state rather than documentation.
     if (fullPath.size() > 1) {
       md.append(describe(spec.usageMessage().description()));
@@ -178,7 +180,7 @@ public final class MarkdownDocsGenerator {
     }
     md.append("## Arguments\n\n| Argument | Required | Description |\n| --- | --- | --- |\n");
     for (PositionalParamSpec positional : positionals) {
-      md.append("| `").append(positional.paramLabel()).append("` | ")
+      md.append("| `").append(StreamxHelp.valueLabel(positional)).append("` | ")
           .append(positional.arity().min() > 0 ? "yes" : "no").append(" | ")
           .append(cell(join(positional.description()))).append(" |\n");
     }
@@ -186,17 +188,20 @@ public final class MarkdownDocsGenerator {
   }
 
   private static void appendOptions(StringBuilder md, CommandSpec spec) {
+    // Required options first, each group alphabetically.
     List<OptionSpec> options = localOptions(spec).stream()
-        .sorted(Comparator.comparing(MarkdownDocsGenerator::primaryName))
+        .sorted(Comparator.comparing((OptionSpec option) -> !StreamxHelp.isRequired(option))
+            .thenComparing(MarkdownDocsGenerator::primaryName))
         .toList();
     if (options.isEmpty()) {
       return;
     }
-    md.append("## Options\n\n| Option | Value | Description |\n| --- | --- | --- |\n");
+    md.append("## Options\n\n| Option | Required | Description |\n| --- | --- | --- |\n");
     for (OptionSpec option : options) {
-      md.append("| `").append(String.join("`, `", option.names())).append("` | ")
-          .append(option.typeInfo().isBoolean() ? "" : "`" + option.paramLabel() + "`")
-          .append(" | ").append(cell(join(option.description()))).append(" |\n");
+      md.append("| ").append(optionCell(option))
+          .append(" | ").append(StreamxHelp.isRequired(option) ? "yes" : "no")
+          .append(" | ").append(cell(join(option.description()))).append(defaultNote(option))
+          .append(" |\n");
     }
     md.append("\n");
   }
@@ -235,12 +240,10 @@ public final class MarkdownDocsGenerator {
         .append("# Global options\n\n")
         .append("These options are accepted by every `").append(spec.name())
         .append("` command, at any position in the invocation.\n\n")
-        .append("| Option | Value | Description |\n| --- | --- | --- |\n");
+        .append("| Option | Description |\n| --- | --- |\n");
     shared.values().stream()
         .sorted(Comparator.comparing(MarkdownDocsGenerator::primaryName))
-        .forEach(option -> md.append("| `").append(String.join("`, `", option.names()))
-            .append("` | ").append(option.typeInfo().isBoolean() ? "" : "`"
-                + option.paramLabel() + "`")
+        .forEach(option -> md.append("| ").append(optionCell(option))
             .append(" | ").append(cell(join(option.description()))).append(" |\n"));
     Files.writeString(outputDir.resolve(GLOBAL_OPTIONS_PAGE + ".md"), md.toString(),
         StandardCharsets.UTF_8);
@@ -258,22 +261,8 @@ public final class MarkdownDocsGenerator {
 
   private static String synopsis(CommandSpec spec, String command,
       Map<String, CommandLine> children) {
-    StringBuilder synopsis = new StringBuilder(command);
-    if (!children.isEmpty()) {
-      synopsis.append(" <command>");
-    }
-    if (!localOptions(spec).isEmpty()) {
-      synopsis.append(" [options]");
-    }
-    for (PositionalParamSpec positional : spec.positionalParameters()) {
-      if (positional.hidden()) {
-        continue;
-      }
-      synopsis.append(positional.arity().min() > 0
-          ? " " + positional.paramLabel()
-          : " [" + positional.paramLabel() + "]");
-    }
-    return synopsis.toString();
+    return StreamxHelp.synopsis(spec, command, "[options]",
+        children.isEmpty() ? null : "<command>");
   }
 
   private static String frontMatter(CommandSpec spec, List<String> fullPath, int position) {
@@ -295,6 +284,19 @@ public final class MarkdownDocsGenerator {
         + "  \"position\": " + position + ",\n"
         + "  \"collapsed\": " + collapsed + "\n}\n";
     Files.writeString(dir.resolve("_category_.json"), json, StandardCharsets.UTF_8);
+  }
+
+  /** The option as the help shows it: {@code `-r, --role=<role>`}, the value on the last name. */
+  private static String optionCell(OptionSpec option) {
+    String names = String.join(", ", option.names());
+    String value = option.typeInfo().isBoolean() ? "" : "=" + StreamxHelp.valueLabel(option);
+    return "`" + names + value + "`";
+  }
+
+  /** The declared default, if any, e.g. the mesh file {@code local run} uses without -f. */
+  private static String defaultNote(OptionSpec option) {
+    String value = StreamxHelp.defaultValue(option);
+    return value == null ? "" : " (default `" + value + "`)";
   }
 
   /** Options specific to this command - the ones inherited by every command are excluded. */
