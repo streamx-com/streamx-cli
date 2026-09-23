@@ -853,6 +853,41 @@ public interface MessageProvider {
       + "Fix or delete that file, or pass --context to override")
   String contextInvalidPointer(String name, String pointerFile);
 
+  @Message(id = 370, value = "Auth server URL")
+  String contextConfigurePromptAuthUrl();
+
+  @Message(id = 371, value = "Platform API URL")
+  String contextConfigurePromptPlatformUrl();
+
+  @Message(id = 372,
+      value = "Ingestion URL (per-project on the cloud platform; leave empty to skip)")
+  String contextConfigurePromptIngestionUrl();
+
+  @Message(id = 373,
+      value = "Verify TLS certificates for %s (answer no for self-signed dev certs)?")
+  String contextConfigurePromptVerifyTls(String target);
+
+  @Message(id = 374, value = "A value for '%s' is required")
+  String contextConfigureValueRequired(String key);
+
+  @Message(id = 375, value = "Invalid URL '%s'. Use http:// or https://")
+  String contextConfigureInvalidUrl(String value);
+
+  @Message(id = 376, value = "Invalid answer '%s'")
+  String contextConfigureInvalidAnswer(String value);
+
+  @Message(id = 377, value = "Context '%s' configured")
+  String contextConfigureSaved(String name);
+
+  @Message(id = 378, value = "Log in now?")
+  String contextConfigurePromptLogin();
+
+  @Message(id = 379, value = "Login method")
+  String contextConfigurePromptLoginMethod();
+
+  @Message(id = 380, value = "Run 'streamx context configure' to set its endpoints")
+  String contextCreateConfigureHint();
+
   @Message(id = 381, value = "This permanently deletes '%s'. Type the ID to confirm")
   String deleteConfirmPrompt(String id);
 
@@ -886,6 +921,15 @@ public interface MessageProvider {
   @Message(id = 391,
       value = "Cleared current project '%s' (it belonged to the previous organization)")
   String orgUseClearedProject(String projectId);
+
+  @Message(id = 392, value = "Current organization (Enter to skip)")
+  String contextConfigurePromptOrg();
+
+  @Message(id = 393, value = "Current project (Enter to skip)")
+  String contextConfigurePromptProject();
+
+  @Message(id = 394, value = "Skipping organization/project selection: %s")
+  String contextConfigureContextSkipped(String reason);
 
   @Message(id = 395, value = "Current organization cleared")
   String orgUnset();

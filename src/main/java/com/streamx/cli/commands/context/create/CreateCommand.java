@@ -72,6 +72,7 @@ public class CreateCommand extends AbstractSilentCommand {
     } catch (IOException e) {
       throw new CliException(msg.contextSwitchFailed(name, e.getMessage()), e);
     }
+    System.err.println(msg.contextCreateConfigureHint());
     return new CommandResult<>(null);
   }
 
