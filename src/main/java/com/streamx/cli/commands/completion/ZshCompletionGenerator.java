@@ -12,6 +12,7 @@ import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
+import com.streamx.cli.platform.TokenIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -241,6 +242,9 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof ClusterIdCompletionCandidates) {
       return "($(streamx __complete-cluster-ids " + ORG_OPTION_VALUE + " 2>/dev/null))";
+    }
+    if (completionCandidates instanceof TokenIdCompletionCandidates) {
+      return "($(streamx __complete-token-ids 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {
