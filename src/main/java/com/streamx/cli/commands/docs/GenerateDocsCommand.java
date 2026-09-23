@@ -25,7 +25,7 @@ public class GenerateDocsCommand extends AbstractCommand<String> {
 
   @Override
   public List<String> getHiddenOptions() {
-    return List.of(CommonOptions.OUTPUT_LONG, CommonOptions.VERBOSE_LONG);
+    return List.of(CommonOptions.OUTPUT_LONG);
   }
 
 

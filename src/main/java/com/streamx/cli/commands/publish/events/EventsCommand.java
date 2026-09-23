@@ -81,13 +81,13 @@ public class EventsCommand extends AbstractCommand<EventsCommandResult> {
   public CommandResult<EventsCommandResult> runCommand() {
     Path rootPath = Paths.get(path).toAbsolutePath().normalize();
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.resolvingStreamxClientConfig());
     }
 
     IngestionClientConfig ingestionClientConfig = ingestionOptions.getIngestionClientConfig();
 
-    if (this.verbose) {
+    if (isVerbose()) {
       System.err.println(msg.initializingStreamxClient());
       System.err.println(IngestionClientConfig.prettyPrint(ingestionClientConfig));
     }
