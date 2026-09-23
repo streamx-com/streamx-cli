@@ -41,6 +41,20 @@ public final class PlatformContext {
     return env != null ? env : StreamxHome.readCurrentProject();
   }
 
+  public static String effectiveOrgSource() {
+    if (override(STREAMX_ORG) != null) {
+      return "from the STREAMX_ORG environment variable";
+    }
+    return StreamxHome.readCurrentOrg() != null ? "from the current-org file" : null;
+  }
+
+  public static String effectiveProjectSource() {
+    if (override(STREAMX_PROJECT) != null) {
+      return "from the STREAMX_PROJECT environment variable";
+    }
+    return StreamxHome.readCurrentProject() != null ? "from the current-project file" : null;
+  }
+
   public static String requireOrg(String orgArg) {
     if (orgArg != null && !orgArg.isBlank()) {
       return orgArg;

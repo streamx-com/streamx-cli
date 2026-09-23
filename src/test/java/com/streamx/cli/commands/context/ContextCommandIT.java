@@ -3,22 +3,33 @@ package com.streamx.cli.commands.context;
 import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.sampleTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.streamx.cli.commands.auth.StubOidcServer;
 import com.streamx.cli.test.CliBaseIT;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ContextCommandIT extends CliBaseIT {
 
+  private StubOidcServer oidcServer;
 
   @BeforeEach
   void cleanContexts() throws IOException {
     deleteRecursively(streamxHome.resolve("contexts"));
     Files.deleteIfExists(streamxHome.resolve("current-context"));
+  }
+
+  @AfterEach
+  void stopServer() {
+    if (oidcServer != null) {
+      oidcServer.close();
+      oidcServer = null;
+    }
   }
 
   @Test
@@ -201,6 +212,23 @@ class ContextCommandIT extends CliBaseIT {
     alt.assertSuccess();
     assertThat(alt.stdout().strip()).isEqualTo("default");
     assertThat(altHome.resolve("contexts/default/config")).isDirectory();
+  }
+
+  @Test
+  void loginWritesIntoTheActiveContext() throws Exception {
+    oidcServer = new StubOidcServer("streamx", 0);
+    exec("context", "create", "prod").assertSuccess();
+    exec("context", "use", "prod").assertSuccess();
+    Files.writeString(streamxHome.resolve("contexts/prod/config/application.properties"), """
+        streamx.auth.server-url=%s
+        streamx.auth.realm=streamx
+        streamx.auth.client-id=streamx-cli
+        """.formatted(oidcServer.getServerUrl()));
+
+    exec("auth", "login", "--no-browser").assertSuccess();
+
+    assertThat(streamxHome.resolve("contexts/prod/config/credentials.json")).exists();
+    assertThat(streamxHome.resolve("contexts/default/config/credentials.json")).doesNotExist();
   }
 
   @Test

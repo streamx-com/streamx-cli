@@ -85,7 +85,14 @@ public class PlatformClients implements AutoCloseable {
   }
 
   public <T> T call(Supplier<Response> operation, Class<T> type) {
-    return handle(invoke(operation), type);
+    Response response = invoke(operation);
+    // A personal access token cannot be refreshed, so retrying would just re-send the same
+    // rejected credential; only a login session is worth a second attempt.
+    if (response.getStatus() == 401 && !AccessTokens.usingPlatformToken()) {
+      AccessTokens.forceRefresh();
+      response = invoke(operation);
+    }
+    return handle(response, type);
   }
 
   public void call(Supplier<Response> operation) {
@@ -143,7 +150,8 @@ public class PlatformClients implements AutoCloseable {
     return switch (status) {
       // Keep the server's explanation (e.g. "personal access tokens cannot manage tokens"),
       // and point at the credential actually in use rather than always at 'auth login'.
-      case 401 -> withDetail(msg.platformTokenUnauthorized(), detail);
+      case 401 -> withDetail(AccessTokens.usingPlatformToken()
+          ? msg.platformTokenUnauthorized() : msg.platformUnauthorized(), detail);
       case 403 -> withDetail(msg.platformAccessDenied(), detail);
       default -> detail == null
           ? msg.platformRequestFailedWithStatus(baseUri.toString(), status)
