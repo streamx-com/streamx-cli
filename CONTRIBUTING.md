@@ -32,6 +32,21 @@ be found in:
 * https://quarkus.io/guides/writing-native-applications-tips
 * https://quarkus.io/guides/native-reference
 
+## Manual testing for PR reviews
+
+It's often a good idea to test features and bugfixes during PR reviews.
+
+### Produce the native image executable
+
+- Build native-image executable by using instructions from the corresponding section.
+- Inside the `target` directory, rename the `streamx-cli-<version>-runner` file to `streamx`.
+- Move the `streamx` executable to any dir in `$PATH`.
+- Ensure that you use the correct version of CLI by running `which streamx`.
+- If you want to make sure, your `~/.streamx` directory won't be corrupted by accident, set `STREAMX_HOME` env variable to some temporary directory.
+
+### Testing autocompletion
+
+- In addition to the point above, run `source <(streamx completion zsh)` to make autocompletion in your current Zsh session.
 
 ## Running tests
 

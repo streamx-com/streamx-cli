@@ -6,6 +6,8 @@ import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdComp
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
 import com.streamx.cli.config.ContextNameCompletionCandidates;
+import com.streamx.cli.platform.ClusterIdCompletionCandidates;
+import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 
 public final class ZshCompletionGenerator {
 
+  // Zsh-specific expression which stores the value typed after --org.
+  // Passed to other completions that depend on the --org value.
+  private static final String ORG_OPTION_VALUE = "\"${words[${words[(i)--org]}+1]}\"";
 
   private ZshCompletionGenerator() {
   }
@@ -214,6 +219,12 @@ public final class ZshCompletionGenerator {
     }
     if (completionCandidates instanceof ContextNameCompletionCandidates) {
       return "($(streamx __complete-context-names 2>/dev/null))";
+    }
+    if (completionCandidates instanceof OrgIdCompletionCandidates) {
+      return "($(streamx __complete-org-ids 2>/dev/null))";
+    }
+    if (completionCandidates instanceof ClusterIdCompletionCandidates) {
+      return "($(streamx __complete-cluster-ids " + ORG_OPTION_VALUE + " 2>/dev/null))";
     }
     // Any remaining candidates are a fixed list (e.g. roles); the dynamic ones are handled above.
     if (completionCandidates != null) {

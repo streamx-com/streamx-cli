@@ -28,6 +28,51 @@ public class StreamxHome {
     streamxHomeCliArg = null;
   }
 
+  public static Path getCurrentOrgFile() {
+    return Contexts.getContextDir().resolve("current-org");
+  }
+
+  public static Path getCurrentProjectFile() {
+    return Contexts.getContextDir().resolve("current-project");
+  }
+
+  public static String readCurrentOrg() {
+    return readPointerFile(getCurrentOrgFile());
+  }
+
+  public static String readCurrentProject() {
+    return readPointerFile(getCurrentProjectFile());
+  }
+
+  public static void writeCurrentOrg(String orgId) throws IOException {
+    writePointerFile(getCurrentOrgFile(), orgId);
+  }
+
+  public static void clearCurrentOrg() throws IOException {
+    Files.deleteIfExists(getCurrentOrgFile());
+  }
+
+  public static void clearCurrentProject() throws IOException {
+    Files.deleteIfExists(getCurrentProjectFile());
+  }
+
+  private static String readPointerFile(Path pointer) {
+    if (!Files.isRegularFile(pointer)) {
+      return null;
+    }
+    try {
+      String stored = Files.readString(pointer).trim();
+      return stored.isEmpty() ? null : stored;
+    } catch (IOException expected) {
+      return null;
+    }
+  }
+
+  private static void writePointerFile(Path pointer, String value) throws IOException {
+    Files.createDirectories(pointer.getParent());
+    Files.writeString(pointer, value + System.lineSeparator());
+  }
+
   public static Path getStreamxHome() {
     if (streamxHomeCliArg != null && !streamxHomeCliArg.isBlank()) {
       return Path.of(streamxHomeCliArg);

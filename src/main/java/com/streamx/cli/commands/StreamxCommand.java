@@ -1,7 +1,9 @@
 package com.streamx.cli.commands;
 
+import com.streamx.cli.commands.completion.CompleteClusterIdsCommand;
 import com.streamx.cli.commands.completion.CompleteContextNamesCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
+import com.streamx.cli.commands.completion.CompleteOrgIdsCommand;
 import com.streamx.cli.commands.completion.CompleteRegisteredTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsKeysCommand;
 import com.streamx.cli.commands.completion.CompleteSettingsSetKeysCommand;
@@ -10,6 +12,7 @@ import com.streamx.cli.commands.completion.CompletionCommand;
 import com.streamx.cli.commands.context.ContextCommand;
 import com.streamx.cli.commands.docs.GenerateDocsCommand;
 import com.streamx.cli.commands.local.LocalCommand;
+import com.streamx.cli.commands.org.OrgCommand;
 import com.streamx.cli.commands.publish.PublishCommand;
 import com.streamx.cli.commands.settings.SettingsCommand;
 import com.streamx.cli.framework.AbstractCommandGroup;
@@ -20,6 +23,7 @@ import picocli.CommandLine;
     header = "StreamX CLI. More info at https://streamx.com",
     subcommands = {
         ContextCommand.class,
+        OrgCommand.class,
         LocalCommand.class,
         SettingsCommand.class,
         PublishCommand.class,
@@ -30,6 +34,8 @@ import picocli.CommandLine;
         CompleteSettingsKeysCommand.class,
         CompleteSettingsSetKeysCommand.class,
         CompleteContextNamesCommand.class,
+        CompleteOrgIdsCommand.class,
+        CompleteClusterIdsCommand.class,
         GenerateDocsCommand.class
     }
 )
