@@ -593,6 +593,28 @@ public interface MessageProvider {
       value = "Current timestamp at the moment of publishing, in ISO_OFFSET_DATE_TIME format.")
   String placeholderDescriptionCurrentTime();
 
+  @Message(id = 296, value = "Not logged in. Set %s to a personal access token")
+  String platformTokenNotConfigured(String variableName);
+
+  @Message(
+      id = 297,
+      value = "StreamX platform URL is not configured.%nSet it with: streamx settings set %s <url>"
+  )
+  String platformUrlNotConfigured(String key);
+
+  @Message(id = 301, value = "Request to %s failed: %s")
+  String platformRequestFailed(String url, String reason);
+
+  @Message(id = 302, value = "Request to %s failed with status %d")
+  String platformRequestFailedWithStatus(String url, int statusCode);
+
+  @Message(id = 303, value = "Request rejected (%d): %s")
+  String platformRequestRejected(int statusCode, String detail);
+
+  @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
+      + "Use an https:// platform URL (http:// is allowed only for localhost)")
+  String platformCleartextHttpBlocked(String url);
+
   @Message(id = 355,
       value = "Invalid context name '%s'. Use 1-32 lowercase letters, digits or dashes, "
           + "starting with a letter or digit")
@@ -641,4 +663,14 @@ public interface MessageProvider {
   @Message(id = 368, value = "Invalid context name '%s' in %s. "
       + "Fix or delete that file, or pass --context to override")
   String contextInvalidPointer(String name, String pointerFile);
+
+  @Message(id = 419, value = "Not found, or you do not have access to it")
+  String platformNotFound();
+
+  @Message(id = 420, value = "You do not have permission to perform this action")
+  String platformAccessDenied();
+
+  @Message(id = 433, value = "Not authorized. The personal access token in "
+      + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
+  String platformTokenUnauthorized();
 }
