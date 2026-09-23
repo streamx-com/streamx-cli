@@ -29,7 +29,7 @@ It's often a good idea to test features and bugfixes during PR reviews.
 
 ### Produce the native image executable
 
-- Build native-image executable by using instructions.
+- Build native-image executable by using instructions from the corresponding section.
 - Inside the `target` directory, rename the `streamx-cli-<version>-runner` file to `streamx`.
 - Move the `streamx` executable to any dir in `$PATH`.
 - Ensure that you use the correct version of CLI by running `which streamx`.
