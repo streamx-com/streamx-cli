@@ -5,7 +5,7 @@
 - Point the CLI at the platform: `streamx settings set streamx.platform.url http://localhost:8080`.
 - Log in to the dashboard in your browser, e.g. `http://localhost:8080`.
 - Open the developer tools, Network tab, right-click any request to the dashboard and
-  copy the Cookie header to a file, e.g.: `/tmp/streamx-cookie`.
+  copy the Cookie header value to a file, e.g.: `/tmp/streamx-cookie`.
 - Create the token and use it:
 
    ```bash
