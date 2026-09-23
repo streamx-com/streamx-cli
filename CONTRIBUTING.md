@@ -23,6 +23,22 @@ Otherwise, CI will fail because at this moment Docker isn't supported on macOS a
 
 - Use `e` button to edit CLI arguments.
 
+## Manual testing for PR reviews
+
+It's often a good idea to test features and bugfixes during PR reviews.
+
+### Produce the native image executable
+
+- Build native-image executable by using instructions.
+- Inside the `target` directory, rename the `streamx-cli-<version>-runner` file to `streamx`.
+- Move the `streamx` executable to any dir in `$PATH`.
+- Ensure that you use the correct version of CLI by running `which streamx`.
+- If you want to make sure, your `~/.streamx` directory won't be corrupted by accident, set `STREAMX_HOME` env variable to some temporary directory.
+
+### Testing autocompletion
+
+- In addition to the point above, run `source <(streamx completion zsh)` to make autocompletion in your current Zsh session.
+
 ### Native build configuration
 Native build requires additional configuration like registering classes for reflection or registering resources to be included
 in native artifact. This project uses `quarkus.native.resources.includes` property in
