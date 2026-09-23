@@ -44,7 +44,7 @@ public class StreamxHome {
   }
 
   public static Path getConfigPath() {
-    return getStreamxHome().resolve("config/application.properties");
+    return Contexts.getConfigDir().resolve("application.properties");
   }
 
   public static URL getConfigUrl() {
@@ -64,15 +64,27 @@ public class StreamxHome {
     }
   }
 
-  public static void populate() {
+  public static void populate(boolean needsContext) {
 
     DefaultEventTemplates.populate();
+
+    String active = Contexts.getActiveContext();
+    if (!Contexts.contextExists(active)) {
+      if (Contexts.DEFAULT_CONTEXT.equals(active)) {
+        Contexts.bootstrapDefault();
+      } else if (needsContext) {
+        throw new CliException(msg.contextNotFound(active, active));
+      } else {
+        clearAppliedSystemProperties();
+        return;
+      }
+    }
     createConfigIfNotExists();
     applySettingsToSystemProperties();
   }
 
   /**
-   * Loads every key/value from {@code streamxHome/config/application.properties} and forwards
+   * Loads every key/value from the active context's {@code application.properties} and forwards
    * them to JVM system properties so any code that reads via {@link
    * org.eclipse.microprofile.config.ConfigProvider} (e.g. {@code StreamxBaseConfig} in
    * the streamx-service-mesh runner) picks them up. System properties already set externally
@@ -80,10 +92,7 @@ public class StreamxHome {
    * a previous call are cleared first so a fresh re-apply reflects the current file.
    */
   public static void applySettingsToSystemProperties() {
-    for (String key : appliedKeys) {
-      System.clearProperty(key);
-    }
-    appliedKeys.clear();
+    clearAppliedSystemProperties();
 
     Path configPath = getConfigPath();
     if (!Files.isRegularFile(configPath)) {
@@ -102,6 +111,13 @@ public class StreamxHome {
       System.setProperty(key, props.getProperty(key));
       appliedKeys.add(key);
     }
+  }
+
+  private static void clearAppliedSystemProperties() {
+    for (String key : appliedKeys) {
+      System.clearProperty(key);
+    }
+    appliedKeys.clear();
   }
 
   static String getStreamxHomeEnv() {

@@ -2,6 +2,7 @@ package com.streamx.cli.framework;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
+import com.streamx.cli.config.Contexts;
 import com.streamx.cli.config.StreamxHome;
 import com.streamx.cli.util.VersionProvider;
 import io.quarkus.runtime.Quarkus;
@@ -134,13 +135,33 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
     }
   }
 
-  public void populateStreamxHome() {
-    if (helpOptions.streamxHome != null) {
-      StreamxHome.setStreamxHomeCliArg(helpOptions.streamxHome);
-    }
-    StreamxHome.applySettingsToSystemProperties();
+  /**
+   * Whether this command operates on the active context's state (settings, credentials,
+   * event templates). Context-management commands return false so they keep working when the
+   * selected context does not exist and the user needs to repair the selection.
+   */
+  public boolean needsContext() {
+    return true;
+  }
 
-    StreamxHome.populate();
+  public void populateStreamxHome(List<CommandLine> parsedChain) {
+    // Reset first: these per-invocation statics would otherwise leak between in-JVM executions.
+    StreamxHome.clearStreamxHomeCliArg();
+    Contexts.clearContextCliArg();
+    // -H/--context may sit at any level of the invocation (streamx --context x sub cmd);
+    // collect across the chain, last occurrence wins.
+    for (CommandLine commandLine : parsedChain) {
+      if (commandLine.getCommand() instanceof AbstractCommand<?> command) {
+        if (command.helpOptions.streamxHome != null) {
+          StreamxHome.setStreamxHomeCliArg(command.helpOptions.streamxHome);
+        }
+        if (command.helpOptions.context != null) {
+          Contexts.setContextCliArg(command.helpOptions.context);
+        }
+      }
+    }
+
+    StreamxHome.populate(needsContext());
   }
 
   public int execute() {

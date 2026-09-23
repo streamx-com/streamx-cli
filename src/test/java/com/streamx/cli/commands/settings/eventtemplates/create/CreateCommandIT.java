@@ -1,10 +1,11 @@
 package com.streamx.cli.commands.settings.eventtemplates.create;
 
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.defaultTemplatesDir;
+import static com.streamx.cli.commands.settings.eventtemplates.EventTemplatesTestSupport.userTemplatesDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streamx.cli.commands.publish.event.UserEventTemplates;
 import com.streamx.cli.test.CliBaseIT;
 import io.quarkus.test.junit.QuarkusTest;
 import java.nio.file.Files;
@@ -29,7 +30,7 @@ class CreateCommandIT extends CliBaseIT {
 
     result.assertSuccess();
 
-    Path created = home.resolve(UserEventTemplates.DIRECTORY)
+    Path created = userTemplatesDir(home)
         .resolve("my.new.template.json");
     assertThat(created).isRegularFile();
 
@@ -71,14 +72,14 @@ class CreateCommandIT extends CliBaseIT {
 
     assertThat(result.exitCode()).isNotZero();
     assertThat(result.stderr()).contains("CloudEvent type is required");
-    Path notCreated = home.resolve(UserEventTemplates.DIRECTORY).resolve("my.blank.json");
+    Path notCreated = userTemplatesDir(home).resolve("my.blank.json");
     assertThat(notCreated).doesNotExist();
   }
 
   @Test
   void shouldRepromptOnIdConflictAndContinueWithFreshId(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Path existing = userDir.resolve("already.there.json");
     Files.writeString(existing, "{}");
@@ -121,17 +122,17 @@ class CreateCommandIT extends CliBaseIT {
 
     assertThat(result.stderr()).contains("already exists");
     assertThat(result.stderr())
-        .contains(home.resolve("event-templates/default/page.published.json")
+        .contains(defaultTemplatesDir(home).resolve("page.published.json")
             .toAbsolutePath().toString());
 
-    Path created = home.resolve(UserEventTemplates.DIRECTORY).resolve("my.custom.json");
+    Path created = userTemplatesDir(home).resolve("my.custom.json");
     assertThat(created).isRegularFile();
   }
 
   @Test
   void shouldFailWhenInputExhaustedDuringConflictLoop(@TempDir Path tempDir) throws Exception {
     Path home = tempDir.resolve("streamx-home");
-    Path userDir = home.resolve(UserEventTemplates.DIRECTORY);
+    Path userDir = userTemplatesDir(home);
     Files.createDirectories(userDir);
     Files.writeString(userDir.resolve("already.there.json"), "{}");
 

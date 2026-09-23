@@ -173,9 +173,9 @@ public class DefaultEventTemplatesIT extends CliBaseIT {
     Path payloadFile = tempDir.resolve("payload.html");
     Files.writeString(payloadFile, "<html>hello</html>");
 
-    Files.createDirectories(customHome);
+    Files.createDirectories(customHome.resolve("contexts/default"));
     Files.writeString(
-        customHome.resolve("override-page-published.json"),
+        customHome.resolve("contexts/default/override-page-published.json"),
         templateWithOrigin("settings")
     );
 
