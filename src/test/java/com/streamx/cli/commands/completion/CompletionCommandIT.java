@@ -28,6 +28,15 @@ class CompletionCommandIT extends CliBaseIT {
     assertThat(stdout).contains("compdef _streamx streamx");
   }
 
+  /** Option candidates were previously dropped, so --role offered nothing on TAB. */
+  @Test
+  void shouldEmitRoleCandidatesForZshOptions() throws Exception {
+    ProcessResult result = exec("completion", "zsh");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("(owner edit view)");
+  }
+
   @Test
   void shouldEmitDynamicTemplateIdCompletionForPublishEvent() throws Exception {
     ProcessResult result = exec("completion", "zsh");

@@ -3,7 +3,7 @@ package com.streamx.cli;
 import com.streamx.cli.commands.StreamxCommand;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.ShortErrorMessageHandler;
-import com.streamx.cli.framework.SynopsisHelper;
+import com.streamx.cli.framework.StreamxHelp;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import jakarta.inject.Inject;
@@ -22,6 +22,7 @@ public class Main implements QuarkusApplication {
         .setParameterExceptionHandler(new ShortErrorMessageHandler())
         .setExpandAtFiles(false)
         .setUsageHelpAutoWidth(true)
+        .setHelpFactory(StreamxHelp::new)
         .setExecutionStrategy(parseResult -> {
           List<CommandLine> parsed = parseResult.asCommandLineList();
           Object lastCommand = parsed.get(parsed.size() - 1).getCommand();
@@ -29,7 +30,7 @@ public class Main implements QuarkusApplication {
             try {
               abstractCommand.populateStreamxHome(parsed);
               // -H/--context are applied now; refresh the root help header to reflect them.
-              SynopsisHelper.applyRootUsageLayout(parsed.get(0));
+              StreamxHelp.applyRootUsageLayout(parsed.get(0));
             } catch (Exception e) {
               return abstractCommand.handleExecutionError(e);
             }
@@ -37,8 +38,8 @@ public class Main implements QuarkusApplication {
           return new CommandLine.RunLast().execute(parseResult);
         });
 
-    SynopsisHelper.applyCustomSynopses(commandLine);
-    SynopsisHelper.applyRootUsageLayout(commandLine);
+    StreamxHelp.applyCustomSynopses(commandLine);
+    StreamxHelp.applyRootUsageLayout(commandLine);
 
     return commandLine.execute(args);
   }

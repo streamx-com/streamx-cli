@@ -55,12 +55,6 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   }
 
   @CommandLine.Option(
-      names = {CommonOptions.VERBOSE_SHORT, CommonOptions.VERBOSE_LONG},
-      description = "Print debug information"
-  )
-  public boolean verbose;
-
-  @CommandLine.Option(
       names = {CommonOptions.OUTPUT_SHORT, CommonOptions.OUTPUT_LONG},
       description = "Specify output format: text, json, yaml",
       defaultValue = "text"
@@ -72,6 +66,10 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
   CommonOptions helpOptions = new CommonOptions();
 
   public abstract CommandResult<ResultT> runCommand();
+
+  public boolean isVerbose() {
+    return helpOptions.verbose;
+  }
 
   public List<String> getHiddenOptions() {
     return List.of();
@@ -109,7 +107,7 @@ public abstract class AbstractCommand<ResultT> implements Runnable {
       writeErrorToTempDir(e);
     }
 
-    if (verbose) {
+    if (isVerbose()) {
 
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
