@@ -261,6 +261,9 @@ jobs:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
+      - name: Trust the StreamX tap
+        run: brew trust --tap ${{ needs.release.outputs.brew_tap_slug }}
+
       - name: Test Homebrew install
         run: |
           echo "Test latest version"
@@ -331,3 +334,4 @@ jobs:
 
       - name: Test install script
         run: ./install.sh.test "${RELEASE_TAG}"
+

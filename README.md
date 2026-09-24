@@ -32,6 +32,9 @@ brew install streamx-com/tap/streamx
 # Add brew tap
 brew tap streamx-com/tap
 
+# Trust the tap (needed for Homebrew after v6.0)
+brew trust streamx-com/tap
+
 # List available formulas
 brew search streamx-com/tap
 
@@ -77,3 +80,4 @@ curl -fsSL https://raw.githubusercontent.com/streamx-com/streamx-cli/main/instal
 There are several ways of configuring and several properties to configure.
 
 For details refer to [StreamX CLI Reference](https://www.streamx.dev/guides/streamx-command-line-interface-reference.html).
+
