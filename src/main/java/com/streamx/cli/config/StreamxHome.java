@@ -48,6 +48,10 @@ public class StreamxHome {
     writePointerFile(getCurrentOrgFile(), orgId);
   }
 
+  public static void writeCurrentProject(String projectId) throws IOException {
+    writePointerFile(getCurrentProjectFile(), projectId);
+  }
+
   public static void clearCurrentOrg() throws IOException {
     Files.deleteIfExists(getCurrentOrgFile());
   }

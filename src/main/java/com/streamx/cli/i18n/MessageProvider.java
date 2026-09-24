@@ -669,6 +669,24 @@ public interface MessageProvider {
   )
   String orgMemberNotActiveForRoleChange(String userId, String status, String orgId);
 
+  @Message(id = 325, value = "No projects found")
+  String projectListEmpty();
+
+  @Message(id = 326, value = "Project '%s' created (id: %s)")
+  String projectCreated(String name, String id);
+
+  @Message(id = 327, value = "Project '%s' updated")
+  String projectUpdated(String projectId);
+
+  @Message(id = 328, value = "Project '%s' deleted")
+  String projectDeleted(String projectId);
+
+  @Message(id = 329, value = "At least one of --name or --description must be given")
+  String projectUpdateNothingToDo();
+
+  @Message(id = 330, value = "No pending changes")
+  String projectPendingChangesEmpty();
+
   @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
       + "Use an https:// platform URL (http:// is allowed only for localhost)")
   String platformCleartextHttpBlocked(String url);
@@ -736,11 +754,21 @@ public interface MessageProvider {
       + "or run: streamx context org use <orgId>")
   String noOrgContext();
 
+  @Message(id = 386, value = "No project given. Pass <projectId>, set STREAMX_PROJECT, "
+      + "or run: streamx context project use <projectId>")
+  String noProjectContext();
+
   @Message(id = 387, value = "Current organization set to '%s'")
   String orgUseSet(String orgId);
 
   @Message(id = 388, value = "No current organization set. Run: streamx context org use <orgId>")
   String noCurrentOrg();
+
+  @Message(id = 389, value = "Current project set to '%s'")
+  String projectUseSet(String projectId);
+
+  @Message(id = 390, value = "No current project set. Run: streamx context project use <projectId>")
+  String noCurrentProject();
 
   @Message(id = 391,
       value = "Cleared current project '%s' (it belonged to the previous organization)")
@@ -754,6 +782,39 @@ public interface MessageProvider {
 
   @Message(id = 397, value = "Current organization: %s")
   String currentOrgHeader(String orgId);
+
+  @Message(id = 398, value = "Current project: %s")
+  String currentProjectHeader(String projectId);
+
+  @Message(id = 399, value = "Project '%s' now runs on: %s")
+  String projectClustersSet(String projectId, String clusterIds);
+
+  @Message(id = 400, value = "Cluster '%s' enabled for project '%s'")
+  String projectClusterEnabled(String clusterId, String projectId);
+
+  @Message(id = 401, value = "Cluster '%s' disabled for project '%s'")
+  String projectClusterDisabled(String clusterId, String projectId);
+
+  @Message(id = 402, value = "Cluster '%s' is already enabled for project '%s'")
+  String projectClusterAlreadyEnabled(String clusterId, String projectId);
+
+  @Message(id = 403, value = "Cluster '%s' is already disabled for project '%s'")
+  String projectClusterAlreadyDisabled(String clusterId, String projectId);
+
+  @Message(id = 404, value = "Unknown cluster '%s'. Available clusters: %s")
+  String projectClusterUnknown(String clusterId, String available);
+
+  @Message(id = 405, value = "Could not read SSH private key file '%s': %s")
+  String projectSshKeyFileUnreadable(String path, String reason);
+
+  @Message(id = 416, value = "specified")
+  String sshKeySpecified();
+
+  @Message(id = 417, value = "not specified")
+  String sshKeyNotSpecified();
+
+  @Message(id = 418, value = "not connected")
+  String repositoryNotConnected();
 
   @Message(id = 419, value = "Not found, or you do not have access to it")
   String platformNotFound();

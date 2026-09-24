@@ -45,6 +45,7 @@ public final class StreamxHelp extends Help {
     usage.description(
         msg.currentContextHeader("@|bold " + currentContext() + "|@"),
         msg.currentOrgHeader(boldOrDash(quiet(PlatformContext::effectiveOrg))),
+        msg.currentProjectHeader(boldOrDash(quiet(PlatformContext::effectiveProject))),
         "");
   }
 
