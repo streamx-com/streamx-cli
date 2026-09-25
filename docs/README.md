@@ -8,6 +8,8 @@ This is what it adds to the repository and what should be removed after the migr
 
 - `docs/` - this Docusaurus site
 - `.github/workflows/gen-docs-reference.yml` - build and publish to GitHub Pages
+- The `docs` job in `.github/workflows/release.yml` - calls `gen-docs-reference.yml` for
+  every release.
 - `.github/scripts/deploy-docs.sh` - the gh-pages publishing script
 - `src/main/java/com/streamx/cli/docs/MarkdownDocsGenerator.java` and
   `src/main/java/com/streamx/cli/commands/docs/GenerateDocsCommand.java` - the hidden

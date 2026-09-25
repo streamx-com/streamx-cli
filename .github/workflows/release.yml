@@ -231,6 +231,17 @@ jobs:
             git push
           fi
 
+  docs:
+    needs: [prepare-release, release]
+    uses: ./.github/workflows/gen-docs-reference.yml
+    with:
+      ref: ${{ needs.prepare-release.outputs.tag }}
+    permissions:
+      contents: write        # push to gh-pages
+      id-token: write        # GCP auth for the private Maven registry
+      pull-requests: write   # requested by the called workflow for PR preview comments
+    secrets: inherit
+
   release-test:
     needs: [prepare-release, build, release]
     name: ${{ matrix.name }}-release-test
@@ -260,6 +271,9 @@ jobs:
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Trust the StreamX tap
+        run: brew trust --tap ${{ needs.release.outputs.brew_tap_slug }}
 
       - name: Test Homebrew install
         run: |
@@ -331,3 +345,4 @@ jobs:
 
       - name: Test install script
         run: ./install.sh.test "${RELEASE_TAG}"
+
