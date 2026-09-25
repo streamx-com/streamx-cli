@@ -20,6 +20,13 @@ You can find all the available stable releases on [GitHub releases page](https:/
 
 ### Install using Homebrew (macOS, Linux)
 
+**Trust the StreamX tap (needed since Homebrew v6.0)**
+
+```sh
+brew tap streamx-com/tap
+brew trust streamx-com/tap
+```
+
 **Install latest stable version:**
 
 ```sh
@@ -29,12 +36,6 @@ brew install streamx-com/tap/streamx
 **Install specific stable version:**
 
 ```sh
-# Add brew tap
-brew tap streamx-com/tap
-
-# Trust the tap (needed for Homebrew after v6.0)
-brew trust streamx-com/tap
-
 # List available formulas
 brew search streamx-com/tap
 
