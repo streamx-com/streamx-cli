@@ -231,6 +231,17 @@ jobs:
             git push
           fi
 
+  docs:
+    needs: [prepare-release, release]
+    uses: ./.github/workflows/gen-docs-reference.yml
+    with:
+      ref: ${{ needs.prepare-release.outputs.tag }}
+    permissions:
+      contents: write        # push to gh-pages
+      id-token: write        # GCP auth for the private Maven registry
+      pull-requests: write   # requested by the called workflow for PR preview comments
+    secrets: inherit
+
   release-test:
     needs: [prepare-release, build, release]
     name: ${{ matrix.name }}-release-test

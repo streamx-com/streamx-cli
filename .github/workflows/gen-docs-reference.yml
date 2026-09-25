@@ -4,12 +4,14 @@ run-name: Docs - ${{ github.event.pull_request.title || github.ref_name }}
 on:
   push:
     branches: [main]
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-rc.*'
   pull_request:
     types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
 
 permissions:
   contents: write        # push to gh-pages
@@ -17,11 +19,11 @@ permissions:
   id-token: write        # GCP auth for the private Maven registry
 
 env:
-  SLOT: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+  SLOT: ${{ inputs.ref || (github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number)) || github.ref_name }}
   SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
 concurrency:
-  group: docs-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+  group: docs-${{ inputs.ref || (github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number)) || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -32,6 +34,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
       - uses: ./.github/actions/setup-env
         with:
           gcp_workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
@@ -61,7 +65,7 @@ jobs:
           }
           build "$SLOT"
           # The highest stable release is also published as "latest".
-          if [[ "$GITHUB_REF_TYPE" == tag && "$SLOT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ "$SLOT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             highest=$(git ls-remote --tags --refs origin | awk -F/ '{print $NF}' \
               | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
             if [[ "$highest" == "$SLOT" ]]; then
