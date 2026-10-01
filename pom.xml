@@ -23,7 +23,7 @@
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <streamx.version>2.1.0-dev.16</streamx.version>
     <aggregated-openapi.version>2.1.0-SNAPSHOT</aggregated-openapi.version>
-    <cloudevents.version>4.0.1</cloudevents.version>
+    <cloudevents.version>5.0.0</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
     <surefire.forkCount>1</surefire.forkCount>
