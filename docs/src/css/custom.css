@@ -72,12 +72,23 @@
 
 /* Navbar: translucent like the site header. */
 .navbar {
-  backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  backdrop-filter: saturate(140%) blur(10px);
 }
 
 [data-theme="light"] .navbar {
   border-bottom: 1px solid #e9edf2;
+}
+
+[data-theme="dark"] .navbar-sidebar {
+  background-color: var(--sx-ink);
 }
 
 .navbar__title {
