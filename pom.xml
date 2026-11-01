@@ -44,7 +44,7 @@
              1.3.x routes JCL to SLF4J natively, replacing the removed jcl-over-slf4j. -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.3.5</version>
+        <version>1.4.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
