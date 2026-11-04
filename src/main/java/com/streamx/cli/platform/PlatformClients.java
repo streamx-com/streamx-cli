@@ -120,7 +120,7 @@ public class PlatformClients implements AutoCloseable {
     }
     if (status < 200 || status >= 300) {
       String body = response.hasEntity() ? response.readEntity(String.class) : "";
-      throw new CliException(errorMessage(status, body));
+      throw new RequestFailedException(errorMessage(status, body), status, violations(body));
     }
     if (type == null || !response.hasEntity()) {
       return null;
@@ -175,9 +175,48 @@ public class PlatformClients implements AutoCloseable {
     }
   }
 
+  private static List<Violation> violations(String body) {
+    List<Violation> violations = new ArrayList<>();
+    if (body == null || body.isBlank()) {
+      return violations;
+    }
+    try {
+      for (JsonNode violation : MAPPER.readTree(body).path("violations")) {
+        violations.add(new Violation(
+            violation.path("field").asText(""), violation.path("message").asText("")));
+      }
+    } catch (com.fasterxml.jackson.core.JsonProcessingException notJson) {
+      return violations;
+    }
+    return violations;
+  }
+
   public static class NotFoundException extends CliException {
     public NotFoundException(String message) {
       super(message);
     }
+  }
+
+  /** Any other failed answer, with its status and field errors for callers that react to them. */
+  public static class RequestFailedException extends CliException {
+    private final int status;
+    private final transient List<Violation> violations;
+
+    public RequestFailedException(String message, int status, List<Violation> violations) {
+      super(message);
+      this.status = status;
+      this.violations = violations;
+    }
+
+    public int status() {
+      return status;
+    }
+
+    public List<Violation> violations() {
+      return violations;
+    }
+  }
+
+  public record Violation(String field, String message) {
   }
 }

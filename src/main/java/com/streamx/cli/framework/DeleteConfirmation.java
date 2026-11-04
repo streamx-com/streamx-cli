@@ -10,10 +10,14 @@ public final class DeleteConfirmation {
   }
 
   public static void require(boolean force, String id) {
+    require(force, id, msg.deleteConfirmPrompt(id));
+  }
+
+  public static void require(boolean force, String id, String prompt) {
     if (force) {
       return;
     }
-    String answer = InteractivePicker.pick(msg.deleteConfirmPrompt(id), null);
+    String answer = InteractivePicker.pick(prompt, null);
     if (StringUtils.isBlank(answer)) {
       throw new CliException(msg.deleteConfirmRequired());
     }
