@@ -22,7 +22,7 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <streamx.version>2.1.0-dev.16</streamx.version>
-    <aggregated-openapi.version>2.1.0-SNAPSHOT</aggregated-openapi.version>
+    <aggregated-openapi.version>2.6.0-SNAPSHOT</aggregated-openapi.version>
     <cloudevents.version>4.0.1</cloudevents.version>
 
     <test.output.toFile>false</test.output.toFile>
