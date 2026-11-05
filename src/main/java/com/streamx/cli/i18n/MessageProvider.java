@@ -684,9 +684,6 @@ public interface MessageProvider {
   @Message(id = 329, value = "At least one of --name or --description must be given")
   String projectUpdateNothingToDo();
 
-  @Message(id = 330, value = "No pending changes")
-  String projectPendingChangesEmpty();
-
   @Message(id = 354, value = "Refusing to send credentials over cleartext HTTP to '%s'.%n"
       + "Use an https:// platform URL (http:// is allowed only for localhost)")
   String platformCleartextHttpBlocked(String url);

@@ -89,10 +89,6 @@ public class StubProjectServer implements AutoCloseable {
             {"state":"Pending","reason":"Scaling","message":"api starting"}
           ]}
           """);
-    } else if (path.endsWith("/changes/pending")) {
-      respond(exchange, 200, """
-          [{"message":"web will be created","details":["image: nginx","replicas: 2"]}]
-          """);
     } else if (path.endsWith("/clusters")) {
       handleClusters(exchange, method);
     } else if (path.endsWith("/projects")) {

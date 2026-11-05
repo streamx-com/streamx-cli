@@ -301,26 +301,6 @@ class ProjectCommandIT extends CliBaseIT {
     assertThat(result.stdout()).contains("Ready", "Deployed", "web is running");
   }
 
-  @Test
-  void shouldListPendingChanges() throws Exception {
-    ProcessResult result = exec("project", "pending-changes", "so-org-web-a1b2c", "--org", ORG);
-
-    result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly(
-        "GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c/changes/pending");
-    assertThat(result.stdout()).contains("web will be created", "image: nginx", "replicas: 2");
-  }
-
-  @Test
-  void shouldReportNoPendingChanges() throws Exception {
-    platform.failWith(200, "[]");
-
-    ProcessResult result = exec("project", "pending-changes", "so-org-web-a1b2c", "--org", ORG);
-
-    result.assertSuccess();
-    assertThat(result.stdout()).contains(msg.projectPendingChangesEmpty());
-  }
-
   /**
    * A crafted project id must stay one path segment. Unencoded, "so-x/status" would route to the
    * status endpoint instead of delete; the raw path is asserted because getPath() decodes it.
