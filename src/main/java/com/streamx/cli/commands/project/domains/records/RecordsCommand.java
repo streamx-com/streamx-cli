@@ -17,7 +17,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "records",
-    header = "Print the DNS records that custom domains need",
+    header = "Show the DNS records to add at your DNS provider",
     footer = {
         "",
         "Examples:",
@@ -40,7 +40,7 @@ public class RecordsCommand extends AbstractCommand<List<DnsRecordView>> {
 
   @CommandLine.Option(
       names = "--zone",
-      description = "Print zone-file lines with absolute names and no TTL"
+      description = "Print DNS records in zone-file format"
   )
   public boolean zone;
 

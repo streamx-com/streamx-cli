@@ -25,11 +25,8 @@ import picocli.CommandLine;
     name = "status",
     header = "Show a custom domain's DNS and HTTPS status",
     description = {
-        "Checks the domain as the platform sees it: its two records (the TXT record that "
-            + "proves ownership and the _acme-challenge CNAME for the certificate), and, once "
-            + "the domain is verified, its HTTPS setup. Ends with exit code 0 when the domain is "
-            + "ready, that is when StreamX serves it over HTTPS, and 1 otherwise. With --watch, "
-            + "checks again until it is ready."
+        "Check DNS verification and HTTPS readiness. Exits with code 0 when the domain is "
+            + "ready, or 1 otherwise. Use --watch to keep checking until it is ready."
     },
     footer = {
         "",
@@ -43,7 +40,7 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name"
   )
   public String idOrDomain;
 
@@ -52,7 +49,7 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
 
   @CommandLine.Option(
       names = "--watch",
-      description = "Check again after each interval until the domain is ready"
+      description = "Repeat checks until HTTPS is ready. Press Ctrl+C to stop."
   )
   public boolean watch;
 
@@ -69,13 +66,15 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   public String getTextOutput(CommandResult<DomainStatusView> result) {
     DomainStatusView status = result.getData();
     List<String> lines = new ArrayList<>();
-    lines.add(msg.domainStatusHeader(status.domain(), status.verification(), status.tls(),
-        status.checkedAt()));
+    lines.add(msg.domainStatusHeader(status.domain(),
+        DomainsSupport.describeStatus(status.verification()),
+        DomainsSupport.describeHttpsStatus(status.tls()), status.checkedAt()));
     lines.add(TextTable.render(
         List.of("RECORD", "TYPE", "NAME", "STATUS"),
         status.records().stream()
             .map(record -> Arrays.asList(
-                getPurpose(record), record.type(), record.name(), record.status()))
+                getPurpose(record), record.type(), record.name(),
+                DomainsSupport.describeStatus(record.status())))
             .toList()));
     List<String> details = status.records().stream()
         .filter(record -> !record.inPlace())
@@ -118,11 +117,14 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
 
   private static String nextStep(DomainStatusView status) {
     String domain = status.domain();
+    if ("FAILED".equals(status.verification())) {
+      return msg.domainVerificationRetry(domain);
+    }
     if (!"VERIFIED".equals(status.verification())) {
       return msg.domainNotVerifiedYet(domain);
     }
     return switch (String.valueOf(status.tls())) {
-      case "NO_ROUTE" -> msg.domainVerifiedNextStep(domain);
+      case "NO_ROUTE" -> msg.domainRouteRequired(domain);
       case "PENDING" -> msg.domainHttpsPending(domain);
       case "RECORD_PROBLEM" -> msg.domainCertificateRecordProblem(domain);
       case "CERTIFICATE_PROBLEM" -> msg.domainCertificateProblem(domain);

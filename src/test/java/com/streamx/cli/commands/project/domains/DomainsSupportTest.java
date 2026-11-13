@@ -49,6 +49,19 @@ class DomainsSupportTest {
         .isEqualTo("shop.example.com");
   }
 
+  @Test
+  void statusLabelsAreReadableAndUnknownValuesArePreserved() {
+    assertThat(DomainsSupport.describeStatus("PENDING")).isEqualTo("Verifying");
+    assertThat(DomainsSupport.describeHttpsStatus("PENDING")).isEqualTo("Setting up HTTPS");
+    assertThat(DomainsSupport.describeStatus("NO_ROUTE")).isEqualTo("No route configured");
+    assertThat(DomainsSupport.describeStatus("CERTIFICATE_PROBLEM"))
+        .isEqualTo("Certificate error");
+    assertThat(DomainsSupport.describeStatus("MISMATCH")).isEqualTo("Record value doesn’t match");
+    assertThat(DomainsSupport.describeStatus("LOOKUP_FAILED")).isEqualTo("DNS lookup failed");
+    assertThat(DomainsSupport.describeStatus("SOMETHING_NEW")).isEqualTo("SOMETHING_NEW");
+    assertThat(DomainsSupport.describeStatus(null)).isEqualTo("Unknown");
+  }
+
   private static ProjectDomainView domain(String id, String hostname) {
     return new ProjectDomainView(id, hostname, "PENDING", null, null, null, null, null, List.of());
   }

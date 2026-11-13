@@ -14,9 +14,8 @@ import picocli.CommandLine;
     name = "domains",
     header = "Manage the custom domains of a project",
     description = {
-        "A project serves a custom domain once two DNS records exist for it: a TXT record that "
-            + "proves you control the domain, and a CNAME that lets StreamX obtain its TLS "
-            + "certificate. 'add' prints both."
+        "Manage custom domains and their DNS verification. "
+            + "Use 'add' to display the DNS records you need to create."
     },
     footer = {
         "",

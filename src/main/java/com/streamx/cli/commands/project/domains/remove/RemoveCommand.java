@@ -21,18 +21,14 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "remove",
     header = "Remove a custom domain from a project",
-    description = {
-        "Removing a verified domain stops the project from serving it, so the command asks for "
-            + "confirmation. For a project with a repository, the command commits the change "
-            + "there and waits until it applies."
-    }
+    description = "Remove a domain from the project and wait for the change to apply."
 )
 public class RemoveCommand extends AbstractSilentCommand {
 
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name"
   )
   public String idOrDomain;
 
@@ -41,7 +37,7 @@ public class RemoveCommand extends AbstractSilentCommand {
 
   @CommandLine.Option(
       names = {"-f", "--force"},
-      description = "Skip the confirmation prompt (required in non-interactive environments)"
+      description = "Remove without asking for confirmation"
   )
   public boolean force;
 

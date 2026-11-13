@@ -18,7 +18,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "list",
-    header = "List the custom domains of a project and their verification state"
+    header = "List custom domains and their verification status"
 )
 public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
 
@@ -27,7 +27,7 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
 
   @CommandLine.Option(
       names = {"-q", "--quiet"},
-      description = "Only display domain names, one per line (for piping to xargs)"
+      description = "Print domain names only, one per line"
   )
   public boolean quiet;
 
@@ -46,12 +46,12 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
     }
 
     return TextTable.render(
-        List.of("ID", "DOMAIN", "STATE", "REASON", "NEXT CHECK"),
+        List.of("ID", "DOMAIN", "VERIFICATION", "REASON", "NEXT CHECK"),
         domains.stream()
             .map(domain -> Arrays.asList(
                 domain.id(),
                 domain.domain(),
-                domain.state(),
+                DomainsSupport.describeStatus(domain.state()),
                 DomainsSupport.describeVerificationReason(domain.failureReason()),
                 // Verified and failed domains are not checked again.
                 domain.verified() || domain.failed() ? null : domain.nextCheckAt()))

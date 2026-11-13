@@ -20,7 +20,7 @@ public class ProjectDomainsApi {
   private static final int NOT_IMPLEMENTED = 501;
   // Field errors name the entry of the request body by its ID, alone or inside a longer path,
   // such as updateProjectDomains.domainsRequest.domains[shop].<map value>.
-  private static final Pattern DOMAIN_ID = Pattern.compile("domains(?:<K>)?\\[([^\\]]+)]");
+  private static final Pattern DOMAIN_ID = Pattern.compile("domains(<K>)?\\[([^\\]]+)]");
 
   private final PlatformClients clients;
   private final DomainsApi api;
@@ -96,8 +96,18 @@ public class ProjectDomainsApi {
     List<String> lines = new ArrayList<>();
     for (PlatformClients.Violation violation : violations) {
       Matcher id = DOMAIN_ID.matcher(violation.field());
-      String hostname = id.find() ? domains.get(id.group(1)) : null;
-      String subject = hostname == null || hostname.isBlank() ? violation.field() : hostname;
+      String subject = "Domains";
+      if (id.find()) {
+        String domainId = id.group(2);
+        String domainName = domains.get(domainId);
+        if (id.group(1) != null || violation.field().endsWith(".<map key>")) {
+          subject = "Domain ID '" + domainId + "'";
+        } else if (domainName == null || domainName.isBlank()) {
+          subject = "Domain with ID '" + domainId + "'";
+        } else {
+          subject = "Domain '" + domainName + "'";
+        }
+      }
       lines.add("  " + subject + ": " + violation.message());
     }
     return String.join(System.lineSeparator(), lines);

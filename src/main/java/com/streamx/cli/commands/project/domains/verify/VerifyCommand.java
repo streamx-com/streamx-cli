@@ -19,11 +19,10 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "verify",
-    header = "Check a custom domain's DNS records again",
+    header = "Request domain verification",
     description = {
-        "Asks the platform to check the domain's DNS records now, which also restarts its "
-            + "verification window. With --wait, the command follows the checks and ends with "
-            + "exit code 0 once the domain is verified, or 1 if it fails or the time runs out."
+        "Request a DNS verification check. Use --wait to wait for the result. "
+            + "With --wait, exits with code 1 if verification fails or waiting times out."
     },
     footer = {
         "",
@@ -39,7 +38,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name"
   )
   public String idOrDomain;
 
@@ -48,7 +47,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
 
   @CommandLine.Option(
       names = "--wait",
-      description = "Wait until the domain is verified or fails"
+      description = "Wait for verification to succeed or fail"
   )
   public boolean wait;
 
@@ -57,7 +56,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
       paramLabel = "<duration>",
       defaultValue = "1h",
       converter = DurationConverter.class,
-      description = "How long --wait waits, such as 90s, 10m or 1h (default: ${DEFAULT-VALUE})"
+      description = "Maximum wait with --wait, such as 10m or 1h (default: ${DEFAULT-VALUE})"
   )
   public Duration timeout;
 
@@ -151,8 +150,12 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
   }
 
   private static String getProgress(ProjectDomainView domain) {
-    String reason = Objects.requireNonNullElse(
-        DomainsSupport.describeVerificationReason(domain.failureReason()), domain.state());
+    String reason = DomainsSupport.describeVerificationReason(domain.failureReason());
+    if (reason == null) {
+      return domain.nextCheckAt() == null
+          ? msg.domainVerifying(domain.domain())
+          : msg.domainVerifyingUntil(domain.domain(), domain.nextCheckAt());
+    }
     return domain.nextCheckAt() == null
         ? msg.domainVerificationPending(reason)
         : msg.domainVerificationPendingUntil(reason, domain.nextCheckAt());

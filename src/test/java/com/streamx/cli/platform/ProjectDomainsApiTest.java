@@ -13,7 +13,7 @@ class ProjectDomainsApiTest {
       "shop", "shop.example.com", "www", "www.example.com", "blog", "blog.example.com"));
 
   @Test
-  void fieldErrorsNameTheHostnameOfTheirId() {
+  void fieldErrorsDistinguishDomainNamesAndIds() {
     String rejected = ProjectDomainsApi.rejected(List.of(
         new PlatformClients.Violation("domains[blog]", "Duplicate domain"),
         new PlatformClients.Violation(
@@ -24,27 +24,28 @@ class ProjectDomainsApiTest {
         DOMAINS);
 
     assertThat(rejected).isEqualTo(
-        "  blog.example.com: Duplicate domain" + System.lineSeparator()
-            + "  shop.example.com: Invalid domain name" + System.lineSeparator()
-            + "  www.example.com: must not be null");
+        "  Domain 'blog.example.com': Duplicate domain" + System.lineSeparator()
+            + "  Domain 'shop.example.com': Invalid domain name" + System.lineSeparator()
+            + "  Domain ID 'www': must not be null");
   }
 
   @Test
-  void fieldErrorsWithoutKnownIdKeepTheirField() {
+  void fieldErrorsWithoutKnownIdUseReadableLabels() {
     String rejected = ProjectDomainsApi.rejected(List.of(
         new PlatformClients.Violation("domains[news]", "Blank domain"),
         new PlatformClients.Violation("domains", "must not be null")), DOMAINS);
 
     assertThat(rejected).isEqualTo(
-        "  domains[news]: Blank domain" + System.lineSeparator() + "  domains: must not be null");
+        "  Domain with ID 'news': Blank domain" + System.lineSeparator()
+            + "  Domains: must not be null");
   }
 
   @Test
-  void blankHostnamesKeepTheirField() {
+  void blankDomainNamesUseTheirId() {
     String rejected = ProjectDomainsApi.rejected(
         List.of(new PlatformClients.Violation("domains[empty]", "Blank domain")),
         Map.of("shop", "shop.example.com", "empty", ""));
 
-    assertThat(rejected).isEqualTo("  domains[empty]: Blank domain");
+    assertThat(rejected).isEqualTo("  Domain with ID 'empty': Blank domain");
   }
 }

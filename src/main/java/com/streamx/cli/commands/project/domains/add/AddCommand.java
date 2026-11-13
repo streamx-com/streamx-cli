@@ -25,7 +25,7 @@ public class AddCommand extends AbstractCommand<List<ProjectDomainView>> {
       index = "0",
       arity = "1",
       paramLabel = "<id>",
-      description = "ID of the domain"
+      description = "Unique ID within the project, such as shop"
   )
   public String id;
 
@@ -33,7 +33,7 @@ public class AddCommand extends AbstractCommand<List<ProjectDomainView>> {
       index = "1",
       arity = "1",
       paramLabel = "<domain>",
-      description = "Domain name to add, such as sub.example.com"
+      description = "Domain name to add, such as shop.example.com"
   )
   public String domainName;
 

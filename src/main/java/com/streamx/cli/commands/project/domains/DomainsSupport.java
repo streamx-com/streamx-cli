@@ -105,14 +105,41 @@ public final class DomainsSupport {
     };
   }
 
+  /** Readable labels for text output; API values stay unchanged in JSON and YAML. */
+  public static String describeStatus(String status) {
+    if (status == null) {
+      return msg.domainStatusUnknown();
+    }
+    return switch (status) {
+      case "PENDING" -> msg.domainStatusVerifying();
+      case "VERIFIED" -> msg.domainStatusVerified();
+      case "FAILED" -> msg.domainStatusVerificationFailed();
+      case "NOT_VERIFIED" -> msg.domainStatusNotVerified();
+      case "NO_ROUTE" -> msg.domainStatusNoRoute();
+      case "RECORD_PROBLEM" -> msg.domainStatusDnsRecordError();
+      case "CERTIFICATE_PROBLEM" -> msg.domainStatusCertificateError();
+      case "READY" -> msg.domainStatusReady();
+      case "CHECK_FAILED" -> msg.domainStatusCheckFailed();
+      case "FOUND" -> msg.domainRecordStatusInPlace();
+      case "MISSING" -> msg.domainRecordStatusNotFound();
+      case "MISMATCH" -> msg.domainRecordStatusMismatch();
+      case "LOOKUP_FAILED" -> msg.domainRecordStatusLookupFailed();
+      default -> status;
+    };
+  }
+
+  public static String describeHttpsStatus(String status) {
+    return "PENDING".equals(status) ? msg.domainStatusHttpsPending() : describeStatus(status);
+  }
+
   public static String formatDomainDetails(ProjectDomainView domain) {
     String details = new DetailsView()
         .row("id", domain.id())
         .row("domain", domain.domain())
-        .row("state", domain.state())
+        .row("verification", describeStatus(domain.state()))
         .row("reason", describeVerificationReason(domain.failureReason()))
         .row("attempts", domain.attempts() == null ? null : domain.attempts().toString())
-        .row("last check", domain.lastCheckedAt())
+        .row("last checked", domain.lastCheckedAt())
         .row("next check", domain.nextCheckAt())
         .row("verified at", domain.verifiedAt())
         .render();

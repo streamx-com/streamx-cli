@@ -859,7 +859,7 @@ public interface MessageProvider {
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
 
-  @Message(id = 440, value = "No domains found")
+  @Message(id = 440, value = "No custom domains configured")
   String domainsListEmpty();
 
   @Message(id = 441, value = "Domain '%s' is not configured for project '%s'")
@@ -875,24 +875,21 @@ public interface MessageProvider {
       + "'streamx project domains verify %s --wait'")
   String domainAddNextStep(String domain);
 
-  @Message(id = 445, value = "The change is saved, but project '%s' has not applied it yet. "
-      + "For a project with a repository, this usually means its repository deployment is "
-      + "failing: check 'streamx project status'")
+  @Message(id = 445, value = "The change was saved, but project '%s' has not applied it yet. Run "
+      + "'streamx project status' for details.")
   String domainsChangeNotApplied(String projectId);
 
-  @Message(id = 446, value = "Domain '%s' is verified: once the change applies, the project "
-      + "stops serving it")
+  @Message(id = 446, value = "Removing domain '%s' will stop the project from serving it")
   String domainRemoveVerifiedWarning(String domain);
 
-  @Message(id = 447, value = "This removes '%s' from the project. Type the domain name to confirm")
+  @Message(id = 447, value = "Type '%s' to confirm removal")
   String domainRemoveConfirmPrompt(String domain);
 
   @Message(id = 448, value = "Domain '%s' removed from project '%s'")
   String domainRemoved(String domain, String projectId);
 
-  @Message(id = 449, value = "In DNS, you can remove this project's value '%s' from the TXT "
-      + "record '%s'; keep any other values there, they belong to other projects. Delete the "
-      + "CNAME '%s' too, unless another project still uses the domain")
+  @Message(id = 449, value = "Remove TXT value '%s' from '%s'. Keep other TXT values. Remove CNAME "
+      + "'%s' if no other project uses this domain.")
   String domainRemoveDnsCleanup(String txtValue, String txtName, String cnameName);
 
   @Message(id = 450, value = "--zone prints zone-file lines and cannot be combined with "
@@ -902,14 +899,14 @@ public interface MessageProvider {
   @Message(id = 451, value = "Domain '%s' is already verified")
   String domainAlreadyVerified(String domain);
 
-  @Message(id = 452, value = "Verification of '%s' requested")
+  @Message(id = 452, value = "Verification requested for domain '%s'")
   String domainVerificationRequested(String domain);
 
-  @Message(id = 453, value = "Run 'streamx project domains get %s' to see the result, or wait "
-      + "for it with --wait")
+  @Message(id = 453, value = "Check progress with 'streamx project domains get %s', or rerun "
+      + "verification with --wait.")
   String domainVerificationNextStep(String domain);
 
-  @Message(id = 454, value = "Waiting for the platform to check '%s'...")
+  @Message(id = 454, value = "Waiting for domain '%s' to be verified...")
   String domainVerificationWaiting(String domain);
 
   @Message(id = 455, value = "Domain '%s' was removed from project '%s' while waiting")
@@ -921,14 +918,14 @@ public interface MessageProvider {
   @Message(id = 457, value = "Verification of '%s' failed: %s")
   String domainVerificationFailed(String domain, String reason);
 
-  @Message(id = 458, value = "Domain '%s' is still not verified after %s. The platform keeps "
-      + "checking until its verification window ends")
+  @Message(id = 458, value = "Stopped waiting after %2$s. Run 'streamx project domains get %1$s' "
+      + "to check verification status.")
   String domainVerificationTimedOut(String domain, String timeout);
 
-  @Message(id = 459, value = "Not verified yet: %s")
+  @Message(id = 459, value = "Verification pending: %s")
   String domainVerificationPending(String reason);
 
-  @Message(id = 460, value = "Not verified yet: %s Next check at %s")
+  @Message(id = 460, value = "Verification pending: %s Next check: %s")
   String domainVerificationPendingUntil(String reason, String nextCheckAt);
 
   @Message(id = 461, value = "Invalid duration '%s': use whole seconds, minutes or hours, "
@@ -944,19 +941,19 @@ public interface MessageProvider {
   @Message(id = 464, value = "CNAME record not found.")
   String domainReasonCnameRecordNotFound();
 
-  @Message(id = 465, value = "CNAME record points to an unexpected target.")
+  @Message(id = 465, value = "CNAME record value does not match.")
   String domainReasonCnameTargetMismatch();
 
   @Message(id = 466, value = "DNS lookup failed.")
   String domainReasonDnsLookupFailed();
 
-  @Message(id = 467, value = "Verification window expired.")
+  @Message(id = 467, value = "Verification timed out. Run verification again to retry.")
   String domainReasonVerificationWindowExpired();
 
-  @Message(id = 468, value = "The project's organization could not be resolved.")
+  @Message(id = 468, value = "Could not identify the project's organization.")
   String domainReasonOrganizationNotResolved();
 
-  @Message(id = 469, value = "The platform rejected the domains:%n%s")
+  @Message(id = 469, value = "Could not save the domains. Fix the following errors:%n%s")
   String domainsRejected(String details);
 
   @Message(id = 470, value = "Project '%s' was not found, or you do not have access to its "
@@ -966,12 +963,10 @@ public interface MessageProvider {
   @Message(id = 471, value = "This platform does not support custom domains")
   String domainsNotSupported();
 
-  @Message(id = 473, value = "Next: add '%s' to the hostnames of a route in mesh/mesh.yaml and "
-      + "wait for the deployment, then point the domain to a StreamX gateway hostname listed for "
-      + "your route on the dashboard's Gateways page")
+  @Message(id = 473, value = "Run 'streamx project domains status %s' to check HTTPS readiness.")
   String domainVerifiedNextStep(String domain);
 
-  @Message(id = 474, value = "%s: verification %s, TLS %s, checked at %s")
+  @Message(id = 474, value = "%s: verification %s, HTTPS %s, last checked %s")
   String domainStatusHeader(String domain, String verification, String tls, String checkedAt);
 
   @Message(id = 475, value = "%s: no %s record at %s yet. Expected: %s")
@@ -980,33 +975,91 @@ public interface MessageProvider {
   @Message(id = 476, value = "%s: %s has %s. Expected: %s")
   String domainRecordMismatch(String purpose, String name, String found, String expected);
 
-  @Message(id = 478, value = "%s: the DNS lookup of %s failed; checking again may help")
+  @Message(id = 478, value = "%s: could not look up DNS record '%s'. Try again.")
   String domainRecordLookupFailed(String purpose, String name);
 
   @Message(id = 479, value = "'%s' is not verified yet: the platform verifies it once its TXT "
       + "and CNAME records are in place")
   String domainNotVerifiedYet(String domain);
 
-  @Message(id = 481, value = "HTTPS for '%s' is being set up: the certificate is issued first, "
-      + "then the deployment that uses the domain follows. This usually takes a few minutes")
+  @Message(id = 481, value = "HTTPS is being set up for '%s'. Check again shortly.")
   String domainHttpsPending(String domain);
 
   @Message(id = 482, value = "The certificate that StreamX serves for '%s' is not valid; contact "
       + "support")
   String domainCertificateProblem(String domain);
 
-  @Message(id = 483, value = "'%s' is ready. Next: point the domain to a StreamX gateway hostname "
-      + "listed for your route on the dashboard's Gateways page")
+  @Message(id = 483, value = "StreamX is ready to serve '%s' over HTTPS. If you haven't already, "
+      + "point the domain to the gateway shown on the dashboard's Gateways page.")
   String domainReadyForTraffic(String domain);
 
-  @Message(id = 484, value = "'%s' could not be checked right now; checking again may help")
+  @Message(id = 484, value = "Could not check HTTPS for '%s'. Try again shortly.")
   String domainHttpsCheckFailed(String domain);
 
-  @Message(id = 485, value = "The _acme-challenge record of '%s' is missing or points elsewhere, "
-      + "so StreamX cannot get its certificate. Restore it as shown by 'streamx project domains "
-      + "records'")
+  @Message(id = 485, value = "The certificate DNS record for '%1$s' is missing or incorrect. Run "
+      + "'streamx project domains records %1$s' for the required value.")
   String domainCertificateRecordProblem(String domain);
 
-  @Message(id = 487, value = "The ID '%s' is already used by '%s'; choose another domain ID")
+  @Message(id = 487, value = "Domain ID '%s' is already used by '%s'. Choose another ID.")
   String domainIdTaken(String id, String domain);
+
+  @Message(id = 488, value = "Add '%s' to your route's hostnames in mesh/mesh.yaml and deploy "
+      + "the change.")
+  String domainRouteRequired(String domain);
+
+  @Message(id = 489, value = "Verification failed. Check the required DNS records with "
+      + "'streamx project domains records %1$s', then run "
+      + "'streamx project domains verify %1$s --wait'.")
+  String domainVerificationRetry(String domain);
+
+  @Message(id = 490, value = "Verifying domain '%s'.")
+  String domainVerifying(String domain);
+
+  @Message(id = 491, value = "Verifying domain '%s'. Next check: %s")
+  String domainVerifyingUntil(String domain, String nextCheckAt);
+
+  @Message(id = 492, value = "Unknown")
+  String domainStatusUnknown();
+
+  @Message(id = 493, value = "Verifying")
+  String domainStatusVerifying();
+
+  @Message(id = 494, value = "Verified")
+  String domainStatusVerified();
+
+  @Message(id = 495, value = "Verification failed")
+  String domainStatusVerificationFailed();
+
+  @Message(id = 496, value = "Not verified")
+  String domainStatusNotVerified();
+
+  @Message(id = 497, value = "No route configured")
+  String domainStatusNoRoute();
+
+  @Message(id = 498, value = "DNS record error")
+  String domainStatusDnsRecordError();
+
+  @Message(id = 499, value = "Certificate error")
+  String domainStatusCertificateError();
+
+  @Message(id = 500, value = "Ready")
+  String domainStatusReady();
+
+  @Message(id = 501, value = "Check failed")
+  String domainStatusCheckFailed();
+
+  @Message(id = 502, value = "In place")
+  String domainRecordStatusInPlace();
+
+  @Message(id = 503, value = "Not found yet")
+  String domainRecordStatusNotFound();
+
+  @Message(id = 504, value = "Record value doesn’t match")
+  String domainRecordStatusMismatch();
+
+  @Message(id = 505, value = "DNS lookup failed")
+  String domainRecordStatusLookupFailed();
+
+  @Message(id = 506, value = "Setting up HTTPS")
+  String domainStatusHttpsPending();
 }

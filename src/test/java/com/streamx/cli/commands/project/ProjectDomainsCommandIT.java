@@ -90,10 +90,10 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .contains("ID", "DOMAIN", "STATE", "REASON", "NEXT CHECK")
-        .containsPattern("shop\\s+shop\\.example\\.com\\s+PENDING\\s+TXT record not found\\.\\s+"
+        .contains("ID", "DOMAIN", "VERIFICATION", "REASON", "NEXT CHECK")
+        .containsPattern("shop\\s+shop\\.example\\.com\\s+Verifying\\s+TXT record not found\\.\\s+"
             + "2026-10-29T08:05:00Z")
-        .containsPattern("www\\s+www\\.example\\.com\\s+VERIFIED\\s+-\\s+-");
+        .containsPattern("www\\s+www\\.example\\.com\\s+Verified\\s+-\\s+-");
     assertThat(platform.getRequests()).containsExactly(GET);
   }
 
@@ -132,7 +132,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(result.stdout())
         .containsPattern("id\\s+= shop")
-        .containsPattern("state\\s+= PENDING")
+        .containsPattern("verification\\s+= Verifying")
         .containsPattern("reason\\s+= TXT record not found\\.")
         .containsPattern("TXT\\s+_streamx-verification\\.shop\\.example\\.com\\s+"
             + "streamx-domain-verification=b3Jn")
@@ -240,7 +240,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertExitCode(1);
     assertThat(result.stderr())
-        .contains("blog.example.com: Domain name is too long (at most 231 characters)");
+        .contains("Domain 'blog.example.com': Domain name is too long (at most 231 characters)");
   }
 
   @Test
@@ -406,7 +406,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     ProcessResult result = domains("verify", "shop.example.com", "--wait");
 
     result.assertSuccess();
-    assertThat(result.stdout()).containsPattern("state\\s+= VERIFIED");
+    assertThat(result.stdout()).containsPattern("verification\\s+= Verified");
     assertThat(result.stderr())
         .contains(msg.domainVerificationPendingUntil(
             msg.domainReasonCnameRecordNotFound(), "2026-10-29T08:05:00Z"))
@@ -426,7 +426,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     ProcessResult result = domains("verify", "shop.example.com", "--wait");
 
     result.assertExitCode(1);
-    assertThat(result.stdout()).containsPattern("state\\s+= FAILED");
+    assertThat(result.stdout()).containsPattern("verification\\s+= Verification failed");
     assertThat(result.stderr()).contains(msg.domainVerificationFailed(
         "shop.example.com", msg.domainReasonVerificationWindowExpired()));
   }
@@ -485,12 +485,12 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertExitCode(1);
     assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "PENDING", "NOT_VERIFIED",
+        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Not verified",
             CHECKED_AT))
         .containsPattern("ownership\\s+TXT\\s+_streamx-verification\\.shop\\.example\\.com"
-            + "\\s+MISSING")
+            + "\\s+Not found yet")
         .containsPattern("certificate\\s+CNAME\\s+_acme-challenge\\.shop\\.example\\.com"
-            + "\\s+MISMATCH")
+            + "\\s+Record value doesn’t match")
         .contains(msg.domainRecordMissing("ownership", "TXT",
             "_streamx-verification.shop.example.com", "streamx-domain-verification=b3Jn"))
         .contains(msg.domainRecordMismatch("certificate", "_acme-challenge.shop.example.com",
@@ -520,7 +520,36 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.domainVerifiedNextStep("shop.example.com"));
+    assertThat(result.stderr()).contains(msg.domainRouteRequired("shop.example.com"));
+  }
+
+  @Test
+  void shouldExplainHowToRetryFailedVerification() throws Exception {
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "FAILED", "NOT_VERIFIED",
+        "FOUND", "FOUND"));
+
+    ProcessResult result = domains("status", "shop.example.com");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr())
+        .contains(msg.domainVerificationRetry("shop.example.com"))
+        .doesNotContain(msg.domainNotVerifiedYet("shop.example.com"));
+  }
+
+  @Test
+  void shouldDescribeVerificationWithoutAFailureReason() throws Exception {
+    platform.queueLists(
+        list(SHOP_PENDING),
+        list(domain("shop.example.com", "PENDING", null, "2026-10-29T08:00:30Z")),
+        list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:01:00Z")));
+
+    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+
+    result.assertSuccess();
+    assertThat(result.stderr())
+        .contains(msg.domainVerifyingUntil("shop.example.com", "2026-10-29T08:05:00Z"))
+        .doesNotContain("Verification pending: Pending")
+        .doesNotContain(msg.domainRouteRequired("shop.example.com"));
   }
 
   @Test
@@ -562,14 +591,14 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     ProcessResult result = domains("status", "shop.example.com", "--watch");
 
     result.assertSuccess();
-    String pending = msg.domainStatusHeader("shop.example.com", "VERIFIED", "PENDING",
+    String pending = msg.domainStatusHeader("shop.example.com", "Verified", "Setting up HTTPS",
         CHECKED_AT);
     // Earlier rounds are progress on stderr; stdout holds the final result only.
     assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "VERIFIED", "READY", CHECKED_AT))
+        .contains(msg.domainStatusHeader("shop.example.com", "Verified", "Ready", CHECKED_AT))
         .doesNotContain(pending);
     assertThat(result.stderr())
-        .contains(msg.domainStatusHeader("shop.example.com", "PENDING", "NOT_VERIFIED",
+        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Not verified",
             CHECKED_AT))
         .contains(pending)
         .contains(msg.domainReadyForTraffic("shop.example.com"));

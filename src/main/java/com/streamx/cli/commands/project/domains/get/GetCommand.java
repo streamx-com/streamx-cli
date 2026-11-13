@@ -12,14 +12,14 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "get",
-    header = "Show a custom domain's verification state and the DNS records it needs"
+    header = "Show a domain's verification status and required DNS records"
 )
 public class GetCommand extends AbstractCommand<ProjectDomainView> {
 
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name"
   )
   public String idOrDomain;
 
