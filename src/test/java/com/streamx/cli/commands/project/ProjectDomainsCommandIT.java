@@ -333,30 +333,64 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldPrintRecordsOfAllDomains() throws Exception {
-    ProcessResult result = domains("records");
-
-    result.assertSuccess();
-    assertThat(result.stdout())
-        .contains("_streamx-verification.shop.example.com", "_acme-challenge.www.example.com");
-  }
-
-  @Test
   void shouldPrintZoneLines() throws Exception {
-    ProcessResult result = domains("records", "shop.example.com", "--zone");
+    ProcessResult result = domains("get-zone-file", "shop.example.com");
 
     result.assertSuccess();
     assertThat(result.stdout().strip()).isEqualTo(
         "_streamx-verification.shop.example.com. IN TXT \"streamx-domain-verification=b3Jn\"\n"
             + "_acme-challenge.shop.example.com. IN CNAME 0a1b2c3d.acme.example.net.");
+    assertThat(platform.getRequests()).containsExactly(GET);
+  }
+
+  @Test
+  void shouldExportZoneByIdWithoutCheckingReadiness() throws Exception {
+    ProcessResult result = domains("get-zone-file", "shop");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains("_streamx-verification.shop.example.com. IN TXT");
+    assertThat(platform.getRequests()).containsExactly(GET);
+    assertThat(result.stderr()).isEmpty();
+  }
+
+  @Test
+  void shouldExportZoneForAllDomainsByDefault() throws Exception {
+    ProcessResult result = domains("get-zone-file");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).contains(
+        "_streamx-verification.shop.example.com. IN TXT",
+        "_acme-challenge.shop.example.com. IN CNAME",
+        "_streamx-verification.www.example.com. IN TXT",
+        "_acme-challenge.www.example.com. IN CNAME");
+    assertThat(platform.getRequests()).containsExactly(GET);
+    assertThat(result.stderr()).isEmpty();
   }
 
   @Test
   void shouldRejectZoneWithJsonOutput() throws Exception {
-    ProcessResult result = domains("records", "--zone", "-o", "json");
+    ProcessResult result = domains("get-zone-file", "shop", "-o", "json");
 
     result.assertExitCode(2);
-    assertThat(result.stderr()).contains(msg.domainsZoneNeedsText());
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void shouldReturnEmptyZoneForProjectWithoutDomains() throws Exception {
+    platform.applied();
+
+    ProcessResult result = domains("get-zone-file");
+
+    result.assertSuccess();
+    assertThat(result.stdout()).isEmpty();
+    assertThat(result.stderr()).isEmpty();
+  }
+
+  @Test
+  void shouldRejectZoneWithYamlOutput() throws Exception {
+    ProcessResult result = domains("get-zone-file", "--output", "yaml");
+
+    result.assertExitCode(2);
     assertThat(platform.getRequests()).isEmpty();
   }
 
@@ -367,8 +401,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET);
     assertThat(result.stderr())
-        .contains(msg.domainAlreadyVerified("www.example.com"))
-        .contains(msg.domainVerifiedNextStep("www.example.com"));
+        .contains(msg.domainAlreadyVerified("www.example.com"));
   }
 
   @Test
@@ -410,8 +443,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     assertThat(result.stderr())
         .contains(msg.domainVerificationPendingUntil(
             msg.domainReasonCnameRecordNotFound(), "2026-10-29T08:05:00Z"))
-        .contains(msg.domainVerified("shop.example.com"))
-        .contains(msg.domainVerifiedNextStep("shop.example.com"));
+        .contains(msg.domainVerified("shop.example.com"));
   }
 
   @Test
@@ -478,19 +510,20 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldShowWhichRecordsAreMissing() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PENDING", "NOT_VERIFIED",
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PENDING",
+        "DOMAIN_NOT_VERIFIED",
         "MISSING", "MISMATCH"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Not verified",
+        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Domain not verified",
             CHECKED_AT))
         .containsPattern("ownership\\s+TXT\\s+_streamx-verification\\.shop\\.example\\.com"
-            + "\\s+Not found yet")
+            + "\\s+streamx-domain-verification=b3Jn\\s+Not found yet")
         .containsPattern("certificate\\s+CNAME\\s+_acme-challenge\\.shop\\.example\\.com"
-            + "\\s+Record value doesn’t match")
+            + "\\s+0a1b2c3d\\.acme\\.example\\.net\\s+Record value doesn’t match")
         .contains(msg.domainRecordMissing("ownership", "TXT",
             "_streamx-verification.shop.example.com", "streamx-domain-verification=b3Jn"))
         .contains(msg.domainRecordMismatch("certificate", "_acme-challenge.shop.example.com",
@@ -500,7 +533,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldIgnoreStatusFieldsItDoesNotKnow() throws Exception {
-    String status = StubDomainsServer.status("shop.example.com", "VERIFIED", "READY",
+    String status = StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
         "FOUND", "FOUND");
     platform.queueChecks(status.substring(0, status.lastIndexOf('}'))
         + ",\"gateways\":[{\"hostname\":\"" + EDGE_HOSTNAME + "\",\"status\":\"SERVED\"}]}");
@@ -509,23 +542,29 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout()).doesNotContain(EDGE_HOSTNAME);
-    assertThat(result.stderr()).contains(msg.domainReadyForTraffic("shop.example.com"));
+    assertThat(result.stderr())
+        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .doesNotContain("dashboard", "gateway");
   }
 
   @Test
-  void shouldExplainTheNextStepOfVerifiedDomain() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "NO_ROUTE",
+  void shouldReportMissingRouteWithoutSetupInstructions() throws Exception {
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED",
+        "DOMAIN_NOT_IN_MESH_ROUTES",
         "FOUND", "FOUND"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.domainRouteRequired("shop.example.com"));
+    assertThat(result.stderr())
+        .contains(msg.domainNotInMeshRoutes("shop.example.com"))
+        .doesNotContain("mesh/mesh.yaml", "deploy", "gateway");
   }
 
   @Test
   void shouldExplainHowToRetryFailedVerification() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "FAILED", "NOT_VERIFIED",
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "FAILED",
+        "DOMAIN_NOT_VERIFIED",
         "FOUND", "FOUND"));
 
     ProcessResult result = domains("status", "shop.example.com");
@@ -549,25 +588,27 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     assertThat(result.stderr())
         .contains(msg.domainVerifyingUntil("shop.example.com", "2026-10-29T08:05:00Z"))
         .doesNotContain("Verification pending: Pending")
-        .doesNotContain(msg.domainRouteRequired("shop.example.com"));
+        .doesNotContain(msg.domainNotInMeshRoutes("shop.example.com"));
   }
 
   @Test
   void shouldSucceedWhenTheDomainIsReady() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "READY",
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
         "FOUND", "FOUND"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertSuccess();
-    assertThat(result.stderr()).contains(msg.domainReadyForTraffic("shop.example.com"));
+    assertThat(result.stderr())
+        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .doesNotContain("dashboard", "gateway");
     assertThat(platform.getRequests())
         .containsExactly(GET, "GET " + DOMAINS_PATH + "/shop.example.com/status");
   }
 
   @Test
   void shouldCheckStatusById() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "READY",
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
         "FOUND", "FOUND"));
 
     ProcessResult result = domains("status", "shop");
@@ -575,30 +616,32 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly(GET, "GET " + DOMAINS_PATH + "/shop.example.com/status");
-    assertThat(result.stderr()).contains(msg.domainReadyForTraffic("shop.example.com"));
+    assertThat(result.stderr())
+        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .doesNotContain("dashboard", "gateway");
   }
 
   @Test
   void shouldWatchUntilTheDomainIsReady() throws Exception {
     platform.queueChecks(
-        StubDomainsServer.status("shop.example.com", "PENDING", "NOT_VERIFIED",
+        StubDomainsServer.status("shop.example.com", "PENDING", "DOMAIN_NOT_VERIFIED",
             "MISSING", "MISSING"),
-        StubDomainsServer.status("shop.example.com", "VERIFIED", "PENDING",
+        StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_NOT_READY",
             "FOUND", "FOUND"),
-        StubDomainsServer.status("shop.example.com", "VERIFIED", "READY",
+        StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
             "FOUND", "FOUND"));
 
     ProcessResult result = domains("status", "shop.example.com", "--watch");
 
     result.assertSuccess();
-    String pending = msg.domainStatusHeader("shop.example.com", "Verified", "Setting up HTTPS",
+    String pending = msg.domainStatusHeader("shop.example.com", "Verified", "HTTPS not ready",
         CHECKED_AT);
     // Earlier rounds are progress on stderr; stdout holds the final result only.
     assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verified", "Ready", CHECKED_AT))
+        .contains(msg.domainStatusHeader("shop.example.com", "Verified", "HTTPS ready", CHECKED_AT))
         .doesNotContain(pending);
     assertThat(result.stderr())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Not verified",
+        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Domain not verified",
             CHECKED_AT))
         .contains(pending)
         .contains(msg.domainReadyForTraffic("shop.example.com"));
@@ -615,17 +658,17 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   @Test
   void shouldKeepRawStatusValuesInJson() throws Exception {
     platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED",
-        "CERTIFICATE_PROBLEM", "FOUND", "LOOKUP_FAILED"));
+        "INVALID_CERTIFICATE", "FOUND", "LOOKUP_FAILED"));
 
     ProcessResult result = domains("status", "shop.example.com", "-o", "json");
 
     result.assertExitCode(1);
     assertThat(result.stdout())
-        .contains("\"tls\" : \"CERTIFICATE_PROBLEM\"")
+        .contains("\"tls\" : \"INVALID_CERTIFICATE\"")
         .contains("\"purpose\" : \"CERTIFICATE\"")
         .contains("\"status\" : \"LOOKUP_FAILED\"");
     assertThat(result.stderr())
-        .contains(msg.domainCertificateProblem("shop.example.com"));
+        .contains(msg.domainInvalidCertificate("shop.example.com"));
   }
 
 

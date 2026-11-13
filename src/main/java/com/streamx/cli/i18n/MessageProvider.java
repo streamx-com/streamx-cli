@@ -892,10 +892,6 @@ public interface MessageProvider {
       + "'%s' if no other project uses this domain.")
   String domainRemoveDnsCleanup(String txtValue, String txtName, String cnameName);
 
-  @Message(id = 450, value = "--zone prints zone-file lines and cannot be combined with "
-      + "--output json or yaml")
-  String domainsZoneNeedsText();
-
   @Message(id = 451, value = "Domain '%s' is already verified")
   String domainAlreadyVerified(String domain);
 
@@ -963,9 +959,6 @@ public interface MessageProvider {
   @Message(id = 471, value = "This platform does not support custom domains")
   String domainsNotSupported();
 
-  @Message(id = 473, value = "Run 'streamx project domains status %s' to check HTTPS readiness.")
-  String domainVerifiedNextStep(String domain);
-
   @Message(id = 474, value = "%s: verification %s, HTTPS %s, last checked %s")
   String domainStatusHeader(String domain, String verification, String tls, String checkedAt);
 
@@ -982,33 +975,31 @@ public interface MessageProvider {
       + "and CNAME records are in place")
   String domainNotVerifiedYet(String domain);
 
-  @Message(id = 481, value = "HTTPS is being set up for '%s'. Check again shortly.")
-  String domainHttpsPending(String domain);
+  @Message(id = 481, value = "HTTPS is not ready for domain '%s'.")
+  String domainHttpsNotReady(String domain);
 
   @Message(id = 482, value = "The certificate that StreamX serves for '%s' is not valid; contact "
       + "support")
-  String domainCertificateProblem(String domain);
+  String domainInvalidCertificate(String domain);
 
-  @Message(id = 483, value = "StreamX is ready to serve '%s' over HTTPS. If you haven't already, "
-      + "point the domain to the gateway shown on the dashboard's Gateways page.")
+  @Message(id = 483, value = "StreamX is ready to serve '%s' over HTTPS.")
   String domainReadyForTraffic(String domain);
 
   @Message(id = 484, value = "Could not check HTTPS for '%s'. Try again shortly.")
   String domainHttpsCheckFailed(String domain);
 
   @Message(id = 485, value = "The certificate DNS record for '%1$s' is missing or incorrect. Run "
-      + "'streamx project domains records %1$s' for the required value.")
+      + "'streamx project domains status %1$s' for the required value.")
   String domainCertificateRecordProblem(String domain);
 
   @Message(id = 487, value = "Domain ID '%s' is already used by '%s'. Choose another ID.")
   String domainIdTaken(String id, String domain);
 
-  @Message(id = 488, value = "Add '%s' to your route's hostnames in mesh/mesh.yaml and deploy "
-      + "the change.")
-  String domainRouteRequired(String domain);
+  @Message(id = 488, value = "No mesh route uses domain '%s'.")
+  String domainNotInMeshRoutes(String domain);
 
   @Message(id = 489, value = "Verification failed. Check the required DNS records with "
-      + "'streamx project domains records %1$s', then run "
+      + "'streamx project domains status %1$s', then run "
       + "'streamx project domains verify %1$s --wait'.")
   String domainVerificationRetry(String domain);
 
@@ -1030,23 +1021,23 @@ public interface MessageProvider {
   @Message(id = 495, value = "Verification failed")
   String domainStatusVerificationFailed();
 
-  @Message(id = 496, value = "Not verified")
+  @Message(id = 496, value = "Domain not verified")
   String domainStatusNotVerified();
 
-  @Message(id = 497, value = "No route configured")
-  String domainStatusNoRoute();
+  @Message(id = 497, value = "No mesh route uses this domain")
+  String domainStatusNotInMeshRoutes();
 
-  @Message(id = 498, value = "DNS record error")
-  String domainStatusDnsRecordError();
+  @Message(id = 498, value = "Certificate DNS record missing or incorrect")
+  String domainStatusCertificateDnsRecordProblem();
 
-  @Message(id = 499, value = "Certificate error")
-  String domainStatusCertificateError();
+  @Message(id = 499, value = "Invalid certificate")
+  String domainStatusInvalidCertificate();
 
-  @Message(id = 500, value = "Ready")
-  String domainStatusReady();
+  @Message(id = 500, value = "HTTPS ready")
+  String domainStatusHttpsReady();
 
-  @Message(id = 501, value = "Check failed")
-  String domainStatusCheckFailed();
+  @Message(id = 501, value = "HTTPS check failed")
+  String domainStatusHttpsCheckFailed();
 
   @Message(id = 502, value = "In place")
   String domainRecordStatusInPlace();
@@ -1060,6 +1051,6 @@ public interface MessageProvider {
   @Message(id = 505, value = "DNS lookup failed")
   String domainRecordStatusLookupFailed();
 
-  @Message(id = 506, value = "Setting up HTTPS")
-  String domainStatusHttpsPending();
+  @Message(id = 506, value = "HTTPS not ready")
+  String domainStatusHttpsNotReady();
 }

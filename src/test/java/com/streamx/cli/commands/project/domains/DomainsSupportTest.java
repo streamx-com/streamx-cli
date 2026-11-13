@@ -52,10 +52,11 @@ class DomainsSupportTest {
   @Test
   void statusLabelsAreReadableAndUnknownValuesArePreserved() {
     assertThat(DomainsSupport.describeStatus("PENDING")).isEqualTo("Verifying");
-    assertThat(DomainsSupport.describeHttpsStatus("PENDING")).isEqualTo("Setting up HTTPS");
-    assertThat(DomainsSupport.describeStatus("NO_ROUTE")).isEqualTo("No route configured");
-    assertThat(DomainsSupport.describeStatus("CERTIFICATE_PROBLEM"))
-        .isEqualTo("Certificate error");
+    assertThat(DomainsSupport.describeStatus("HTTPS_NOT_READY")).isEqualTo("HTTPS not ready");
+    assertThat(DomainsSupport.describeStatus("DOMAIN_NOT_IN_MESH_ROUTES"))
+        .isEqualTo("No mesh route uses this domain");
+    assertThat(DomainsSupport.describeStatus("INVALID_CERTIFICATE"))
+        .isEqualTo("Invalid certificate");
     assertThat(DomainsSupport.describeStatus("MISMATCH")).isEqualTo("Record value doesn’t match");
     assertThat(DomainsSupport.describeStatus("LOOKUP_FAILED")).isEqualTo("DNS lookup failed");
     assertThat(DomainsSupport.describeStatus("SOMETHING_NEW")).isEqualTo("SOMETHING_NEW");

@@ -79,7 +79,6 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
       // The platform ignores requests for verified domains, though it answers PENDING to them.
       if (before.verified()) {
         System.err.println(msg.domainAlreadyVerified(domain));
-        System.err.println(msg.domainVerifiedNextStep(domain));
         return new CommandResult<>(before);
       }
       api.verify(context.org(), context.project(), domain);
@@ -114,7 +113,6 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
       boolean newCheck = !Objects.equals(current.lastCheckedAt(), checkedBefore);
       if (newCheck && current.verified()) {
         System.err.println(msg.domainVerified(domain));
-        System.err.println(msg.domainVerifiedNextStep(domain));
         return new CommandResult<>(current);
       }
       restarted = restarted || newCheck && !current.failed();

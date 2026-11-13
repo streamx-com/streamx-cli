@@ -114,22 +114,19 @@ public final class DomainsSupport {
       case "PENDING" -> msg.domainStatusVerifying();
       case "VERIFIED" -> msg.domainStatusVerified();
       case "FAILED" -> msg.domainStatusVerificationFailed();
-      case "NOT_VERIFIED" -> msg.domainStatusNotVerified();
-      case "NO_ROUTE" -> msg.domainStatusNoRoute();
-      case "RECORD_PROBLEM" -> msg.domainStatusDnsRecordError();
-      case "CERTIFICATE_PROBLEM" -> msg.domainStatusCertificateError();
-      case "READY" -> msg.domainStatusReady();
-      case "CHECK_FAILED" -> msg.domainStatusCheckFailed();
+      case "DOMAIN_NOT_VERIFIED" -> msg.domainStatusNotVerified();
+      case "DOMAIN_NOT_IN_MESH_ROUTES" -> msg.domainStatusNotInMeshRoutes();
+      case "CERTIFICATE_DNS_RECORD_PROBLEM" -> msg.domainStatusCertificateDnsRecordProblem();
+      case "INVALID_CERTIFICATE" -> msg.domainStatusInvalidCertificate();
+      case "HTTPS_NOT_READY" -> msg.domainStatusHttpsNotReady();
+      case "HTTPS_READY" -> msg.domainStatusHttpsReady();
+      case "HTTPS_CHECK_FAILED" -> msg.domainStatusHttpsCheckFailed();
       case "FOUND" -> msg.domainRecordStatusInPlace();
       case "MISSING" -> msg.domainRecordStatusNotFound();
       case "MISMATCH" -> msg.domainRecordStatusMismatch();
       case "LOOKUP_FAILED" -> msg.domainRecordStatusLookupFailed();
       default -> status;
     };
-  }
-
-  public static String describeHttpsStatus(String status) {
-    return "PENDING".equals(status) ? msg.domainStatusHttpsPending() : describeStatus(status);
   }
 
   public static String formatDomainDetails(ProjectDomainView domain) {

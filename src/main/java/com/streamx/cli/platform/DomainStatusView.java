@@ -24,6 +24,6 @@ public record DomainStatusView(
   }
 
   public boolean ready() {
-    return "READY".equals(tls);
+    return "HTTPS_READY".equals(tls);
   }
 }

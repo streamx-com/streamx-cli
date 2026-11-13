@@ -2,8 +2,8 @@ package com.streamx.cli.commands.project.domains;
 
 import com.streamx.cli.commands.project.domains.add.AddCommand;
 import com.streamx.cli.commands.project.domains.get.GetCommand;
+import com.streamx.cli.commands.project.domains.getzonefile.GetZoneFileCommand;
 import com.streamx.cli.commands.project.domains.list.ListCommand;
-import com.streamx.cli.commands.project.domains.records.RecordsCommand;
 import com.streamx.cli.commands.project.domains.remove.RemoveCommand;
 import com.streamx.cli.commands.project.domains.status.StatusCommand;
 import com.streamx.cli.commands.project.domains.verify.VerifyCommand;
@@ -29,8 +29,8 @@ import picocli.CommandLine;
         GetCommand.class,
         AddCommand.class,
         RemoveCommand.class,
-        RecordsCommand.class,
         StatusCommand.class,
+        GetZoneFileCommand.class,
         VerifyCommand.class
     }
 )
