@@ -19,16 +19,16 @@ public class GetCommand extends AbstractCommand<ProjectDomainView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or hostname, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
   )
-  public String idOrHostname;
+  public String idOrDomain;
 
   @CommandLine.Mixin
   ProjectScopedOptions scope;
 
   @Override
   public String getTextOutput(CommandResult<ProjectDomainView> result) {
-    return DomainsSupport.details(result.getData());
+    return DomainsSupport.formatDomainDetails(result.getData());
   }
 
   @Override
@@ -36,9 +36,9 @@ public class GetCommand extends AbstractCommand<ProjectDomainView> {
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
     try (PlatformClients client = PlatformClients.fromConfig()) {
-      return new CommandResult<>(DomainsSupport.require(
+      return new CommandResult<>(DomainsSupport.requireDomain(
           new ProjectDomainsApi(client).list(context.org(), context.project()),
-          DomainsSupport.normalize(idOrHostname),
+          DomainsSupport.normalizeDomain(idOrDomain),
           context.project()));
     }
   }

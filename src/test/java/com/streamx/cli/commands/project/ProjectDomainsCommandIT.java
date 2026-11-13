@@ -98,7 +98,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldListHostnamesOnlyWhenQuiet() throws Exception {
+  void shouldListDomainsOnlyWhenQuiet() throws Exception {
     ProcessResult result = domains("list", "-q");
 
     result.assertSuccess();
@@ -141,7 +141,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldRejectGetOfUnknownHostname() throws Exception {
+  void shouldRejectGetOfUnknownDomain() throws Exception {
     ProcessResult result = domains("get", "blog.example.com");
 
     result.assertExitCode(1);
@@ -159,9 +159,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldAddNewHostnamesAndPrintTheirRecords() throws Exception {
-    ProcessResult result = domains("add", " Blog.Example.com ", "shop.example.com",
-        "blog.example.com");
+  void shouldAddOneDomainAndPrintItsRecords() throws Exception {
+    ProcessResult result = domains("add", "blog", " Blog.Example.com ");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET, PUT, GET);
@@ -172,14 +171,13 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         .contains("_streamx-verification.blog.example.com", "_acme-challenge.blog.example.com")
         .doesNotContain("shop.example.com");
     assertThat(result.stderr())
-        .contains(msg.domainAlreadyAdded("shop.example.com", PROJECT))
         .contains(msg.domainAdded("blog.example.com", PROJECT))
         .contains(msg.domainAddNextStep("blog.example.com"));
   }
 
   @Test
-  void shouldAddHostnameWithTheGivenId() throws Exception {
-    ProcessResult result = domains("add", "blog.example.com", "--id", "news");
+  void shouldAddDomainWithTheGivenId() throws Exception {
+    ProcessResult result = domains("add", "news", "blog.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequestBodies().get(1)).contains("\"news\":\"blog.example.com\"");
@@ -187,27 +185,35 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldNumberTheDerivedIdWhenItIsTaken() throws Exception {
-    ProcessResult result = domains("add", "shop.example.org");
+  void shouldRequireDomainId() throws Exception {
+    ProcessResult result = domains("add");
 
-    result.assertSuccess();
-    assertThat(platform.getRequestBodies().get(1))
-        .contains("\"shop\":\"shop.example.com\"", "\"shop-2\":\"shop.example.org\"");
-  }
-
-  @Test
-  void shouldRefuseIdForSeveralHostnames() throws Exception {
-    ProcessResult result = domains("add", "blog.example.com", "news.example.com", "--id",
-        "news");
-
-    result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.domainIdForOneHostname());
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("Missing required parameter", "<id>");
     assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test
-  void shouldRefuseIdThatAnotherHostnameUses() throws Exception {
-    ProcessResult result = domains("add", "blog.example.com", "--id", "shop");
+  void shouldRequireDomain() throws Exception {
+    ProcessResult result = domains("add", "blog");
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("Missing required parameter", "<domain>");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void shouldRefuseSeveralDomains() throws Exception {
+    ProcessResult result = domains("add", "news", "blog.example.com", "news.example.com");
+
+    result.assertExitCode(2);
+    assertThat(result.stderr()).contains("Unmatched argument", "news.example.com");
+    assertThat(platform.getRequests()).isEmpty();
+  }
+
+  @Test
+  void shouldRefuseIdThatAnotherDomainUses() throws Exception {
+    ProcessResult result = domains("add", "shop", "blog.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.domainIdTaken("shop", "shop.example.com"));
@@ -215,8 +221,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldNotWriteWhenEveryHostnameIsPresent() throws Exception {
-    ProcessResult result = domains("add", "shop.example.com");
+  void shouldNotWriteWhenDomainIsPresent() throws Exception {
+    ProcessResult result = domains("add", "shop", "shop.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET);
@@ -224,13 +230,13 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldNameTheRejectedHostname() throws Exception {
+  void shouldNameTheRejectedDomain() throws Exception {
     platform.failPutsWith(400, """
         {"errorCode":400,"errorMessage":"Validation failed","violations":[
           {"field":"domains[blog]","message":"Domain name is too long (at most 231 characters)"}]}
         """);
 
-    ProcessResult result = domains("add", "blog.example.com");
+    ProcessResult result = domains("add", "blog", "blog.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -241,7 +247,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   void shouldWaitUntilTheChangeApplies() throws Exception {
     platform.applyAfterReads(3);
 
-    ProcessResult result = domains("add", "blog.example.com");
+    ProcessResult result = domains("add", "blog", "blog.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET, PUT, GET, GET, GET);
@@ -252,7 +258,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   void shouldStillPrintRecordsWhenTheChangeNeverApplies() throws Exception {
     platform.applyAfterReads(-1);
 
-    ProcessResult result = domains("add", "blog.example.com");
+    ProcessResult result = domains("add", "blog", "blog.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stdout()).contains("_acme-challenge.blog.example.com");
@@ -570,7 +576,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldRejectStatusOfUnknownHostname() throws Exception {
+  void shouldRejectStatusOfUnknownDomain() throws Exception {
     ProcessResult result = domains("status", "blog.example.com");
 
     result.assertExitCode(1);

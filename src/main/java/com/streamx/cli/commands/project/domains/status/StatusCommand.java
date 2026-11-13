@@ -23,7 +23,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "status",
-    header = "Show how far the setup of a custom domain is",
+    header = "Show a custom domain's DNS and HTTPS status",
     description = {
         "Checks the domain as the platform sees it: its two records (the TXT record that "
             + "proves ownership and the _acme-challenge CNAME for the certificate), and, once "
@@ -43,9 +43,9 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or hostname, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
   )
-  public String idOrHostname;
+  public String idOrDomain;
 
   @CommandLine.Mixin
   ProjectScopedOptions scope;
@@ -75,11 +75,11 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
         List.of("RECORD", "TYPE", "NAME", "STATUS"),
         status.records().stream()
             .map(record -> Arrays.asList(
-                purpose(record), record.type(), record.name(), record.status()))
+                getPurpose(record), record.type(), record.name(), record.status()))
             .toList()));
     List<String> details = status.records().stream()
         .filter(record -> !record.inPlace())
-        .map(StatusCommand::detail)
+        .map(StatusCommand::getDetails)
         .toList();
     if (!details.isEmpty()) {
       lines.add("");
@@ -94,9 +94,9 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
     try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectDomainsApi api = new ProjectDomainsApi(client);
-      String domain = DomainsSupport.require(api.list(context.org(), context.project()),
-          DomainsSupport.normalize(idOrHostname), context.project()).domain();
-      Duration pause = DomainsSupport.pollInterval(interval);
+      String domain = DomainsSupport.requireDomain(api.list(context.org(), context.project()),
+          DomainsSupport.normalizeDomain(idOrDomain), context.project()).domain();
+      Duration pause = DomainsSupport.resolvePollInterval(interval);
       while (true) {
         DomainStatusView status = api.status(context.org(), context.project(), domain);
         CommandResult<DomainStatusView> result = new CommandResult<>(status);
@@ -130,18 +130,18 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
     };
   }
 
-  private static String purpose(DnsRecordCheckView record) {
+  private static String getPurpose(DnsRecordCheckView record) {
     return record.purpose() == null ? null : record.purpose().toLowerCase(Locale.ROOT);
   }
 
-  private static String detail(DnsRecordCheckView record) {
+  private static String getDetails(DnsRecordCheckView record) {
     String expected = record.expected().isEmpty() ? "-" : String.join(" or ", record.expected());
     return switch (String.valueOf(record.status())) {
       case "MISSING" -> msg.domainRecordMissing(
-          purpose(record), record.type(), record.name(), expected);
+          getPurpose(record), record.type(), record.name(), expected);
       case "MISMATCH" -> msg.domainRecordMismatch(
-          purpose(record), record.name(), String.join(", ", record.found()), expected);
-      default -> msg.domainRecordLookupFailed(purpose(record), record.name());
+          getPurpose(record), record.name(), String.join(", ", record.found()), expected);
+      default -> msg.domainRecordLookupFailed(getPurpose(record), record.name());
     };
   }
 }

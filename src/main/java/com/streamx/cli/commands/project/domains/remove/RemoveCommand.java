@@ -32,9 +32,9 @@ public class RemoveCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or hostname, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
   )
-  public String idOrHostname;
+  public String idOrDomain;
 
   @CommandLine.Mixin
   ProjectScopedOptions scope;
@@ -49,11 +49,11 @@ public class RemoveCommand extends AbstractSilentCommand {
   public CommandResult<Void> runCommand() {
     PlatformContext.OrgProject context =
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
-    String requested = DomainsSupport.normalize(idOrHostname);
+    String requested = DomainsSupport.normalizeDomain(idOrDomain);
     try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectDomainsApi api = new ProjectDomainsApi(client);
       List<ProjectDomainView> current = api.list(context.org(), context.project());
-      Optional<ProjectDomainView> target = DomainsSupport.find(current, requested);
+      Optional<ProjectDomainView> target = DomainsSupport.findDomain(current, requested);
       if (target.isEmpty()) {
         System.err.println(msg.domainNotConfigured(requested, context.project()));
         return new CommandResult<>(null);
@@ -64,12 +64,12 @@ public class RemoveCommand extends AbstractSilentCommand {
         DeleteConfirmation.require(force, domain, msg.domainRemoveConfirmPrompt(domain));
       }
 
-      Map<String, String> desired = DomainsSupport.byId(current.stream()
+      Map<String, String> desired = DomainsSupport.domainNamesById(current.stream()
           .filter(candidate -> !candidate.domain().equals(domain))
           .toList());
       api.update(context.org(), context.project(), desired);
       System.err.println(msg.domainRemoved(domain, context.project()));
-      if (!DomainsSupport.awaitApplied(api, context.org(), context.project(), desired)) {
+      if (!DomainsSupport.waitForDomainsToApply(api, context.org(), context.project(), desired)) {
         throw new CliException(msg.domainsChangeNotApplied(context.project()));
       }
       DnsRecordView txt = record(target.get(), "TXT");

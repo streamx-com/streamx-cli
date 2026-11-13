@@ -15,13 +15,13 @@ import picocli.CommandLine;
     header = "Manage the custom domains of a project",
     description = {
         "A project serves a custom domain once two DNS records exist for it: a TXT record that "
-            + "proves you control the hostname, and a CNAME that lets StreamX obtain its TLS "
+            + "proves you control the domain, and a CNAME that lets StreamX obtain its TLS "
             + "certificate. 'add' prints both."
     },
     footer = {
         "",
         "Examples:",
-        "  streamx project domains add shop.example.com",
+        "  streamx project domains add shop shop.example.com",
         "  # create the two records it prints at your DNS provider, then:",
         "  streamx project domains verify shop.example.com --wait"
     },

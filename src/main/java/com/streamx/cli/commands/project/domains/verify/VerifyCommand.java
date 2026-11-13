@@ -39,9 +39,9 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
-      description = "Domain ID or hostname, as shown by 'streamx project domains list'"
+      description = "Domain ID or domain name, as shown by 'streamx project domains list'"
   )
-  public String idOrHostname;
+  public String idOrDomain;
 
   @CommandLine.Mixin
   ProjectScopedOptions scope;
@@ -63,7 +63,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
 
   @Override
   public String getTextOutput(CommandResult<ProjectDomainView> result) {
-    return result.getData() == null ? "" : DomainsSupport.details(result.getData());
+    return result.getData() == null ? "" : DomainsSupport.formatDomainDetails(result.getData());
   }
 
   @Override
@@ -72,8 +72,9 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
         PlatformContext.orgAndProject(scope.orgId, scope.projectId);
     try (PlatformClients client = PlatformClients.fromConfig()) {
       ProjectDomainsApi api = new ProjectDomainsApi(client);
-      ProjectDomainView before = DomainsSupport.require(
-          api.list(context.org(), context.project()), DomainsSupport.normalize(idOrHostname),
+      ProjectDomainView before = DomainsSupport.requireDomain(
+          api.list(context.org(), context.project()),
+          DomainsSupport.normalizeDomain(idOrDomain),
           context.project());
       String domain = before.domain();
       // The platform ignores requests for verified domains, though it answers PENDING to them.
@@ -88,14 +89,18 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
         System.err.println(msg.domainVerificationNextStep(domain));
         return new CommandResult<>(null);
       }
-      return await(api, context, domain, before.lastCheckedAt());
+      return awaitResult(api, context, domain, before.lastCheckedAt());
     }
   }
 
-  private CommandResult<ProjectDomainView> await(ProjectDomainsApi api,
-      PlatformContext.OrgProject context, String domain, String checkedBefore) {
+  private CommandResult<ProjectDomainView> awaitResult(
+      ProjectDomainsApi api,
+      PlatformContext.OrgProject context,
+      String domain,
+      String checkedBefore
+  ) {
     Instant deadline = Instant.now().plus(timeout);
-    Duration interval = DomainsSupport.pollInterval(POLL_INTERVAL);
+    Duration interval = DomainsSupport.resolvePollInterval(POLL_INTERVAL);
     // The request restarts the verification window, so the requested check ends PENDING or
     // VERIFIED. FAILED only counts after that, never from the previous window: a scheduled check
     // may still finish between the read and the request.
@@ -104,7 +109,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
     System.err.println(msg.domainVerificationWaiting(domain));
     while (true) {
       ProjectDomainView current = DomainsSupport
-          .find(api.list(context.org(), context.project()), domain)
+          .findDomain(api.list(context.org(), context.project()), domain)
           .orElseThrow(() -> new CliException(
               msg.domainRemovedWhileWaiting(domain, context.project())));
       boolean newCheck = !Objects.equals(current.lastCheckedAt(), checkedBefore);
@@ -115,11 +120,11 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
       }
       restarted = restarted || newCheck && !current.failed();
       if (restarted && current.failed()) {
-        return failure(current, msg.domainVerificationFailed(
-            domain, DomainsSupport.reasonText(current.failureReason())));
+        return getFailureResult(current, msg.domainVerificationFailed(
+            domain, DomainsSupport.describeVerificationReason(current.failureReason())));
       }
       if (restarted) {
-        String progress = progress(current);
+        String progress = getProgress(current);
         if (!progress.equals(reported)) {
           System.err.println(progress);
           reported = progress;
@@ -130,22 +135,24 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
         DomainsSupport.sleep(left.compareTo(interval) < 0 ? left : interval);
       }
       if (!Instant.now().isBefore(deadline)) {
-        return failure(current,
+        return getFailureResult(current,
             msg.domainVerificationTimedOut(domain, DurationConverter.format(timeout)));
       }
     }
   }
 
-  private static CommandResult<ProjectDomainView> failure(ProjectDomainView domain,
-      String message) {
+  private static CommandResult<ProjectDomainView> getFailureResult(
+      ProjectDomainView domain,
+      String message
+  ) {
     CommandResult<ProjectDomainView> result = new CommandResult<>(domain);
     result.setError(new CliException(message));
     return result;
   }
 
-  private static String progress(ProjectDomainView domain) {
+  private static String getProgress(ProjectDomainView domain) {
     String reason = Objects.requireNonNullElse(
-        DomainsSupport.reasonText(domain.failureReason()), domain.state());
+        DomainsSupport.describeVerificationReason(domain.failureReason()), domain.state());
     return domain.nextCheckAt() == null
         ? msg.domainVerificationPending(reason)
         : msg.domainVerificationPendingUntil(reason, domain.nextCheckAt());

@@ -31,9 +31,9 @@ public class RecordsCommand extends AbstractCommand<List<DnsRecordView>> {
       index = "0",
       arity = "0..1",
       paramLabel = "<domain>",
-      description = "Only this domain, by ID or hostname (defaults to all domains of the project)"
+      description = "Domain ID or domain name (defaults to all domains of the project)"
   )
-  public String idOrHostname;
+  public String idOrDomain;
 
   @CommandLine.Mixin
   ProjectScopedOptions scope;
@@ -48,12 +48,12 @@ public class RecordsCommand extends AbstractCommand<List<DnsRecordView>> {
   public String getTextOutput(CommandResult<List<DnsRecordView>> result) {
     List<DnsRecordView> records = result.getData();
     if (zone) {
-      return DomainsSupport.zoneLines(records);
+      return DomainsSupport.formatDnsZoneFile(records);
     }
     if (records.isEmpty()) {
       return msg.domainsListEmpty();
     }
-    return DomainsSupport.recordsTable(records);
+    return DomainsSupport.formatDnsRecordsTable(records);
   }
 
   @Override
@@ -66,9 +66,9 @@ public class RecordsCommand extends AbstractCommand<List<DnsRecordView>> {
     try (PlatformClients client = PlatformClients.fromConfig()) {
       List<ProjectDomainView> domains =
           new ProjectDomainsApi(client).list(context.org(), context.project());
-      if (idOrHostname != null) {
-        domains = List.of(DomainsSupport.require(
-            domains, DomainsSupport.normalize(idOrHostname), context.project()));
+      if (idOrDomain != null) {
+        domains = List.of(DomainsSupport.requireDomain(
+            domains, DomainsSupport.normalizeDomain(idOrDomain), context.project()));
       }
       return new CommandResult<>(domains.stream()
           .flatMap(domain -> domain.dnsRecords().stream())

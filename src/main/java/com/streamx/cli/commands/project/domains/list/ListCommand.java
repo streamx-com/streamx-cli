@@ -27,7 +27,7 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
 
   @CommandLine.Option(
       names = {"-q", "--quiet"},
-      description = "Only display hostnames, one per line (for piping to xargs)"
+      description = "Only display domain names, one per line (for piping to xargs)"
   )
   public boolean quiet;
 
@@ -52,7 +52,7 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
                 domain.id(),
                 domain.domain(),
                 domain.state(),
-                DomainsSupport.reasonText(domain.failureReason()),
+                DomainsSupport.describeVerificationReason(domain.failureReason()),
                 // Verified and failed domains are not checked again.
                 domain.verified() || domain.failed() ? null : domain.nextCheckAt()))
             .toList());

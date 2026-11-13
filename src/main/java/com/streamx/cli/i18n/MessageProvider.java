@@ -884,7 +884,7 @@ public interface MessageProvider {
       + "stops serving it")
   String domainRemoveVerifiedWarning(String domain);
 
-  @Message(id = 447, value = "This removes '%s' from the project. Type the hostname to confirm")
+  @Message(id = 447, value = "This removes '%s' from the project. Type the domain name to confirm")
   String domainRemoveConfirmPrompt(String domain);
 
   @Message(id = 448, value = "Domain '%s' removed from project '%s'")
@@ -892,7 +892,7 @@ public interface MessageProvider {
 
   @Message(id = 449, value = "In DNS, you can remove this project's value '%s' from the TXT "
       + "record '%s'; keep any other values there, they belong to other projects. Delete the "
-      + "CNAME '%s' too, unless another project still uses the hostname")
+      + "CNAME '%s' too, unless another project still uses the domain")
   String domainRemoveDnsCleanup(String txtValue, String txtName, String cnameName);
 
   @Message(id = 450, value = "--zone prints zone-file lines and cannot be combined with "
@@ -1007,10 +1007,6 @@ public interface MessageProvider {
       + "records'")
   String domainCertificateRecordProblem(String domain);
 
-  @Message(id = 486, value = "--id sets the ID of one hostname; add the hostnames one at a time "
-      + "to give each its own ID")
-  String domainIdForOneHostname();
-
-  @Message(id = 487, value = "The ID '%s' is already used by '%s'; choose another one with --id")
+  @Message(id = 487, value = "The ID '%s' is already used by '%s'; choose another domain ID")
   String domainIdTaken(String id, String domain);
 }
