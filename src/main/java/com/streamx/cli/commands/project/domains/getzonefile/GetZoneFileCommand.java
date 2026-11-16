@@ -5,6 +5,7 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.CommonOptions;
+import com.streamx.cli.platform.DomainCompletionCandidates;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectDomainView;
@@ -30,6 +31,7 @@ public class GetZoneFileCommand extends AbstractCommand<String> {
       index = "0",
       arity = "0..1",
       paramLabel = "<domain>",
+      completionCandidates = DomainCompletionCandidates.class,
       description = "Domain ID or domain name. Defaults to all domains in the project."
   )
   public String idOrDomain;

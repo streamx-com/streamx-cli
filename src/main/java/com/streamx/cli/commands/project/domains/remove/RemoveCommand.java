@@ -9,6 +9,7 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.DeleteConfirmation;
 import com.streamx.cli.platform.DnsRecordView;
+import com.streamx.cli.platform.DomainCompletionCandidates;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectDomainView;
@@ -28,6 +29,7 @@ public class RemoveCommand extends AbstractSilentCommand {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
+      completionCandidates = DomainCompletionCandidates.class,
       description = "Domain ID or domain name"
   )
   public String idOrDomain;

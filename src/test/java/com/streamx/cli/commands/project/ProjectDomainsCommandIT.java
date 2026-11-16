@@ -85,6 +85,45 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
+  void shouldCompleteDomainIdsAndNamesForExplicitProject() throws Exception {
+    ProcessResult result = exec("__complete-domains", ORG, PROJECT);
+
+    result.assertSuccess();
+    assertThat(result.stdout().lines().toList())
+        .containsExactly("shop", "shop.example.com", "www", "www.example.com");
+    assertThat(result.stderr()).isEmpty();
+    assertThat(platform.getRequests()).containsExactly(GET);
+  }
+
+  @Test
+  void shouldCompleteDomainsFromEnvironmentScope() throws Exception {
+    setEnv("STREAMX_ORG", ORG);
+    setEnv("STREAMX_PROJECT", PROJECT);
+    try {
+      ProcessResult result = exec("__complete-domains", "", "");
+
+      result.assertSuccess();
+      assertThat(result.stdout()).contains("shop.example.com");
+      assertThat(platform.getRequests()).containsExactly(GET);
+    } finally {
+      clearEnv("STREAMX_ORG");
+      clearEnv("STREAMX_PROJECT");
+    }
+  }
+
+  @Test
+  void shouldSilentlySkipDomainCompletionWhenPlatformIsUnavailable() throws Exception {
+    platform.close();
+    platform = null;
+
+    ProcessResult result = exec("__complete-domains", ORG, PROJECT);
+
+    result.assertSuccess();
+    assertThat(result.stdout()).isEmpty();
+    assertThat(result.stderr()).isEmpty();
+  }
+
+  @Test
   void shouldListDomainsWithReasonTexts() throws Exception {
     ProcessResult result = domains("list");
 

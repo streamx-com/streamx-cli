@@ -10,6 +10,7 @@ import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.DnsRecordCheckView;
+import com.streamx.cli.platform.DomainCompletionCandidates;
 import com.streamx.cli.platform.DomainStatusView;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
@@ -42,6 +43,7 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<domain>",
+      completionCandidates = DomainCompletionCandidates.class,
       description = "Domain ID or domain name"
   )
   public String idOrDomain;
