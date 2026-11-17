@@ -8,6 +8,7 @@ import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCand
 import com.streamx.cli.config.ContextNameCompletionCandidates;
 import com.streamx.cli.platform.ClusterIdCompletionCandidates;
 import com.streamx.cli.platform.ContextProjectIdCompletionCandidates;
+import com.streamx.cli.platform.DomainCompletionCandidates;
 import com.streamx.cli.platform.InvitedEmailCompletionCandidates;
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.OrgMemberIdCompletionCandidates;
@@ -34,6 +35,8 @@ public final class ZshCompletionGenerator {
   public static String generate(String programName, CommandLine commandLine) {
     StringBuilder sb = new StringBuilder();
     sb.append("#compdef ").append(programName).append("\n\n");
+    // Zsh completion words still contain shell quoting; remove it before forwarding values.
+    sb.append(CompletionScope.functions("${(@Q)words}", programName));
     generateFunction(sb, "_" + sanitize(programName), commandLine);
     sb.append("compdef _").append(sanitize(programName))
         .append(" ").append(programName).append("\n");
@@ -167,10 +170,13 @@ public final class ZshCompletionGenerator {
 
     if (shortName != null && longName != null) {
       String exclusion = "'(" + shortName + " " + longName + ")'";
-      return exclusion + "{" + shortName + "," + longName + "}"
+      return exclusion + "{" + shortName + "," + longName + (argSpec.isEmpty() ? "" : "=") + "}"
           + "'[" + escape(desc) + "]" + argSpec + "'";
     } else {
       String name = longName != null ? longName : shortName;
+      if (longName != null && !argSpec.isEmpty()) {
+        name += "=";
+      }
       return "'" + name + "[" + escape(desc) + "]" + argSpec + "'";
     }
   }
@@ -206,6 +212,11 @@ public final class ZshCompletionGenerator {
 
   private static String getCompletionAction(
       Class<?> type, OptionSpec opt, Iterable<String> completionCandidates) {
+    if (completionCandidates instanceof DomainCompletionCandidates) {
+      return "($(_streamx_complete_scoped __complete-domains "
+          + CompletionScope.value("--org") + " " + CompletionScope.value("--project")
+          + " 2>/dev/null))";
+    }
     if (completionCandidates instanceof RegisteredTemplateIdCompletionCandidates) {
       return "($(streamx __complete-registered-template-ids 2>/dev/null))";
     }

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 /**
  * The text view of a single resource.
- * {@link TextTable} to display details for multiple objects.
+ * Use {@link TextList} for a vertical list of resources or {@link TextTable} for compact rows.
  */
 public final class DetailsView {
 

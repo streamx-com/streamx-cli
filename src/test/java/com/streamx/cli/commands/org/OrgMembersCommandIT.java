@@ -53,6 +53,7 @@ class OrgMembersCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("GET /api/v1/organizations/" + ORG + "/users");
+    assertThat(result.stdout()).contains("ID", "DISPLAY NAME", "ROLE", "STATUS");
     assertThat(result.stdout()).contains("user1@streamx.com", "owner", "ACTIVE", "(you)");
     assertThat(result.stdout()).contains("pending@streamx.com", "view", "PENDING");
   }

@@ -858,4 +858,199 @@ public interface MessageProvider {
   @Message(id = 433, value = "Not authorized. The personal access token in "
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
+
+  @Message(id = 440, value = "No custom domains configured")
+  String domainsListEmpty();
+
+  @Message(id = 441, value = "Domain '%s' is not configured for project '%s'")
+  String domainNotConfigured(String domain, String projectId);
+
+  @Message(id = 442, value = "Domain '%s' is already configured for project '%s'")
+  String domainAlreadyAdded(String domain, String projectId);
+
+  @Message(id = 443, value = "Domain '%s' added to project '%s'")
+  String domainAdded(String domain, String projectId);
+
+  @Message(id = 444, value = "Create these DNS records at your DNS provider, then run "
+      + "'streamx project domains recheck %s --wait'")
+  String domainAddNextStep(String domain);
+
+  @Message(id = 445, value = "The change was saved, but project '%s' has not applied it yet. Run "
+      + "'streamx project status' for details.")
+  String domainsChangeNotApplied(String projectId);
+
+  @Message(id = 446, value = "Removing domain '%s' will stop the project from serving it")
+  String domainRemoveWarning(String domain);
+
+  @Message(id = 447, value = "Type '%s' to confirm removal")
+  String domainRemoveConfirmPrompt(String domain);
+
+  @Message(id = 448, value = "Domain '%s' removed from project '%s'")
+  String domainRemoved(String domain, String projectId);
+
+  @Message(id = 449, value = "Remove TXT value '%s' from '%s'. Keep other TXT values. Remove CNAME "
+      + "'%s' if no other project uses this domain.")
+  String domainRemoveDnsCleanup(String txtValue, String txtName, String cnameName);
+
+  @Message(id = 451, value = "DNS checks for '%s' have already passed")
+  String domainDnsChecksAlreadyPassed(String domain);
+
+  @Message(id = 452, value = "DNS recheck requested for '%s'")
+  String domainDnsCheckRequested(String domain);
+
+  @Message(id = 453, value = "Check progress with 'streamx project domains get %s', or rerun "
+      + "DNS checks with --wait.")
+  String domainDnsCheckNextStep(String domain);
+
+  @Message(id = 454, value = "Waiting for DNS checks for '%s'...")
+  String domainDnsCheckWaiting(String domain);
+
+  @Message(id = 455, value = "Domain '%s' was removed from project '%s' while waiting")
+  String domainRemovedWhileWaiting(String domain, String projectId);
+
+  @Message(id = 456, value = "DNS checks for '%s' passed")
+  String domainDnsChecksPassed(String domain);
+
+  @Message(id = 457, value = "DNS checks for '%s' failed: %s")
+  String domainDnsChecksFailed(String domain, String reason);
+
+  @Message(id = 458, value = "Stopped waiting after %2$s. Run 'streamx project domains get %1$s' "
+      + "to check DNS check results.")
+  String domainDnsCheckWaitTimedOut(String domain, String timeout);
+
+  @Message(id = 459, value = "DNS checks pending: %s")
+  String domainDnsChecksPending(String reason);
+
+  @Message(id = 460, value = "DNS checks pending: %s Next check: %s")
+  String domainDnsChecksPendingUntil(String reason, String nextCheckAt);
+
+  @Message(id = 461, value = "Invalid duration '%s': use whole seconds, minutes or hours, "
+      + "such as 90s, 10m or 1h")
+  String invalidDuration(String value);
+
+  @Message(id = 462, value = "Interrupted while waiting")
+  String domainsWaitInterrupted();
+
+  @Message(id = 463, value = "Ownership verification record is missing or has the wrong value.")
+  String domainReasonOwnershipRecordNotMatched();
+
+  @Message(id = 464, value = "ACME challenge record not found.")
+  String domainReasonAcmeDelegationRecordMissing();
+
+  @Message(id = 465, value = "ACME challenge record value does not match.")
+  String domainReasonAcmeDelegationRecordMismatch();
+
+  @Message(id = 466, value = "DNS lookup failed.")
+  String domainReasonDnsLookupFailed();
+
+  @Message(id = 467, value = "DNS checks timed out.")
+  String domainReasonDnsCheckWindowExpired();
+
+  @Message(id = 468, value = "Could not identify the project's organization.")
+  String domainReasonOrganizationNotResolved();
+
+  @Message(id = 469, value = "Could not save the domains. Fix the following errors:%n%s")
+  String domainsRejected(String details);
+
+  @Message(id = 470, value = "Project '%s' was not found, or you do not have access to its "
+      + "domains")
+  String domainsNotFound(String projectId);
+
+  @Message(id = 471, value = "This platform does not support custom domains")
+  String domainsNotSupported();
+
+  @Message(id = 479, value = "DNS checks for '%s' have not passed yet. Add the required TXT "
+      + "and CNAME records at your DNS provider.")
+  String domainDnsChecksNotPassed(String domain);
+
+  @Message(id = 481, value = "The TLS certificate is not ready for domain '%s'.")
+  String domainTlsCertificateNotReady(String domain);
+
+  @Message(id = 482, value = "The certificate that StreamX serves for '%s' is not valid; contact "
+      + "support")
+  String domainTlsCertificateInvalid(String domain);
+
+  @Message(id = 483, value = "The TLS certificate for '%s' is ready.")
+  String domainTlsCertificateReady(String domain);
+
+  @Message(id = 484, value = "Could not check the TLS certificate for '%s'. Try again shortly.")
+  String domainTlsCertificateCheckFailed(String domain);
+
+  @Message(id = 485, value = "The ACME challenge record for '%1$s' is missing or incorrect. Run "
+      + "'streamx project domains get %1$s' for the required value.")
+  String domainAcmeDelegationRecordInvalid(String domain);
+
+  @Message(id = 487, value = "Domain ID '%s' is already used by '%s'. Choose another ID.")
+  String domainIdTaken(String id, String domain);
+
+  @Message(id = 488, value = "No mesh route uses domain '%s'.")
+  String domainNotInMeshRoutes(String domain);
+
+  @Message(id = 489, value = "DNS checks failed. Check the required DNS records with "
+      + "'streamx project domains get %1$s', then run "
+      + "'streamx project domains recheck %1$s --wait'.")
+  String domainDnsChecksRetry(String domain);
+
+  @Message(id = 490, value = "Checking DNS records for '%s'.")
+  String domainCheckingDns(String domain);
+
+  @Message(id = 491, value = "Checking DNS records for '%s'. Next check: %s")
+  String domainCheckingDnsUntil(String domain, String nextCheckAt);
+
+  @Message(id = 492, value = "Unknown")
+  String domainStatusUnknown();
+
+  @Message(id = 493, value = "Checking DNS records")
+  String domainStatusCheckingDns();
+
+  @Message(id = 494, value = "DNS checks passed")
+  String domainStatusDnsChecksPassed();
+
+  @Message(id = 495, value = "DNS checks failed")
+  String domainStatusDnsChecksFailed();
+
+  @Message(id = 496, value = "DNS checks have not passed")
+  String domainStatusDnsChecksNotPassed();
+
+  @Message(id = 497, value = "No mesh route uses this domain")
+  String domainStatusNotInMeshRoutes();
+
+  @Message(id = 498, value = "ACME challenge record missing or incorrect")
+  String domainStatusAcmeDelegationRecordInvalid();
+
+  @Message(id = 499, value = "Invalid certificate")
+  String domainStatusTlsCertificateInvalid();
+
+  @Message(id = 500, value = "Ready")
+  String domainStatusTlsCertificateReady();
+
+  @Message(id = 501, value = "Check failed")
+  String domainStatusTlsCertificateCheckFailed();
+
+  @Message(id = 502, value = "In place")
+  String domainRecordStatusInPlace();
+
+  @Message(id = 503, value = "Record is missing")
+  String domainRecordStatusMissing();
+
+  @Message(id = 504, value = "Record mismatch")
+  String domainRecordStatusMismatch();
+
+  @Message(id = 505, value = "DNS lookup failed")
+  String domainRecordStatusLookupFailed();
+
+  @Message(id = 506, value = "Not ready")
+  String domainStatusTlsCertificateNotReady();
+
+  @Message(id = 507, value = "Ownership verification record")
+  String domainOwnershipRecordTitle();
+
+  @Message(id = 508, value = "ACME challenge record")
+  String domainAcmeRecordTitle();
+
+  @Message(id = 510, value = "DNS checks timed out")
+  String domainStatusDnsChecksTimedOut();
+
+  @Message(id = 509, value = "DNS record")
+  String domainRecordTitle();
 }

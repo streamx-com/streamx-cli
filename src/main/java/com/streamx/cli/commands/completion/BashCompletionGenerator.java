@@ -5,6 +5,7 @@ import com.streamx.cli.commands.settings.SettingsSetKeyCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.NonDefaultTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.RegisteredTemplateIdCompletionCandidates;
 import com.streamx.cli.commands.settings.eventtemplates.TemplateIdCompletionCandidates;
+import com.streamx.cli.platform.DomainCompletionCandidates;
 import java.util.HashMap;
 import java.util.Map;
 import picocli.AutoComplete;
@@ -13,24 +14,36 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 
 /**
- * Wraps picocli's built-in bash completion generator and rewrites the
- * {@code local positionals=""} lines so that completion for our positional
- * parameters resolves dynamically at completion time by shelling out to one
+ * Adds dynamic positional and organization/project option candidates to picocli's bash script.
+ * Candidates are resolved at completion time by shelling out to one
  * of the {@code __complete-*} hidden subcommands. This mirrors what
  * {@link ZshCompletionGenerator} does for zsh.
  */
 public final class BashCompletionGenerator {
 
-  private static final String EMPTY_POSITIONALS = "local positionals=\"\"";
-
   private BashCompletionGenerator() {
   }
 
   public static String generate(String programName, CommandLine commandLine) {
-    String picocliOutput = AutoComplete.bash(programName, commandLine);
+    String picocliOutput = AutoComplete.bash(programName, commandLine)
+        .replace("    if [[ \"${optionsWithArgs}\" =~ ${previousWord} ]]; then", """
+                if [[ "${previousWord}" == *=* \\
+                    && "${optionsWithArgs}" == *"'${previousWord%%=*}'"* ]]; then
+                  ((result-=1))
+                elif [[ "${optionsWithArgs}" =~ ${previousWord} ]]; then
+              """.stripTrailing())
+        .replace("((result-=2)) # Arg option and its value not counted as positional param",
+            """
+            if [[ "${COMP_WORDS[i+1]}" == "=" ]]; then
+                    ((result-=3))
+                  else
+                    ((result-=2))
+                  fi
+            """.stripTrailing());
     Map<String, String> functionToCommand = new HashMap<>();
     collect("_picocli_" + sanitize(programName), commandLine, functionToCommand);
-    return rewritePositionals(picocliOutput, functionToCommand, programName);
+    return CompletionScope.functions("${COMP_WORDS[@]}", programName)
+        + rewriteCompletions(picocliOutput, functionToCommand);
   }
 
   private static void collect(
@@ -53,6 +66,10 @@ public final class BashCompletionGenerator {
   }
 
   private static String mapCandidatesToCommand(Iterable<String> candidates) {
+    if (candidates instanceof DomainCompletionCandidates) {
+      return "__complete-domains " + CompletionScope.value("--org") + " "
+          + CompletionScope.value("--project");
+    }
     if (candidates instanceof RegisteredTemplateIdCompletionCandidates) {
       return "__complete-registered-template-ids";
     }
@@ -71,15 +88,20 @@ public final class BashCompletionGenerator {
     return null;
   }
 
-  private static String rewritePositionals(
-      String script, Map<String, String> functionToCommand, String programName) {
-    if (functionToCommand.isEmpty()) {
-      return script;
-    }
+  private static String rewriteCompletions(
+      String script, Map<String, String> functionToCommand) {
     String[] lines = script.split("\n", -1);
     String currentFunction = null;
     for (int i = 0; i < lines.length; i++) {
       String line = lines[i];
+      if (line.contains("COMPREPLY=") && line.contains("${orgId_option_args[@]}")) {
+        lines[i] = "      COMPREPLY=( $(compgen -W \"$(_streamx_complete_scoped "
+            + "__complete-org-ids 2>/dev/null)\" -- \"${curr_word}\") )";
+      } else if (line.contains("COMPREPLY=") && line.contains("${projectId_option_args[@]}")) {
+        lines[i] = "      COMPREPLY=( $(compgen -W \"$(_streamx_complete_scoped "
+            + "__complete-project-ids " + CompletionScope.value("--org")
+            + " 2>/dev/null)\" -- \"${curr_word}\") )";
+      }
       String openedFunction = parseFunctionDeclaration(line);
       if (openedFunction != null) {
         currentFunction = openedFunction;
@@ -92,14 +114,10 @@ public final class BashCompletionGenerator {
       if (completionCmd == null) {
         continue;
       }
-      int idx = line.indexOf(EMPTY_POSITIONALS);
-      if (idx < 0) {
-        continue;
+      if (line.trim().startsWith("positionals=$( compReplyArray ")) {
+        lines[i] = "      positionals=\"$(_streamx_complete_scoped "
+            + completionCmd + " 2>/dev/null)\"";
       }
-      String dynamic = "local positionals=\"$(" + programName + " "
-          + completionCmd + " 2>/dev/null)\"";
-      lines[i] = line.substring(0, idx) + dynamic
-          + line.substring(idx + EMPTY_POSITIONALS.length());
     }
     return String.join("\n", lines);
   }

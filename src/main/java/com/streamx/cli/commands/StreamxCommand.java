@@ -2,6 +2,7 @@ package com.streamx.cli.commands;
 
 import com.streamx.cli.commands.completion.CompleteClusterIdsCommand;
 import com.streamx.cli.commands.completion.CompleteContextNamesCommand;
+import com.streamx.cli.commands.completion.CompleteDomainsCommand;
 import com.streamx.cli.commands.completion.CompleteInvitedEmailsCommand;
 import com.streamx.cli.commands.completion.CompleteNonDefaultTemplateIdsCommand;
 import com.streamx.cli.commands.completion.CompleteOrgIdsCommand;
@@ -41,6 +42,7 @@ import picocli.CommandLine;
         CompleteContextNamesCommand.class,
         CompleteOrgIdsCommand.class,
         CompleteProjectIdsCommand.class,
+        CompleteDomainsCommand.class,
         CompleteOrgMemberIdsCommand.class,
         CompleteInvitedEmailsCommand.class,
         CompleteClusterIdsCommand.class,
