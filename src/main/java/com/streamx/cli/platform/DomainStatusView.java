@@ -27,7 +27,9 @@ public record DomainStatusView(
             : status.getRecords().stream().map(DnsRecordCheckView::from).toList());
   }
 
-  public boolean isTlsCertificateReady() {
-    return tlsCertificate == TlsCertificateEnum.TLS_CERTIFICATE_READY;
+  public boolean isSetupComplete() {
+    return dnsChecks == DnsChecksEnum.PASSED
+        && tlsCertificate == TlsCertificateEnum.TLS_CERTIFICATE_READY
+        && records.stream().allMatch(DnsRecordCheckView::inPlace);
   }
 }

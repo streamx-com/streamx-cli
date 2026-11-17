@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.project.domains.recheckdns;
+package com.streamx.cli.commands.project.domains.recheck;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
@@ -19,8 +19,8 @@ import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-    name = "recheck-dns",
-    header = "Recheck the required DNS records",
+    name = "recheck",
+    header = "Initiate recheck for the required DNS records",
     description = {
         "Restart pending or failed DNS checks. Checks that already passed are not restarted. "
             + "With --wait, exits with code 1 if the DNS checks fail or waiting times out."
@@ -28,11 +28,11 @@ import picocli.CommandLine;
     footer = {
         "",
         "Examples:",
-        "  streamx project domains recheck-dns shop.example.com",
-        "  streamx project domains recheck-dns shop.example.com --wait --timeout 10m"
+        "  streamx project domains recheck shop.example.com",
+        "  streamx project domains recheck shop.example.com --wait --timeout 10m"
     }
 )
-public class RecheckDnsCommand extends AbstractCommand<ProjectDomainView> {
+public class RecheckCommand extends AbstractCommand<ProjectDomainView> {
 
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(10);
 

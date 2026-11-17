@@ -124,17 +124,32 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldListDomainsWithReasonTexts() throws Exception {
+  void shouldListDomainsWithStatusAndDetails() throws Exception {
     ProcessResult result = domains("list");
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .contains("DOMAIN ID", "DOMAIN NAME", "DNS CHECKS", "REASON", "NEXT CHECK")
+        .contains("DOMAIN ID", "DOMAIN NAME", "STATUS", "DETAILS", "NEXT CHECK")
         .containsPattern("shop\\s+shop\\.example\\.com\\s+Checking DNS records\\s+"
             + "Ownership verification record is missing or has the wrong value\\.\\s+"
             + "2026-10-29T08:05:00Z")
         .containsPattern("www\\s+www\\.example\\.com\\s+DNS checks passed\\s+-\\s+-");
     assertThat(platform.getRequests()).containsExactly(GET);
+  }
+
+  @Test
+  void shouldOmitRedundantTimeoutDetails() throws Exception {
+    for (String reason : new String[] {"DNS_CHECK_WINDOW_EXPIRED", "VERIFICATION_WINDOW_EXPIRED"}) {
+      platform.queueLists(list(domain("shop.example.com", "FAILED", reason,
+          "2026-10-29T08:00:00Z")));
+
+      ProcessResult result = domains("list");
+
+      result.assertSuccess();
+      assertThat(result.stdout())
+          .containsPattern("DNS checks timed out\\s+-\\s+-")
+          .doesNotContain(msg.domainReasonDnsCheckWindowExpired());
+    }
   }
 
   @Test
@@ -163,40 +178,6 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout()).contains(msg.domainsListEmpty());
-  }
-
-  @Test
-  void shouldShowOneDomainWithItsRecords() throws Exception {
-    ProcessResult result = domains("get", "Shop.Example.com");
-
-    result.assertSuccess();
-    assertThat(result.stdout())
-        .containsPattern("Domain ID\\s+= shop")
-        .containsPattern("DNS checks\\s+= Checking DNS records")
-        .containsPattern("Reason\\s+= Ownership verification record is missing or has the "
-            + "wrong value\\.")
-        .containsPattern("TXT\\s+_streamx-verification\\.shop\\.example\\.com\\s+"
-            + "streamx-domain-verification=b3Jn")
-        .containsPattern("CNAME\\s+_acme-challenge\\.shop\\.example\\.com\\s+"
-            + "0a1b2c3d\\.acme\\.example\\.net");
-  }
-
-  @Test
-  void shouldRejectGetOfUnknownDomain() throws Exception {
-    ProcessResult result = domains("get", "blog.example.com");
-
-    result.assertExitCode(1);
-    assertThat(result.stderr()).contains(msg.domainNotConfigured("blog.example.com", PROJECT));
-  }
-
-  @Test
-  void shouldShowOneDomainById() throws Exception {
-    ProcessResult result = domains("get", "www");
-
-    result.assertSuccess();
-    assertThat(result.stdout())
-        .containsPattern("Domain ID\\s+= www")
-        .containsPattern("Domain name\\s+= www\\.example\\.com");
   }
 
   @Test
@@ -439,7 +420,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldNotRequestDnsCheckForPassedDomain() throws Exception {
-    ProcessResult result = domains("recheck-dns", "www.example.com");
+    ProcessResult result = domains("recheck", "www.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET);
@@ -449,7 +430,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldRequestDnsCheckWithoutWaiting() throws Exception {
-    ProcessResult result = domains("recheck-dns", "shop.example.com");
+    ProcessResult result = domains("recheck", "shop.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -459,7 +440,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldRequestDnsCheckById() throws Exception {
-    ProcessResult result = domains("recheck-dns", "shop");
+    ProcessResult result = domains("recheck", "shop");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
@@ -479,7 +460,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
             "2026-10-29T08:00:30Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:01:00Z")));
 
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait");
 
     result.assertSuccess();
     assertThat(result.stdout()).containsPattern("DNS checks\\s+= DNS checks passed");
@@ -498,7 +479,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         list(domain("shop.example.com", "FAILED", "DNS_CHECK_WINDOW_EXPIRED",
             "2026-10-29T09:00:00Z")));
 
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait");
 
     result.assertExitCode(1);
     assertThat(result.stdout()).containsPattern("DNS checks\\s+= DNS checks timed out");
@@ -517,7 +498,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
             "2026-10-29T08:00:20Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:00:40Z")));
 
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait");
 
     result.assertSuccess();
     assertThat(result.stderr()).contains(msg.domainDnsChecksPassed("shop.example.com"));
@@ -525,7 +506,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldStopWaitingAtTheTimeout() throws Exception {
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait", "--timeout", "1s");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait", "--timeout", "1s");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -536,7 +517,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   void shouldStopWaitingWhenTheDomainIsRemoved() throws Exception {
     platform.queueLists(list(SHOP_PENDING), list(WWW_VERIFIED));
 
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -546,10 +527,41 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   @Test
   void shouldRejectInvalidTimeout() throws Exception {
     ProcessResult result = domains(
-        "recheck-dns", "shop.example.com", "--wait", "--timeout", "PT1H");
+        "recheck", "shop.example.com", "--wait", "--timeout", "PT1H");
 
     result.assertExitCode(2);
     assertThat(result.stderr()).contains(msg.invalidDuration("PT1H"));
+  }
+
+  @Test
+  void shouldSucceedWithIncompleteSetupByDefault() throws Exception {
+    for (String certificate : new String[] {"DNS_CHECKS_NOT_PASSED",
+        "TLS_CERTIFICATE_NOT_READY", "TLS_CERTIFICATE_INVALID", "TLS_CERTIFICATE_CHECK_FAILED"}) {
+      platform.queueChecks(StubDomainsServer.status("shop.example.com", "PENDING", certificate,
+          "DNS_RECORD_MISSING", "DNS_RECORD_VALUE_MISMATCH"));
+
+      ProcessResult result = domains("get", "Shop.Example.com");
+
+      result.assertSuccess();
+      assertThat(result.stdout()).contains("Record is missing", "Record mismatch");
+      assertThat(result.stderr()).isEmpty();
+    }
+  }
+
+  @Test
+  void shouldRejectGetOfUnknownDomainIdEvenWithFailureFlag() throws Exception {
+    ProcessResult result = domains("get", "unknown-id", "--fail-on-incomplete-setup");
+
+    result.assertExitCode(1);
+    assertThat(result.stderr()).contains(msg.domainNotConfigured("unknown-id", PROJECT));
+    assertThat(platform.getRequests()).containsExactly(GET);
+  }
+
+  @Test
+  void shouldRejectRemovedStatusCommand() throws Exception {
+    ProcessResult result = domains("status", "shop.example.com");
+
+    result.assertExitCode(2);
   }
 
   @Test
@@ -558,7 +570,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         "DNS_CHECKS_NOT_PASSED",
         "DNS_RECORD_MISSING", "DNS_RECORD_VALUE_MISMATCH"));
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com", "--fail-on-incomplete-setup");
 
     result.assertExitCode(1);
     assertThat(result.stdout()).isEqualToNormalizingNewlines("""
@@ -593,7 +605,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         .replace("0a1b2c3d.acme.example.net", target)
         .replace("streamx-domain-verification=b3Jn", txt));
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com", "--fail-on-incomplete-setup");
 
     result.assertExitCode(1);
     assertThat(result.stdout().lines().toList())
@@ -609,7 +621,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     platform.queueChecks(status.substring(0, status.lastIndexOf('}'))
         + ",\"gateways\":[{\"hostname\":\"" + EDGE_HOSTNAME + "\",\"status\":\"SERVED\"}]}");
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com");
 
     result.assertSuccess();
     assertThat(result.stdout()).doesNotContain(EDGE_HOSTNAME);
@@ -624,7 +636,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         "DOMAIN_NOT_IN_MESH_ROUTES",
         "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com", "--fail-on-incomplete-setup");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -638,7 +650,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         "DNS_CHECKS_NOT_PASSED",
         "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com", "--fail-on-incomplete-setup");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -653,7 +665,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         list(domain("shop.example.com", "PENDING", null, "2026-10-29T08:00:30Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:01:00Z")));
 
-    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck", "shop.example.com", "--wait");
 
     result.assertSuccess();
     assertThat(result.stderr())
@@ -668,7 +680,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         "TLS_CERTIFICATE_READY",
         "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
-    ProcessResult result = domains("status", "shop.example.com");
+    ProcessResult result = domains("get", "shop.example.com", "--fail-on-incomplete-setup");
 
     result.assertSuccess();
     assertThat(result.stderr())
@@ -679,12 +691,12 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldCheckStatusById() throws Exception {
+  void shouldGetSetupById() throws Exception {
     platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
         "TLS_CERTIFICATE_READY",
         "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
-    ProcessResult result = domains("status", "shop");
+    ProcessResult result = domains("get", "shop");
 
     result.assertSuccess();
     assertThat(result.stdout())
@@ -706,7 +718,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         StubDomainsServer.status("shop.example.com", "PASSED", "TLS_CERTIFICATE_READY",
             "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
-    ProcessResult result = domains("status", "shop.example.com", "--watch");
+    ProcessResult result = domains("get", "shop.example.com", "--watch");
 
     result.assertSuccess();
     // Earlier rounds are progress on stderr; stdout holds the final result only.
@@ -723,8 +735,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldRejectStatusOfUnknownDomain() throws Exception {
-    ProcessResult result = domains("status", "blog.example.com");
+  void shouldRejectGetOfUnknownDomain() throws Exception {
+    ProcessResult result = domains("get", "blog.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(msg.domainNotConfigured("blog.example.com", PROJECT));
@@ -735,7 +747,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
         "TLS_CERTIFICATE_INVALID", "DNS_RECORD_MATCHES", "DNS_LOOKUP_FAILED"));
 
-    ProcessResult result = domains("status", "shop.example.com", "-o", "json");
+    ProcessResult result = domains("get", "shop.example.com",
+        "--fail-on-incomplete-setup", "-o", "json");
 
     result.assertExitCode(1);
     assertThat(result.stdout())

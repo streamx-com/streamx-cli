@@ -21,7 +21,7 @@ class ZshCompletionIT extends CliBaseIT {
 
   @Test
   void shouldCompleteIdsAndDomainsForEveryExistingDomainArgument() throws Exception {
-    for (String command : List.of("get", "remove", "recheck-dns", "status", "get-zone-file")) {
+    for (String command : List.of("get", "remove", "recheck", "get-zone-file")) {
       CompletionResult result = complete("streamx project domains " + command
           + " --org so-alpha --project project-one sh");
       assertThat(result.matches()).containsExactlyInAnyOrder("shop", "shop.example.com");

@@ -164,9 +164,13 @@ public final class DomainsSupport {
     };
   }
 
+  public static boolean dnsChecksTimedOut(ProjectDomainView domain) {
+    return domain.failed() && ("DNS_CHECK_WINDOW_EXPIRED".equals(domain.failureReason())
+        || "VERIFICATION_WINDOW_EXPIRED".equals(domain.failureReason()));
+  }
+
   public static String describeDnsCheckState(ProjectDomainView domain) {
-    if (domain.failed() && ("DNS_CHECK_WINDOW_EXPIRED".equals(domain.failureReason())
-        || "VERIFICATION_WINDOW_EXPIRED".equals(domain.failureReason()))) {
+    if (dnsChecksTimedOut(domain)) {
       return msg.domainStatusDnsChecksTimedOut();
     }
     return describeVerificationState(domain.state());

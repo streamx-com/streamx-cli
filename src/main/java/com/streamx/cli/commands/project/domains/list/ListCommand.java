@@ -46,13 +46,14 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
     }
 
     return TextTable.render(
-        List.of("DOMAIN ID", "DOMAIN NAME", "DNS CHECKS", "REASON", "NEXT CHECK"),
+        List.of("DOMAIN ID", "DOMAIN NAME", "STATUS", "DETAILS", "NEXT CHECK"),
         domains.stream()
             .map(domain -> Arrays.asList(
                 domain.id(),
                 domain.domain(),
                 DomainsSupport.describeDnsCheckState(domain),
-                DomainsSupport.describeDnsCheckReason(domain.failureReason()),
+                DomainsSupport.dnsChecksTimedOut(domain) ? null
+                    : DomainsSupport.describeDnsCheckReason(domain.failureReason()),
                 // Verified and failed domains are not checked again.
                 domain.dnsChecksPassed() || domain.failed() ? null : domain.nextCheckAt()))
             .toList());

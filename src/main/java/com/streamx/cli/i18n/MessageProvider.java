@@ -872,7 +872,7 @@ public interface MessageProvider {
   String domainAdded(String domain, String projectId);
 
   @Message(id = 444, value = "Create these DNS records at your DNS provider, then run "
-      + "'streamx project domains recheck-dns %s --wait'")
+      + "'streamx project domains recheck %s --wait'")
   String domainAddNextStep(String domain);
 
   @Message(id = 445, value = "The change was saved, but project '%s' has not applied it yet. Run "
@@ -943,7 +943,7 @@ public interface MessageProvider {
   @Message(id = 466, value = "DNS lookup failed.")
   String domainReasonDnsLookupFailed();
 
-  @Message(id = 467, value = "DNS checks timed out. Recheck the DNS records to retry.")
+  @Message(id = 467, value = "DNS checks timed out.")
   String domainReasonDnsCheckWindowExpired();
 
   @Message(id = 468, value = "Could not identify the project's organization.")
@@ -977,7 +977,7 @@ public interface MessageProvider {
   String domainTlsCertificateCheckFailed(String domain);
 
   @Message(id = 485, value = "The ACME challenge record for '%1$s' is missing or incorrect. Run "
-      + "'streamx project domains status %1$s' for the required value.")
+      + "'streamx project domains get %1$s' for the required value.")
   String domainAcmeDelegationRecordInvalid(String domain);
 
   @Message(id = 487, value = "Domain ID '%s' is already used by '%s'. Choose another ID.")
@@ -987,8 +987,8 @@ public interface MessageProvider {
   String domainNotInMeshRoutes(String domain);
 
   @Message(id = 489, value = "DNS checks failed. Check the required DNS records with "
-      + "'streamx project domains status %1$s', then run "
-      + "'streamx project domains recheck-dns %1$s --wait'.")
+      + "'streamx project domains get %1$s', then run "
+      + "'streamx project domains recheck %1$s --wait'.")
   String domainDnsChecksRetry(String domain);
 
   @Message(id = 490, value = "Checking DNS records for '%s'.")
