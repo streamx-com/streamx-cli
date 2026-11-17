@@ -13,7 +13,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "get",
-    header = "Show a domain's verification status and required DNS records"
+    header = "Show a domain's status and required DNS records"
 )
 public class GetCommand extends AbstractCommand<ProjectDomainView> {
 

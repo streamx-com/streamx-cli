@@ -8,7 +8,8 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.framework.TextTable;
+import com.streamx.cli.framework.DetailsView;
+import com.streamx.cli.framework.TextList;
 import com.streamx.cli.platform.DnsRecordCheckView;
 import com.streamx.cli.platform.DomainCompletionCandidates;
 import com.streamx.cli.platform.DomainStatusView;
@@ -16,19 +17,17 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectDomainView;
 import com.streamx.cli.platform.ProjectDomainsApi;
+import com.streamx.cli.platform.generated.model.DomainStatus.DnsChecksEnum;
+import com.streamx.cli.platform.generated.model.DomainStatusRecordsInner.StatusEnum;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "status",
-    header = "Show required DNS records and current DNS and HTTPS status",
+    header = "Show domain setup details and check results",
     description = {
-        "Show the required DNS records and check DNS verification and HTTPS readiness. "
-            + "Exits with code 0 when the domain is "
+        "Show the required DNS records and check DNS records and TLS certificate readiness. "
+            + "Exits with code 0 when the TLS certificate is "
             + "ready, or 1 otherwise. Use --watch to keep checking until it is ready."
     },
     footer = {
@@ -53,7 +52,7 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
 
   @CommandLine.Option(
       names = "--watch",
-      description = "Repeat checks until HTTPS is ready. Press Ctrl+C to stop."
+      description = "Repeat checks until the TLS certificate is ready. Press Ctrl+C to stop."
   )
   public boolean watch;
 
@@ -69,30 +68,29 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   @Override
   public String getTextOutput(CommandResult<DomainStatusView> result) {
     DomainStatusView status = result.getData();
-    List<String> lines = new ArrayList<>();
-    lines.add(msg.domainStatusHeader(status.domain(),
-        DomainsSupport.describeStatus(status.verification()),
-        DomainsSupport.describeStatus(status.tls()), status.checkedAt()));
-
-    lines.add(TextTable.render(
-        List.of("RECORD", "TYPE", "NAME", "REQUIRED VALUE", "STATUS"),
-        status.records().stream()
-            .map(record -> Arrays.asList(
-                getPurpose(record), record.type(), record.name(), formatExpected(record),
-                DomainsSupport.describeStatus(record.status())))
-            .toList()));
-
-    List<String> details = status.records().stream()
-        .filter(record -> !record.inPlace())
-        .map(StatusCommand::getDetails)
-        .toList();
-
-    if (!details.isEmpty()) {
-      lines.add("");
-      lines.addAll(details);
+    String summary = new DetailsView()
+        .row("Domain ID", status.id())
+        .row("Domain name", status.domain())
+        .row("DNS checks", DomainsSupport.describeDnsChecks(status.dnsChecks()))
+        .row("TLS certificate", DomainsSupport.describeTlsCertificate(status.tlsCertificate()))
+        .row("Last checked", status.checkedAt())
+        .render();
+    TextList records = new TextList();
+    for (DnsRecordCheckView record : status.records()) {
+      DetailsView details = new DetailsView()
+          .row("Status", DomainsSupport.describeDnsRecord(record.status()))
+          .row("Record type", record.type() == null ? null : record.type().toString())
+          .row("Name", record.name())
+          .row("Expected value", formatExpected(record));
+      if (record.status() == StatusEnum.DNS_RECORD_VALUE_MISMATCH
+          && !record.found().isEmpty()) {
+        details.row("Found value", String.join(", ", record.found()));
+      }
+      records.item(recordTitle(record), details);
     }
-
-    return String.join(System.lineSeparator(), lines);
+    String recordList = records.render();
+    return recordList.isEmpty() ? summary
+        : summary + System.lineSeparator().repeat(2) + recordList;
   }
 
   @Override
@@ -108,11 +106,11 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
       Duration pause = DomainsSupport.resolvePollInterval(interval);
 
       while (true) {
-        DomainStatusView status = api.status(context.org(), context.project(), domain);
+        DomainStatusView status = api.status(context.org(), context.project(), configured);
         CommandResult<DomainStatusView> result = new CommandResult<>(status);
 
-        if (status.ready()) {
-          System.err.println(msg.domainReadyForTraffic(domain));
+        if (status.isTlsCertificateReady()) {
+          System.err.println(msg.domainTlsCertificateReady(domain));
           return result;
         }
         if (!watch) {
@@ -132,40 +130,39 @@ public class StatusCommand extends AbstractCommand<DomainStatusView> {
   private static String nextStep(DomainStatusView status) {
     String domain = status.domain();
 
-    if ("FAILED".equals(status.verification())) {
-      return msg.domainVerificationRetry(domain);
+    if (status.dnsChecks() == DnsChecksEnum.FAILED) {
+      return msg.domainDnsChecksRetry(domain);
     }
 
-    if (!"VERIFIED".equals(status.verification())) {
-      return msg.domainNotVerifiedYet(domain);
+    if (status.dnsChecks() != DnsChecksEnum.PASSED) {
+      return msg.domainDnsChecksNotPassed(domain);
     }
 
-    return switch (String.valueOf(status.tls())) {
-      case "DOMAIN_NOT_IN_MESH_ROUTES" -> msg.domainNotInMeshRoutes(domain);
-      case "HTTPS_NOT_READY" -> msg.domainHttpsNotReady(domain);
-      case "CERTIFICATE_DNS_RECORD_PROBLEM" -> msg.domainCertificateRecordProblem(domain);
-      case "INVALID_CERTIFICATE" -> msg.domainInvalidCertificate(domain);
-      default -> msg.domainHttpsCheckFailed(domain);
+    if (status.tlsCertificate() == null) {
+      return msg.domainTlsCertificateCheckFailed(domain);
+    }
+    return switch (status.tlsCertificate()) {
+      case DOMAIN_NOT_IN_MESH_ROUTES -> msg.domainNotInMeshRoutes(domain);
+      case TLS_CERTIFICATE_NOT_READY -> msg.domainTlsCertificateNotReady(domain);
+      case ACME_DELEGATION_RECORD_INVALID -> msg.domainAcmeDelegationRecordInvalid(domain);
+      case TLS_CERTIFICATE_INVALID -> msg.domainTlsCertificateInvalid(domain);
+      case DNS_CHECKS_NOT_PASSED, TLS_CERTIFICATE_READY, TLS_CERTIFICATE_CHECK_FAILED ->
+          msg.domainTlsCertificateCheckFailed(domain);
     };
   }
 
-  private static String getPurpose(DnsRecordCheckView record) {
-    return record.purpose() == null ? null : record.purpose().toLowerCase(Locale.ROOT);
+  private static String recordTitle(DnsRecordCheckView record) {
+    if (record.purpose() == null) {
+      return msg.domainRecordTitle();
+    }
+    return switch (record.purpose()) {
+      case OWNERSHIP_VERIFICATION -> msg.domainOwnershipRecordTitle();
+      case ACME_DELEGATION -> msg.domainAcmeRecordTitle();
+    };
   }
 
   private static String formatExpected(DnsRecordCheckView record) {
     return record.expected().isEmpty() ? "-" : String.join(" or ", record.expected());
   }
 
-  private static String getDetails(DnsRecordCheckView record) {
-    String expected = formatExpected(record);
-
-    return switch (String.valueOf(record.status())) {
-      case "MISSING" -> msg.domainRecordMissing(
-          getPurpose(record), record.type(), record.name(), expected);
-      case "MISMATCH" -> msg.domainRecordMismatch(
-          getPurpose(record), record.name(), String.join(", ", record.found()), expected);
-      default -> msg.domainRecordLookupFailed(getPurpose(record), record.name());
-    };
-  }
 }

@@ -14,6 +14,7 @@ import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectDomainView;
 import com.streamx.cli.platform.ProjectDomainsApi;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200ResponseDnsRecordsInner.TypeEnum;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,8 +58,8 @@ public class RemoveCommand extends AbstractSilentCommand {
         return new CommandResult<>(null);
       }
       String domain = target.get().domain();
-      if (target.get().verified()) {
-        System.err.println(msg.domainRemoveVerifiedWarning(domain));
+      if (target.get().dnsChecksPassed()) {
+        System.err.println(msg.domainRemoveWarning(domain));
         DeleteConfirmation.require(force, domain, msg.domainRemoveConfirmPrompt(domain));
       }
 
@@ -70,16 +71,16 @@ public class RemoveCommand extends AbstractSilentCommand {
       if (!DomainsSupport.waitForDomainsToApply(api, context.org(), context.project(), desired)) {
         throw new CliException(msg.domainsChangeNotApplied(context.project()));
       }
-      DnsRecordView txt = record(target.get(), "TXT");
+      DnsRecordView txt = record(target.get(), TypeEnum.TXT);
       System.err.println(msg.domainRemoveDnsCleanup(
-          txt.value(), txt.name(), record(target.get(), "CNAME").name()));
+          txt.value(), txt.name(), record(target.get(), TypeEnum.CNAME).name()));
     }
     return new CommandResult<>(null);
   }
 
-  private static DnsRecordView record(ProjectDomainView domain, String type) {
+  private static DnsRecordView record(ProjectDomainView domain, TypeEnum type) {
     return domain.dnsRecords().stream()
-        .filter(record -> type.equals(record.type()))
+        .filter(record -> type == record.type())
         .findFirst()
         .orElse(new DnsRecordView(type, "-", "-"));
   }

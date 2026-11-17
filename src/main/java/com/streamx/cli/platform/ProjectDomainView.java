@@ -1,7 +1,8 @@
 package com.streamx.cli.platform;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.streamx.cli.platform.generated.model.VerifyProjectDomain200Response;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200Response;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200Response.StateEnum;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 public record ProjectDomainView(
     String id,
     String domain,
-    String state,
+    StateEnum state,
     String failureReason,
     Integer attempts,
     String lastCheckedAt,
@@ -19,11 +20,11 @@ public record ProjectDomainView(
     List<DnsRecordView> dnsRecords
 ) {
 
-  public static ProjectDomainView from(VerifyProjectDomain200Response domain) {
+  public static ProjectDomainView from(RecheckDomainDns200Response domain) {
     return new ProjectDomainView(
         domain.getId(),
         domain.getDomain(),
-        domain.getState() == null ? null : domain.getState().toString(),
+        domain.getState(),
         domain.getFailureReason(),
         domain.getAttempts(),
         domain.getLastCheckedAt(),
@@ -33,11 +34,11 @@ public record ProjectDomainView(
             : domain.getDnsRecords().stream().map(DnsRecordView::from).toList());
   }
 
-  public boolean verified() {
-    return "VERIFIED".equals(state);
+  public boolean dnsChecksPassed() {
+    return state == StateEnum.VERIFIED;
   }
 
   public boolean failed() {
-    return "FAILED".equals(state);
+    return state == StateEnum.FAILED;
   }
 }

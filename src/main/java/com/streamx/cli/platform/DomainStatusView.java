@@ -1,29 +1,33 @@
 package com.streamx.cli.platform;
 
 import com.streamx.cli.platform.generated.model.DomainStatus;
+import com.streamx.cli.platform.generated.model.DomainStatus.DnsChecksEnum;
+import com.streamx.cli.platform.generated.model.DomainStatus.TlsCertificateEnum;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.util.List;
 
 @RegisterForReflection
 public record DomainStatusView(
+    String id,
     String domain,
     String checkedAt,
-    String verification,
-    String tls,
+    DnsChecksEnum dnsChecks,
+    TlsCertificateEnum tlsCertificate,
     List<DnsRecordCheckView> records
 ) {
 
-  public static DomainStatusView from(DomainStatus status) {
+  public static DomainStatusView from(String id, DomainStatus status) {
     return new DomainStatusView(
+        id,
         status.getDomain(),
         status.getCheckedAt(),
-        status.getVerification() == null ? null : status.getVerification().toString(),
-        status.getTls() == null ? null : status.getTls().toString(),
+        status.getDnsChecks(),
+        status.getTlsCertificate(),
         status.getRecords() == null ? List.of()
             : status.getRecords().stream().map(DnsRecordCheckView::from).toList());
   }
 
-  public boolean ready() {
-    return "HTTPS_READY".equals(tls);
+  public boolean isTlsCertificateReady() {
+    return tlsCertificate == TlsCertificateEnum.TLS_CERTIFICATE_READY;
   }
 }

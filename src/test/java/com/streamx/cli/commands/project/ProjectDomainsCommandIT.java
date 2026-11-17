@@ -32,7 +32,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   private static final String EDGE_HOSTNAME = PROJECT + ".edge-1.example.net";
 
   private static final String SHOP_PENDING =
-      domain("shop.example.com", "PENDING", "TXT_RECORD_NOT_FOUND", "2026-10-29T08:00:00Z");
+      domain("shop.example.com", "PENDING", "OWNERSHIP_RECORD_NOT_MATCHED", "2026-10-29T08:00:00Z");
   private static final String WWW_VERIFIED =
       domain("www.example.com", "VERIFIED", null, "2026-10-28T10:00:00Z");
 
@@ -129,10 +129,11 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .contains("ID", "DOMAIN", "VERIFICATION", "REASON", "NEXT CHECK")
-        .containsPattern("shop\\s+shop\\.example\\.com\\s+Verifying\\s+TXT record not found\\.\\s+"
+        .contains("DOMAIN ID", "DOMAIN NAME", "DNS CHECKS", "REASON", "NEXT CHECK")
+        .containsPattern("shop\\s+shop\\.example\\.com\\s+Checking DNS records\\s+"
+            + "Ownership verification record is missing or has the wrong value\\.\\s+"
             + "2026-10-29T08:05:00Z")
-        .containsPattern("www\\s+www\\.example\\.com\\s+Verified\\s+-\\s+-");
+        .containsPattern("www\\s+www\\.example\\.com\\s+DNS checks passed\\s+-\\s+-");
     assertThat(platform.getRequests()).containsExactly(GET);
   }
 
@@ -150,7 +151,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .contains("\"failureReason\" : \"TXT_RECORD_NOT_FOUND\"")
+        .contains("\"failureReason\" : \"OWNERSHIP_RECORD_NOT_MATCHED\"")
         .contains("\"name\" : \"_acme-challenge.shop.example.com\"");
   }
 
@@ -170,9 +171,10 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .containsPattern("id\\s+= shop")
-        .containsPattern("verification\\s+= Verifying")
-        .containsPattern("reason\\s+= TXT record not found\\.")
+        .containsPattern("Domain ID\\s+= shop")
+        .containsPattern("DNS checks\\s+= Checking DNS records")
+        .containsPattern("Reason\\s+= Ownership verification record is missing or has the "
+            + "wrong value\\.")
         .containsPattern("TXT\\s+_streamx-verification\\.shop\\.example\\.com\\s+"
             + "streamx-domain-verification=b3Jn")
         .containsPattern("CNAME\\s+_acme-challenge\\.shop\\.example\\.com\\s+"
@@ -193,8 +195,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(result.stdout())
-        .containsPattern("id\\s+= www")
-        .containsPattern("domain\\s+= www\\.example\\.com");
+        .containsPattern("Domain ID\\s+= www")
+        .containsPattern("Domain name\\s+= www\\.example\\.com");
   }
 
   @Test
@@ -207,6 +209,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
         + "\"shop\":\"shop.example.com\",\"www\":\"www.example.com\","
         + "\"blog\":\"blog.example.com\"}}");
     assertThat(result.stdout())
+        .containsPattern("Domain ID\\s+= blog")
+        .containsPattern("Domain name\\s+= blog\\.example\\.com")
         .contains("_streamx-verification.blog.example.com", "_acme-challenge.blog.example.com")
         .doesNotContain("shop.example.com");
     assertThat(result.stderr())
@@ -323,7 +327,7 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests()).contains(PUT);
-    assertThat(result.stderr()).contains(msg.domainRemoveVerifiedWarning("www.example.com"));
+    assertThat(result.stderr()).contains(msg.domainRemoveWarning("www.example.com"));
   }
 
   @Test
@@ -434,72 +438,72 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldNotRequestVerificationOfVerifiedDomain() throws Exception {
-    ProcessResult result = domains("verify", "www.example.com");
+  void shouldNotRequestDnsCheckForPassedDomain() throws Exception {
+    ProcessResult result = domains("recheck-dns", "www.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly(GET);
     assertThat(result.stderr())
-        .contains(msg.domainAlreadyVerified("www.example.com"));
+        .contains(msg.domainDnsChecksAlreadyPassed("www.example.com"));
   }
 
   @Test
-  void shouldRequestVerificationWithoutWaiting() throws Exception {
-    ProcessResult result = domains("verify", "shop.example.com");
+  void shouldRequestDnsCheckWithoutWaiting() throws Exception {
+    ProcessResult result = domains("recheck-dns", "shop.example.com");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly(GET, "POST " + DOMAINS_PATH + "/shop.example.com/verify");
-    assertThat(result.stderr()).contains(msg.domainVerificationRequested("shop.example.com"));
+    assertThat(result.stderr()).contains(msg.domainDnsCheckRequested("shop.example.com"));
   }
 
   @Test
-  void shouldRequestVerificationById() throws Exception {
-    ProcessResult result = domains("verify", "shop");
+  void shouldRequestDnsCheckById() throws Exception {
+    ProcessResult result = domains("recheck-dns", "shop");
 
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly(GET, "POST " + DOMAINS_PATH + "/shop.example.com/verify");
-    assertThat(result.stderr()).contains(msg.domainVerificationRequested("shop.example.com"));
+    assertThat(result.stderr()).contains(msg.domainDnsCheckRequested("shop.example.com"));
   }
 
   @Test
   void shouldIgnoreStaleFailureUntilTheRequestedCheckRuns() throws Exception {
-    String failed = domain("shop.example.com", "FAILED", "VERIFICATION_WINDOW_EXPIRED",
+    String failed = domain("shop.example.com", "FAILED", "DNS_CHECK_WINDOW_EXPIRED",
         "2026-10-29T07:00:00Z");
     platform.applied(failed);
     platform.queueLists(
         list(failed),
         list(failed),
-        list(domain("shop.example.com", "PENDING", "CNAME_RECORD_NOT_FOUND",
+        list(domain("shop.example.com", "PENDING", "ACME_DELEGATION_RECORD_MISSING",
             "2026-10-29T08:00:30Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:01:00Z")));
 
-    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
 
     result.assertSuccess();
-    assertThat(result.stdout()).containsPattern("verification\\s+= Verified");
+    assertThat(result.stdout()).containsPattern("DNS checks\\s+= DNS checks passed");
     assertThat(result.stderr())
-        .contains(msg.domainVerificationPendingUntil(
-            msg.domainReasonCnameRecordNotFound(), "2026-10-29T08:05:00Z"))
-        .contains(msg.domainVerified("shop.example.com"));
+        .contains(msg.domainDnsChecksPendingUntil(
+            msg.domainReasonAcmeDelegationRecordMissing(), "2026-10-29T08:05:00Z"))
+        .contains(msg.domainDnsChecksPassed("shop.example.com"));
   }
 
   @Test
-  void shouldFailWhenVerificationFails() throws Exception {
+  void shouldFailWhenDnsChecksFail() throws Exception {
     platform.queueLists(
         list(SHOP_PENDING),
-        list(domain("shop.example.com", "PENDING", "TXT_RECORD_NOT_FOUND",
+        list(domain("shop.example.com", "PENDING", "OWNERSHIP_RECORD_NOT_MATCHED",
             "2026-10-29T08:00:30Z")),
-        list(domain("shop.example.com", "FAILED", "VERIFICATION_WINDOW_EXPIRED",
+        list(domain("shop.example.com", "FAILED", "DNS_CHECK_WINDOW_EXPIRED",
             "2026-10-29T09:00:00Z")));
 
-    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
 
     result.assertExitCode(1);
-    assertThat(result.stdout()).containsPattern("verification\\s+= Verification failed");
-    assertThat(result.stderr()).contains(msg.domainVerificationFailed(
-        "shop.example.com", msg.domainReasonVerificationWindowExpired()));
+    assertThat(result.stdout()).containsPattern("DNS checks\\s+= DNS checks timed out");
+    assertThat(result.stderr()).contains(msg.domainDnsChecksFailed(
+        "shop.example.com", msg.domainReasonDnsCheckWindowExpired()));
   }
 
   @Test
@@ -507,32 +511,32 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     // A scheduled check ends the old window between the read and the request.
     platform.queueLists(
         list(SHOP_PENDING),
-        list(domain("shop.example.com", "FAILED", "VERIFICATION_WINDOW_EXPIRED",
+        list(domain("shop.example.com", "FAILED", "DNS_CHECK_WINDOW_EXPIRED",
             "2026-10-29T08:00:10Z")),
-        list(domain("shop.example.com", "PENDING", "TXT_RECORD_NOT_FOUND",
+        list(domain("shop.example.com", "PENDING", "OWNERSHIP_RECORD_NOT_MATCHED",
             "2026-10-29T08:00:20Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:00:40Z")));
 
-    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
 
     result.assertSuccess();
-    assertThat(result.stderr()).contains(msg.domainVerified("shop.example.com"));
+    assertThat(result.stderr()).contains(msg.domainDnsChecksPassed("shop.example.com"));
   }
 
   @Test
   void shouldStopWaitingAtTheTimeout() throws Exception {
-    ProcessResult result = domains("verify", "shop.example.com", "--wait", "--timeout", "1s");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait", "--timeout", "1s");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
-        .contains(msg.domainVerificationTimedOut("shop.example.com", "1s"));
+        .contains(msg.domainDnsCheckWaitTimedOut("shop.example.com", "1s"));
   }
 
   @Test
   void shouldStopWaitingWhenTheDomainIsRemoved() throws Exception {
     platform.queueLists(list(SHOP_PENDING), list(WWW_VERIFIED));
 
-    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
@@ -541,7 +545,8 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldRejectInvalidTimeout() throws Exception {
-    ProcessResult result = domains("verify", "shop.example.com", "--wait", "--timeout", "PT1H");
+    ProcessResult result = domains(
+        "recheck-dns", "shop.example.com", "--wait", "--timeout", "PT1H");
 
     result.assertExitCode(2);
     assertThat(result.stderr()).contains(msg.invalidDuration("PT1H"));
@@ -550,30 +555,57 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   @Test
   void shouldShowWhichRecordsAreMissing() throws Exception {
     platform.queueChecks(StubDomainsServer.status("shop.example.com", "PENDING",
-        "DOMAIN_NOT_VERIFIED",
-        "MISSING", "MISMATCH"));
+        "DNS_CHECKS_NOT_PASSED",
+        "DNS_RECORD_MISSING", "DNS_RECORD_VALUE_MISMATCH"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertExitCode(1);
-    assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Domain not verified",
-            CHECKED_AT))
-        .containsPattern("ownership\\s+TXT\\s+_streamx-verification\\.shop\\.example\\.com"
-            + "\\s+streamx-domain-verification=b3Jn\\s+Not found yet")
-        .containsPattern("certificate\\s+CNAME\\s+_acme-challenge\\.shop\\.example\\.com"
-            + "\\s+0a1b2c3d\\.acme\\.example\\.net\\s+Record value doesn’t match")
-        .contains(msg.domainRecordMissing("ownership", "TXT",
-            "_streamx-verification.shop.example.com", "streamx-domain-verification=b3Jn"))
-        .contains(msg.domainRecordMismatch("certificate", "_acme-challenge.shop.example.com",
-            "old.acme.example.org", "0a1b2c3d.acme.example.net"));
-    assertThat(result.stderr()).contains(msg.domainNotVerifiedYet("shop.example.com"));
+    assertThat(result.stdout()).isEqualToNormalizingNewlines("""
+        Domain ID       = shop
+        Domain name     = shop.example.com
+        DNS checks      = Checking DNS records
+        TLS certificate = DNS checks have not passed
+        Last checked    = 2026-10-29T09:00:00Z
+
+        Ownership verification record
+          Status         = Record is missing
+          Record type    = TXT
+          Name           = _streamx-verification.shop.example.com
+          Expected value = streamx-domain-verification=b3Jn
+
+        ACME challenge record
+          Status         = Record mismatch
+          Record type    = CNAME
+          Name           = _acme-challenge.shop.example.com
+          Expected value = 0a1b2c3d.acme.example.net
+          Found value    = old.acme.example.org
+        """);
+    assertThat(result.stderr()).contains(msg.domainDnsChecksNotPassed("shop.example.com"));
+  }
+
+  @Test
+  void shouldKeepLongDnsValuesIntactInSeparateRecordSections() throws Exception {
+    String target = "a".repeat(63) + ".acme.sandbox.example.net";
+    String txt = "streamx-domain-verification=" + "b".repeat(120);
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PENDING",
+        "DNS_CHECKS_NOT_PASSED", "DNS_RECORD_MISSING", "DNS_RECORD_VALUE_MISMATCH")
+        .replace("0a1b2c3d.acme.example.net", target)
+        .replace("streamx-domain-verification=b3Jn", txt));
+
+    ProcessResult result = domains("status", "shop.example.com");
+
+    result.assertExitCode(1);
+    assertThat(result.stdout().lines().toList())
+        .contains("  Expected value = " + target, "  Expected value = " + txt,
+            "  Found value    = old.acme.example.org");
+    assertThat(result.stdout()).doesNotContain("REQUIRED VALUE", "Expected:");
   }
 
   @Test
   void shouldIgnoreStatusFieldsItDoesNotKnow() throws Exception {
-    String status = StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
-        "FOUND", "FOUND");
+    String status = StubDomainsServer.status("shop.example.com", "PASSED", "TLS_CERTIFICATE_READY",
+        "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES");
     platform.queueChecks(status.substring(0, status.lastIndexOf('}'))
         + ",\"gateways\":[{\"hostname\":\"" + EDGE_HOSTNAME + "\",\"status\":\"SERVED\"}]}");
 
@@ -582,15 +614,15 @@ class ProjectDomainsCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(result.stdout()).doesNotContain(EDGE_HOSTNAME);
     assertThat(result.stderr())
-        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .contains(msg.domainTlsCertificateReady("shop.example.com"))
         .doesNotContain("dashboard", "gateway");
   }
 
   @Test
   void shouldReportMissingRouteWithoutSetupInstructions() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED",
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
         "DOMAIN_NOT_IN_MESH_ROUTES",
-        "FOUND", "FOUND"));
+        "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
@@ -601,45 +633,46 @@ class ProjectDomainsCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldExplainHowToRetryFailedVerification() throws Exception {
+  void shouldExplainHowToRetryFailedDnsChecks() throws Exception {
     platform.queueChecks(StubDomainsServer.status("shop.example.com", "FAILED",
-        "DOMAIN_NOT_VERIFIED",
-        "FOUND", "FOUND"));
+        "DNS_CHECKS_NOT_PASSED",
+        "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertExitCode(1);
     assertThat(result.stderr())
-        .contains(msg.domainVerificationRetry("shop.example.com"))
-        .doesNotContain(msg.domainNotVerifiedYet("shop.example.com"));
+        .contains(msg.domainDnsChecksRetry("shop.example.com"))
+        .doesNotContain(msg.domainDnsChecksNotPassed("shop.example.com"));
   }
 
   @Test
-  void shouldDescribeVerificationWithoutAFailureReason() throws Exception {
+  void shouldDescribeDnsChecksWithoutAFailureReason() throws Exception {
     platform.queueLists(
         list(SHOP_PENDING),
         list(domain("shop.example.com", "PENDING", null, "2026-10-29T08:00:30Z")),
         list(domain("shop.example.com", "VERIFIED", null, "2026-10-29T08:01:00Z")));
 
-    ProcessResult result = domains("verify", "shop.example.com", "--wait");
+    ProcessResult result = domains("recheck-dns", "shop.example.com", "--wait");
 
     result.assertSuccess();
     assertThat(result.stderr())
-        .contains(msg.domainVerifyingUntil("shop.example.com", "2026-10-29T08:05:00Z"))
-        .doesNotContain("Verification pending: Pending")
+        .contains(msg.domainCheckingDnsUntil("shop.example.com", "2026-10-29T08:05:00Z"))
+        .doesNotContain("DNS checks pending: Pending")
         .doesNotContain(msg.domainNotInMeshRoutes("shop.example.com"));
   }
 
   @Test
   void shouldSucceedWhenTheDomainIsReady() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
-        "FOUND", "FOUND"));
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
+        "TLS_CERTIFICATE_READY",
+        "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
     ProcessResult result = domains("status", "shop.example.com");
 
     result.assertSuccess();
     assertThat(result.stderr())
-        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .contains(msg.domainTlsCertificateReady("shop.example.com"))
         .doesNotContain("dashboard", "gateway");
     assertThat(platform.getRequests())
         .containsExactly(GET, "GET " + DOMAINS_PATH + "/shop.example.com/status");
@@ -647,43 +680,46 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldCheckStatusById() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
-        "FOUND", "FOUND"));
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
+        "TLS_CERTIFICATE_READY",
+        "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
     ProcessResult result = domains("status", "shop");
 
     result.assertSuccess();
+    assertThat(result.stdout())
+        .contains("Domain ID       = shop", "Domain name     = shop.example.com");
     assertThat(platform.getRequests())
         .containsExactly(GET, "GET " + DOMAINS_PATH + "/shop.example.com/status");
     assertThat(result.stderr())
-        .contains(msg.domainReadyForTraffic("shop.example.com"))
+        .contains(msg.domainTlsCertificateReady("shop.example.com"))
         .doesNotContain("dashboard", "gateway");
   }
 
   @Test
   void shouldWatchUntilTheDomainIsReady() throws Exception {
     platform.queueChecks(
-        StubDomainsServer.status("shop.example.com", "PENDING", "DOMAIN_NOT_VERIFIED",
-            "MISSING", "MISSING"),
-        StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_NOT_READY",
-            "FOUND", "FOUND"),
-        StubDomainsServer.status("shop.example.com", "VERIFIED", "HTTPS_READY",
-            "FOUND", "FOUND"));
+        StubDomainsServer.status("shop.example.com", "PENDING", "DNS_CHECKS_NOT_PASSED",
+            "DNS_RECORD_MISSING", "DNS_RECORD_MISSING"),
+        StubDomainsServer.status("shop.example.com", "PASSED", "TLS_CERTIFICATE_NOT_READY",
+            "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"),
+        StubDomainsServer.status("shop.example.com", "PASSED", "TLS_CERTIFICATE_READY",
+            "DNS_RECORD_MATCHES", "DNS_RECORD_MATCHES"));
 
     ProcessResult result = domains("status", "shop.example.com", "--watch");
 
     result.assertSuccess();
-    String pending = msg.domainStatusHeader("shop.example.com", "Verified", "HTTPS not ready",
-        CHECKED_AT);
     // Earlier rounds are progress on stderr; stdout holds the final result only.
     assertThat(result.stdout())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verified", "HTTPS ready", CHECKED_AT))
-        .doesNotContain(pending);
+        .contains("Domain ID       = shop", "Domain name     = shop.example.com")
+        .contains("TLS certificate = Ready")
+        .doesNotContain("Not ready", "Checking DNS records");
     assertThat(result.stderr())
-        .contains(msg.domainStatusHeader("shop.example.com", "Verifying", "Domain not verified",
-            CHECKED_AT))
-        .contains(pending)
-        .contains(msg.domainReadyForTraffic("shop.example.com"));
+        .contains("Domain ID       = shop", "Domain name     = shop.example.com")
+        .contains("DNS checks      = Checking DNS records")
+        .contains("TLS certificate = DNS checks have not passed")
+        .contains("TLS certificate = Not ready")
+        .contains(msg.domainTlsCertificateReady("shop.example.com"));
   }
 
   @Test
@@ -696,18 +732,19 @@ class ProjectDomainsCommandIT extends CliBaseIT {
 
   @Test
   void shouldKeepRawStatusValuesInJson() throws Exception {
-    platform.queueChecks(StubDomainsServer.status("shop.example.com", "VERIFIED",
-        "INVALID_CERTIFICATE", "FOUND", "LOOKUP_FAILED"));
+    platform.queueChecks(StubDomainsServer.status("shop.example.com", "PASSED",
+        "TLS_CERTIFICATE_INVALID", "DNS_RECORD_MATCHES", "DNS_LOOKUP_FAILED"));
 
     ProcessResult result = domains("status", "shop.example.com", "-o", "json");
 
     result.assertExitCode(1);
     assertThat(result.stdout())
-        .contains("\"tls\" : \"INVALID_CERTIFICATE\"")
-        .contains("\"purpose\" : \"CERTIFICATE\"")
-        .contains("\"status\" : \"LOOKUP_FAILED\"");
+        .contains("\"id\" : \"shop\"", "\"domain\" : \"shop.example.com\"")
+        .contains("\"tlsCertificate\" : \"TLS_CERTIFICATE_INVALID\"")
+        .contains("\"purpose\" : \"ACME_DELEGATION\"")
+        .contains("\"status\" : \"DNS_LOOKUP_FAILED\"");
     assertThat(result.stderr())
-        .contains(msg.domainInvalidCertificate("shop.example.com"));
+        .contains(msg.domainTlsCertificateInvalid("shop.example.com"));
   }
 
 

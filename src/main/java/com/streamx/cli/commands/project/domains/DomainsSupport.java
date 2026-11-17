@@ -8,6 +8,11 @@ import com.streamx.cli.framework.TextTable;
 import com.streamx.cli.platform.DnsRecordView;
 import com.streamx.cli.platform.ProjectDomainView;
 import com.streamx.cli.platform.ProjectDomainsApi;
+import com.streamx.cli.platform.generated.model.DomainStatus.DnsChecksEnum;
+import com.streamx.cli.platform.generated.model.DomainStatus.TlsCertificateEnum;
+import com.streamx.cli.platform.generated.model.DomainStatusRecordsInner.StatusEnum;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200Response.StateEnum;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200ResponseDnsRecordsInner.TypeEnum;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -90,55 +95,93 @@ public final class DomainsSupport {
     }
   }
 
-  public static String describeVerificationReason(String reason) {
+  public static String describeDnsCheckReason(String reason) {
     if (reason == null) {
       return null;
     }
     return switch (reason) {
-      case "TXT_RECORD_NOT_FOUND" -> msg.domainReasonTxtRecordNotFound();
-      case "CNAME_RECORD_NOT_FOUND" -> msg.domainReasonCnameRecordNotFound();
-      case "CNAME_TARGET_MISMATCH" -> msg.domainReasonCnameTargetMismatch();
+      case "OWNERSHIP_RECORD_NOT_MATCHED", "TXT_RECORD_NOT_FOUND" ->
+          msg.domainReasonOwnershipRecordNotMatched();
+      case "ACME_DELEGATION_RECORD_MISSING", "CNAME_RECORD_NOT_FOUND" ->
+          msg.domainReasonAcmeDelegationRecordMissing();
+      case "ACME_DELEGATION_RECORD_MISMATCH", "CNAME_TARGET_MISMATCH" ->
+          msg.domainReasonAcmeDelegationRecordMismatch();
       case "DNS_LOOKUP_FAILED" -> msg.domainReasonDnsLookupFailed();
-      case "VERIFICATION_WINDOW_EXPIRED" -> msg.domainReasonVerificationWindowExpired();
+      case "DNS_CHECK_WINDOW_EXPIRED", "VERIFICATION_WINDOW_EXPIRED" ->
+          msg.domainReasonDnsCheckWindowExpired();
       case "ORGANIZATION_NOT_RESOLVED" -> msg.domainReasonOrganizationNotResolved();
       default -> reason;
     };
   }
 
-  /** Readable labels for text output; API values stay unchanged in JSON and YAML. */
-  public static String describeStatus(String status) {
+  /** Readable labels for text output; enum values remain unchanged in JSON and YAML. */
+  public static String describeVerificationState(StateEnum state) {
+    if (state == null) {
+      return msg.domainStatusUnknown();
+    }
+    return switch (state) {
+      case PENDING -> msg.domainStatusCheckingDns();
+      case VERIFIED -> msg.domainStatusDnsChecksPassed();
+      case FAILED -> msg.domainStatusDnsChecksFailed();
+    };
+  }
+
+  public static String describeDnsChecks(DnsChecksEnum state) {
+    if (state == null) {
+      return msg.domainStatusUnknown();
+    }
+    return switch (state) {
+      case PENDING -> msg.domainStatusCheckingDns();
+      case PASSED -> msg.domainStatusDnsChecksPassed();
+      case FAILED -> msg.domainStatusDnsChecksFailed();
+    };
+  }
+
+  public static String describeTlsCertificate(TlsCertificateEnum status) {
     if (status == null) {
       return msg.domainStatusUnknown();
     }
     return switch (status) {
-      case "PENDING" -> msg.domainStatusVerifying();
-      case "VERIFIED" -> msg.domainStatusVerified();
-      case "FAILED" -> msg.domainStatusVerificationFailed();
-      case "DOMAIN_NOT_VERIFIED" -> msg.domainStatusNotVerified();
-      case "DOMAIN_NOT_IN_MESH_ROUTES" -> msg.domainStatusNotInMeshRoutes();
-      case "CERTIFICATE_DNS_RECORD_PROBLEM" -> msg.domainStatusCertificateDnsRecordProblem();
-      case "INVALID_CERTIFICATE" -> msg.domainStatusInvalidCertificate();
-      case "HTTPS_NOT_READY" -> msg.domainStatusHttpsNotReady();
-      case "HTTPS_READY" -> msg.domainStatusHttpsReady();
-      case "HTTPS_CHECK_FAILED" -> msg.domainStatusHttpsCheckFailed();
-      case "FOUND" -> msg.domainRecordStatusInPlace();
-      case "MISSING" -> msg.domainRecordStatusNotFound();
-      case "MISMATCH" -> msg.domainRecordStatusMismatch();
-      case "LOOKUP_FAILED" -> msg.domainRecordStatusLookupFailed();
-      default -> status;
+      case DNS_CHECKS_NOT_PASSED -> msg.domainStatusDnsChecksNotPassed();
+      case DOMAIN_NOT_IN_MESH_ROUTES -> msg.domainStatusNotInMeshRoutes();
+      case ACME_DELEGATION_RECORD_INVALID -> msg.domainStatusAcmeDelegationRecordInvalid();
+      case TLS_CERTIFICATE_INVALID -> msg.domainStatusTlsCertificateInvalid();
+      case TLS_CERTIFICATE_NOT_READY -> msg.domainStatusTlsCertificateNotReady();
+      case TLS_CERTIFICATE_READY -> msg.domainStatusTlsCertificateReady();
+      case TLS_CERTIFICATE_CHECK_FAILED -> msg.domainStatusTlsCertificateCheckFailed();
     };
+  }
+
+  public static String describeDnsRecord(StatusEnum status) {
+    if (status == null) {
+      return msg.domainStatusUnknown();
+    }
+    return switch (status) {
+      case DNS_RECORD_MATCHES -> msg.domainRecordStatusInPlace();
+      case DNS_RECORD_MISSING -> msg.domainRecordStatusMissing();
+      case DNS_RECORD_VALUE_MISMATCH -> msg.domainRecordStatusMismatch();
+      case DNS_LOOKUP_FAILED -> msg.domainRecordStatusLookupFailed();
+    };
+  }
+
+  public static String describeDnsCheckState(ProjectDomainView domain) {
+    if (domain.failed() && ("DNS_CHECK_WINDOW_EXPIRED".equals(domain.failureReason())
+        || "VERIFICATION_WINDOW_EXPIRED".equals(domain.failureReason()))) {
+      return msg.domainStatusDnsChecksTimedOut();
+    }
+    return describeVerificationState(domain.state());
   }
 
   public static String formatDomainDetails(ProjectDomainView domain) {
     String details = new DetailsView()
-        .row("id", domain.id())
-        .row("domain", domain.domain())
-        .row("verification", describeStatus(domain.state()))
-        .row("reason", describeVerificationReason(domain.failureReason()))
-        .row("attempts", domain.attempts() == null ? null : domain.attempts().toString())
-        .row("last checked", domain.lastCheckedAt())
-        .row("next check", domain.nextCheckAt())
-        .row("verified at", domain.verifiedAt())
+        .row("Domain ID", domain.id())
+        .row("Domain name", domain.domain())
+        .row("DNS checks", describeDnsCheckState(domain))
+        .row("Reason", describeDnsCheckReason(domain.failureReason()))
+        .row("Attempts", domain.attempts() == null ? null : domain.attempts().toString())
+        .row("Last checked", domain.lastCheckedAt())
+        .row("Next check", domain.nextCheckAt())
+        .row("DNS checks passed at", domain.verifiedAt())
         .render();
     return details + System.lineSeparator() + System.lineSeparator()
         + formatDnsRecordsTable(domain.dnsRecords());
@@ -148,7 +191,9 @@ public final class DomainsSupport {
     return TextTable.render(
         List.of("TYPE", "NAME", "VALUE"),
         records.stream()
-            .map(record -> Arrays.asList(record.type(), record.name(), record.value()))
+            .map(record -> Arrays.asList(
+                record.type() == null ? null : record.type().toString(),
+                record.name(), record.value()))
             .toList());
   }
 
@@ -160,7 +205,7 @@ public final class DomainsSupport {
   }
 
   static String formatDnsZoneRecord(DnsRecordView record) {
-    String value = "TXT".equals(record.type())
+    String value = record.type() == TypeEnum.TXT
         ? "\"" + record.value().replace("\\", "\\\\").replace("\"", "\\\"") + "\""
         : toAbsoluteDnsName(record.value());
     return toAbsoluteDnsName(record.name()) + " IN " + record.type() + " " + value;

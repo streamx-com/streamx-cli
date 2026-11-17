@@ -105,17 +105,17 @@ public class StubDomainsServer implements AutoCloseable {
   }
 
   /** A domain status with the TXT and certificate CNAME records in the given statuses. */
-  public static String status(String host, String verification, String tls, String txt,
+  public static String status(String host, String dnsChecks, String tlsCertificate, String txt,
       String certificate) {
     return """
-        {"domain":"%1$s","checkedAt":"2026-10-29T09:00:00Z","verification":"%4$s",
-         "tls":"%5$s","records":[
-          {"purpose":"OWNERSHIP","type":"TXT","name":"_streamx-verification.%1$s",
+        {"domain":"%1$s","checkedAt":"2026-10-29T09:00:00Z","dnsChecks":"%4$s",
+         "tlsCertificate":"%5$s","records":[
+          {"purpose":"OWNERSHIP_VERIFICATION","type":"TXT","name":"_streamx-verification.%1$s",
            "expected":["streamx-domain-verification=b3Jn"],"status":"%2$s","found":[]},
-          {"purpose":"CERTIFICATE","type":"CNAME","name":"_acme-challenge.%1$s",
+          {"purpose":"ACME_DELEGATION","type":"CNAME","name":"_acme-challenge.%1$s",
            "expected":["0a1b2c3d.acme.example.net"],"status":"%3$s","found":%6$s}]}
-        """.formatted(host, txt, certificate, verification, tls,
-        "MISMATCH".equals(certificate) ? "[\"old.acme.example.org\"]" : "[]");
+        """.formatted(host, txt, certificate, dnsChecks, tlsCertificate,
+        "DNS_RECORD_VALUE_MISMATCH".equals(certificate) ? "[\"old.acme.example.org\"]" : "[]");
   }
 
   public static String list(String... domains) {

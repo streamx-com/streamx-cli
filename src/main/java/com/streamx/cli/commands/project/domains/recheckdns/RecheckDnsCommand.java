@@ -1,4 +1,4 @@
-package com.streamx.cli.commands.project.domains.verify;
+package com.streamx.cli.commands.project.domains.recheckdns;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
@@ -19,20 +19,20 @@ import java.util.Objects;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-    name = "verify",
-    header = "Request domain verification",
+    name = "recheck-dns",
+    header = "Recheck the required DNS records",
     description = {
-        "Request a DNS verification check. Use --wait to wait for the result. "
-            + "With --wait, exits with code 1 if verification fails or waiting times out."
+        "Restart pending or failed DNS checks. Checks that already passed are not restarted. "
+            + "With --wait, exits with code 1 if the DNS checks fail or waiting times out."
     },
     footer = {
         "",
         "Examples:",
-        "  streamx project domains verify shop.example.com",
-        "  streamx project domains verify shop.example.com --wait --timeout 10m"
+        "  streamx project domains recheck-dns shop.example.com",
+        "  streamx project domains recheck-dns shop.example.com --wait --timeout 10m"
     }
 )
-public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
+public class RecheckDnsCommand extends AbstractCommand<ProjectDomainView> {
 
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(10);
 
@@ -49,7 +49,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
 
   @CommandLine.Option(
       names = "--wait",
-      description = "Wait for verification to succeed or fail"
+      description = "Wait for the DNS checks to finish"
   )
   public boolean wait;
 
@@ -78,15 +78,15 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
           DomainsSupport.normalizeDomain(idOrDomain),
           context.project());
       String domain = before.domain();
-      // The platform ignores requests for verified domains, though it answers PENDING to them.
-      if (before.verified()) {
-        System.err.println(msg.domainAlreadyVerified(domain));
+      // The existing background lifecycle does not restart checks that have already passed.
+      if (before.dnsChecksPassed()) {
+        System.err.println(msg.domainDnsChecksAlreadyPassed(domain));
         return new CommandResult<>(before);
       }
-      api.verify(context.org(), context.project(), domain);
-      System.err.println(msg.domainVerificationRequested(domain));
+      api.requestDnsCheck(context.org(), context.project(), domain);
+      System.err.println(msg.domainDnsCheckRequested(domain));
       if (!wait) {
-        System.err.println(msg.domainVerificationNextStep(domain));
+        System.err.println(msg.domainDnsCheckNextStep(domain));
         return new CommandResult<>(null);
       }
       return awaitResult(api, context, domain, before.lastCheckedAt());
@@ -101,26 +101,26 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
   ) {
     Instant deadline = Instant.now().plus(timeout);
     Duration interval = DomainsSupport.resolvePollInterval(POLL_INTERVAL);
-    // The request restarts the verification window, so the requested check ends PENDING or
+    // The request restarts the DNS check window, so the requested check ends PENDING or
     // VERIFIED. FAILED only counts after that, never from the previous window: a scheduled check
     // may still finish between the read and the request.
     boolean restarted = false;
     String reported = null;
-    System.err.println(msg.domainVerificationWaiting(domain));
+    System.err.println(msg.domainDnsCheckWaiting(domain));
     while (true) {
       ProjectDomainView current = DomainsSupport
           .findDomain(api.list(context.org(), context.project()), domain)
           .orElseThrow(() -> new CliException(
               msg.domainRemovedWhileWaiting(domain, context.project())));
       boolean newCheck = !Objects.equals(current.lastCheckedAt(), checkedBefore);
-      if (newCheck && current.verified()) {
-        System.err.println(msg.domainVerified(domain));
+      if (newCheck && current.dnsChecksPassed()) {
+        System.err.println(msg.domainDnsChecksPassed(domain));
         return new CommandResult<>(current);
       }
       restarted = restarted || newCheck && !current.failed();
       if (restarted && current.failed()) {
-        return getFailureResult(current, msg.domainVerificationFailed(
-            domain, DomainsSupport.describeVerificationReason(current.failureReason())));
+        return getFailureResult(current, msg.domainDnsChecksFailed(
+            domain, DomainsSupport.describeDnsCheckReason(current.failureReason())));
       }
       if (restarted) {
         String progress = getProgress(current);
@@ -135,7 +135,7 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
       }
       if (!Instant.now().isBefore(deadline)) {
         return getFailureResult(current,
-            msg.domainVerificationTimedOut(domain, DurationConverter.format(timeout)));
+            msg.domainDnsCheckWaitTimedOut(domain, DurationConverter.format(timeout)));
       }
     }
   }
@@ -150,14 +150,14 @@ public class VerifyCommand extends AbstractCommand<ProjectDomainView> {
   }
 
   private static String getProgress(ProjectDomainView domain) {
-    String reason = DomainsSupport.describeVerificationReason(domain.failureReason());
+    String reason = DomainsSupport.describeDnsCheckReason(domain.failureReason());
     if (reason == null) {
       return domain.nextCheckAt() == null
-          ? msg.domainVerifying(domain.domain())
-          : msg.domainVerifyingUntil(domain.domain(), domain.nextCheckAt());
+          ? msg.domainCheckingDns(domain.domain())
+          : msg.domainCheckingDnsUntil(domain.domain(), domain.nextCheckAt());
     }
     return domain.nextCheckAt() == null
-        ? msg.domainVerificationPending(reason)
-        : msg.domainVerificationPendingUntil(reason, domain.nextCheckAt());
+        ? msg.domainDnsChecksPending(reason)
+        : msg.domainDnsChecksPendingUntil(reason, domain.nextCheckAt());
   }
 }

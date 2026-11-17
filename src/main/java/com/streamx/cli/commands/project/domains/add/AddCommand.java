@@ -7,12 +7,14 @@ import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
+import com.streamx.cli.framework.DetailsView;
 import com.streamx.cli.platform.PlatformClients;
 import com.streamx.cli.platform.PlatformContext;
 import com.streamx.cli.platform.ProjectDomainView;
 import com.streamx.cli.platform.ProjectDomainsApi;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -45,9 +47,13 @@ public class AddCommand extends AbstractCommand<List<ProjectDomainView>> {
     if (result.getData().isEmpty()) {
       return "";
     }
-    return DomainsSupport.formatDnsRecordsTable(result.getData().stream()
-        .flatMap(domain -> domain.dnsRecords().stream())
-        .toList());
+    String separator = System.lineSeparator().repeat(2);
+    return result.getData().stream()
+        .map(domain -> new DetailsView()
+            .row("Domain ID", domain.id())
+            .row("Domain name", domain.domain())
+            .render() + separator + DomainsSupport.formatDnsRecordsTable(domain.dnsRecords()))
+        .collect(Collectors.joining(separator));
   }
 
   @Override

@@ -422,6 +422,8 @@
           <forkCount>${surefire.forkCount}</forkCount>
           <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
+          <!-- Tests supply their own credentials; never inherit a developer's token. -->
+          <excludedEnvironmentVariables>STREAMX_PLATFORM_TOKEN</excludedEnvironmentVariables>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>
@@ -446,6 +448,8 @@
           <forkCount>${it.forkCount}</forkCount>
           <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>${test.output.toFile}</redirectTestOutputToFile>
+          <!-- Also isolates native CLI subprocesses launched by integration tests. -->
+          <excludedEnvironmentVariables>STREAMX_PLATFORM_TOKEN</excludedEnvironmentVariables>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemPropertyVariables>

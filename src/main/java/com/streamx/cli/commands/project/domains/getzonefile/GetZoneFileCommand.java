@@ -16,7 +16,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "get-zone-file",
     header = "Print required DNS records in zone-file format",
-    description = "Export the required DNS records without running DNS or HTTPS checks.",
+    description = "Export the required DNS records without running DNS or TLS certificate checks.",
     footer = {
         "",
         "Examples:",

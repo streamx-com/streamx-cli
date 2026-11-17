@@ -18,7 +18,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "list",
-    header = "List custom domains and their verification status"
+    header = "List custom domains and their status"
 )
 public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
 
@@ -46,15 +46,15 @@ public class ListCommand extends AbstractCommand<List<ProjectDomainView>> {
     }
 
     return TextTable.render(
-        List.of("ID", "DOMAIN", "VERIFICATION", "REASON", "NEXT CHECK"),
+        List.of("DOMAIN ID", "DOMAIN NAME", "DNS CHECKS", "REASON", "NEXT CHECK"),
         domains.stream()
             .map(domain -> Arrays.asList(
                 domain.id(),
                 domain.domain(),
-                DomainsSupport.describeStatus(domain.state()),
-                DomainsSupport.describeVerificationReason(domain.failureReason()),
+                DomainsSupport.describeDnsCheckState(domain),
+                DomainsSupport.describeDnsCheckReason(domain.failureReason()),
                 // Verified and failed domains are not checked again.
-                domain.verified() || domain.failed() ? null : domain.nextCheckAt()))
+                domain.dnsChecksPassed() || domain.failed() ? null : domain.nextCheckAt()))
             .toList());
   }
 

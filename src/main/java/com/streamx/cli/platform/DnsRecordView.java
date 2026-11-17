@@ -1,14 +1,15 @@
 package com.streamx.cli.platform;
 
-import com.streamx.cli.platform.generated.model.VerifyProjectDomain200ResponseDnsRecordsInner;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200ResponseDnsRecordsInner;
+import com.streamx.cli.platform.generated.model.RecheckDomainDns200ResponseDnsRecordsInner.TypeEnum;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record DnsRecordView(String type, String name, String value) {
+public record DnsRecordView(TypeEnum type, String name, String value) {
 
-  public static DnsRecordView from(VerifyProjectDomain200ResponseDnsRecordsInner record) {
+  public static DnsRecordView from(RecheckDomainDns200ResponseDnsRecordsInner record) {
     return new DnsRecordView(
-        record.getType() == null ? null : record.getType().toString(),
+        record.getType(),
         record.getName(),
         record.getValue());
   }

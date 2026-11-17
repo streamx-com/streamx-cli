@@ -54,20 +54,20 @@ public class ProjectDomainsApi {
     }
   }
 
-  public void verify(String orgId, String projectId, String domain) {
+  public void requestDnsCheck(String orgId, String projectId, String domain) {
     call(projectId, () -> {
-      clients.call(() -> api.verifyProjectDomain(domain, orgId, projectId, null, null));
+      clients.call(() -> api.recheckDomainDns(domain, orgId, projectId, null, null));
       return null;
     });
   }
 
   /**
-   * Checks the domain live: its records in public DNS, as verification does, and HTTPS on the
-   * project's StreamX hostnames.
+   * Checks the required DNS records and the TLS certificate served by the project's
+   * StreamX endpoints.
    */
-  public DomainStatusView status(String orgId, String projectId, String domain) {
-    return DomainStatusView.from(call(projectId, () -> clients.call(
-        () -> api.getProjectDomainStatus(domain, orgId, projectId, null, null),
+  public DomainStatusView status(String orgId, String projectId, ProjectDomainView domain) {
+    return DomainStatusView.from(domain.id(), call(projectId, () -> clients.call(
+        () -> api.getProjectDomainStatus(domain.domain(), orgId, projectId, null, null),
         DomainStatus.class)));
   }
 
