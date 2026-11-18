@@ -296,21 +296,22 @@ class ProjectCommandIT extends CliBaseIT {
 
     result.assertSuccess();
     assertThat(platform.getRequests())
-        .containsExactly("GET /api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c/status");
+        .containsExactly("GET /api/v1/organizations/" + ORG
+            + "/projects/so-org-web-a1b2c/deployment/status");
     assertThat(result.stdout()).contains("state = Pending");
     assertThat(result.stdout()).contains("Ready", "Deployed", "web is running");
   }
 
   /**
-   * A crafted project id must stay one path segment. Unencoded, "so-x/status" would route to the
-   * status endpoint instead of delete; the raw path is asserted because getPath() decodes it.
+   * A project id containing slashes must stay one path segment.
+   * The raw path is asserted because getPath() decodes it.
    */
   @Test
   void shouldEncodeProjectIdIntoASinglePathSegment() throws Exception {
-    exec("project", "delete", "-f", "so-x/status", "--org", ORG);
+    exec("project", "delete", "-f", "so-x/deployment/status", "--org", ORG);
 
     assertThat(platform.getRawRequests()).containsExactly(
-        "DELETE /api/v1/organizations/" + ORG + "/projects/so-x%2Fstatus");
+        "DELETE /api/v1/organizations/" + ORG + "/projects/so-x%2Fdeployment%2Fstatus");
   }
 
   @Test

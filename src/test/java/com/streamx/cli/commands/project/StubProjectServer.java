@@ -82,7 +82,7 @@ public class StubProjectServer implements AutoCloseable {
 
     if (path.contains("/repository")) {
       handleRepository(exchange, method, path);
-    } else if (path.endsWith("/status")) {
+    } else if ("GET".equals(method) && path.endsWith("/deployment/status")) {
       respond(exchange, 200, """
           {"state":"Pending","statuses":[
             {"state":"Ready","reason":"Deployed","message":"web is running"},
