@@ -855,4 +855,16 @@ public interface MessageProvider {
   @Message(id = 433, value = "Not authorized. The personal access token in "
       + "STREAMX_PLATFORM_TOKEN is invalid or has been revoked")
   String platformTokenUnauthorized();
+
+  @Message(id = 434, value = "No local deployment changes")
+  String projectDeploymentNoLocalChanges();
+
+  @Message(id = 435, value = "Local deployment changes are present, but the diff is empty")
+  String projectDeploymentEmptyDiff();
+
+  @Message(id = 436, value = "Nothing to push")
+  String projectDeploymentNothingToPush();
+
+  @Message(id = 437, value = "Published desired deployment configuration (generation %d)")
+  String projectDeploymentPushed(long generation);
 }

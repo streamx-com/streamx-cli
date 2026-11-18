@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,9 @@ import org.junit.jupiter.api.Test;
 class ProjectCommandIT extends CliBaseIT {
 
   private static final String ORG = "so-testorg";
+  private static final String PROJECT_ID = "so-org-web-a1b2c";
+  private static final String DEPLOYMENT_PATH =
+      "/api/v1/organizations/" + ORG + "/projects/" + PROJECT_ID + "/deployment";
 
   private StubProjectServer platform;
 
@@ -300,6 +305,101 @@ class ProjectCommandIT extends CliBaseIT {
             + "/projects/so-org-web-a1b2c/deployment/status");
     assertThat(result.stdout()).contains("state = Pending");
     assertThat(result.stdout()).contains("Ready", "Deployed", "web is running");
+  }
+
+  @Test
+  void shouldShowLiveAndDesiredDeploymentConfiguration() throws Exception {
+    platform.failWith(200, """
+        {"generation":7,"domains":["example.com"]}
+        """);
+
+    ProcessResult live = deployment("live", "-o", "json");
+    live.assertSuccess();
+    assertThat(live.stdout()).contains("\"generation\"", "7", "example.com");
+
+    ProcessResult desired = deployment("desired", "-o", "yaml");
+    desired.assertSuccess();
+    assertThat(desired.stdout()).contains("generation: 7", "example.com");
+    assertThat(platform.getRequests()).containsExactly(
+        "GET " + DEPLOYMENT_PATH + "/live", "GET " + DEPLOYMENT_PATH + "/desired");
+  }
+
+  @Test
+  void shouldUseCurrentProjectForDeploymentCommands() throws Exception {
+    exec("context", "org", "use", ORG).assertSuccess();
+    exec("context", "project", "use", PROJECT_ID).assertSuccess();
+    platform.failWith(200, """
+        {"generation":7}
+        """);
+
+    exec("project", "deployment", "desired").assertSuccess();
+    assertThat(platform.getRequests()).last().isEqualTo("GET " + DEPLOYMENT_PATH + "/desired");
+  }
+
+  @Test
+  void shouldShowDeploymentDiffAndSendPathAsJsonPointer() throws Exception {
+    platform.failWith(200, """
+        {"present":true,"base":"desired","differences":[
+          {"operation":"replace","path":"/domains","before":["old.example.com"],
+           "after":["new.example.com"]}
+        ]}
+        """);
+
+    ProcessResult diff = deployment("diff");
+    diff.assertSuccess();
+    assertThat(diff.stdout()).contains("replace", "/domains",
+        "[\"old.example.com\"]", "[\"new.example.com\"]");
+
+    ProcessResult filtered = deployment("diff", "--path", "/domains", "-o", "json");
+    filtered.assertSuccess();
+    assertThat(filtered.stdout()).contains("\"present\"", "true", "\"desired\"", "\"differences\"");
+    assertThat(platform.getRequests()).containsExactly(
+        "GET " + DEPLOYMENT_PATH + "/diff", "POST " + DEPLOYMENT_PATH + "/diff/path");
+    assertThat(platform.getRequestBodies().get(1)).isEqualTo("{\"path\":\"/domains\"}");
+  }
+
+  @Test
+  void shouldDistinguishEmptyDiffFromAbsentLocalChanges() throws Exception {
+    platform.failWith(200, """
+        {"present":true,"base":"desired","differences":[]}
+        """);
+    ProcessResult empty = deployment("diff");
+    empty.assertSuccess();
+    assertThat(empty.stdout()).contains(msg.projectDeploymentEmptyDiff());
+
+    platform.failWith(200, """
+        {"present":false,"base":"desired","differences":[]}
+        """);
+    ProcessResult absent = deployment("diff");
+    absent.assertSuccess();
+    assertThat(absent.stdout()).contains(msg.projectDeploymentNoLocalChanges());
+  }
+
+  @Test
+  void shouldDiscardAndPushDeploymentChanges() throws Exception {
+    platform.failWith(204, "");
+    deployment("discard").assertSuccess();
+    ProcessResult noPush = deployment("push");
+    noPush.assertSuccess();
+    assertThat(noPush.stdout()).contains(msg.projectDeploymentNothingToPush());
+
+    platform.failWith(200, """
+        {"generation":8}
+        """);
+    ProcessResult push = deployment("push");
+    push.assertSuccess();
+    assertThat(push.stdout()).contains(msg.projectDeploymentPushed(8));
+    assertThat(platform.getRequests()).containsExactly(
+        "DELETE " + DEPLOYMENT_PATH + "/diff",
+        "POST " + DEPLOYMENT_PATH + "/push",
+        "POST " + DEPLOYMENT_PATH + "/push");
+  }
+
+  private ProcessResult deployment(String command, String... options) throws Exception {
+    var args = new ArrayList<>(
+        List.of("project", "deployment", command, "--org", ORG, "--project", PROJECT_ID));
+    args.addAll(List.of(options));
+    return exec(args.toArray(String[]::new));
   }
 
   /**

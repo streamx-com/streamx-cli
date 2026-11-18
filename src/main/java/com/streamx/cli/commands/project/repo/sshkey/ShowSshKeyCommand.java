@@ -2,7 +2,7 @@ package com.streamx.cli.commands.project.repo.sshkey;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
+import com.streamx.cli.commands.project.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractCommand;
 import com.streamx.cli.framework.CliException;
 import com.streamx.cli.framework.CommandResult;
