@@ -112,64 +112,66 @@ class ProjectClustersCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldEnableDisabledCluster() throws Exception {
-    ProcessResult result = exec("project", "clusters", "enable",
+  void shouldStageAnEmptyClusterListWithClear() throws Exception {
+    ProcessResult result =
+        exec("project", "clusters", "set", "--clear", "--org", ORG, "--project", PROJECT);
+
+    result.assertSuccess();
+    assertThat(platform.getRequests()).containsExactly("PATCH " + CLUSTERS_PATH);
+    assertThat(platform.getRequestBodies()).containsExactly("[]");
+    assertThat(result.stderr()).contains(msg.projectClustersCleared(PROJECT));
+  }
+
+  @Test
+  void shouldRejectClearWithClusterIds() throws Exception {
+    ProcessResult result = exec("project", "clusters", "set", "--clear",
         "edge-us-east", "--org", ORG, "--project", PROJECT);
 
-    result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly(
-        "GET " + CLUSTERS_PATH,
-        "PATCH " + CLUSTERS_PATH);
-    assertThat(platform.getRequestBodies().get(1))
-        .isEqualTo("[\"processing-eu-central\",\"edge-us-east\"]");
-    assertThat(result.stderr()).contains(msg.projectClusterEnabled("edge-us-east", PROJECT));
+    result.assertExitCode(2);
+    assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test
-  void shouldNotPatchWhenClusterAlreadyEnabled() throws Exception {
-    ProcessResult result = exec("project", "clusters", "enable",
-        "processing-eu-central", "--org", ORG, "--project", PROJECT);
-
-    result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stderr())
-        .contains(msg.projectClusterAlreadyEnabled("processing-eu-central", PROJECT));
+  void shouldShowProjectSelectorsInEnableAndDisableHelp() throws Exception {
+    for (String command : new String[]{"enable", "disable"}) {
+      ProcessResult help = exec("project", "clusters", command, "--help");
+      assertThat(help.stdout()).contains("--org=<orgId>", "--project=<projectId>", "<clusterId>");
+    }
+    assertThat(platform.getRequests()).isEmpty();
   }
 
   @Test
-  void shouldDisableEnabledCluster() throws Exception {
-    ProcessResult result = exec("project", "clusters", "disable",
+  void shouldStageTwoClusterChangesWithSeparatePatches() throws Exception {
+    ProcessResult enable = exec("project", "clusters", "enable",
+        "edge-us-east", "--org", ORG, "--project", PROJECT);
+    ProcessResult disable = exec("project", "clusters", "disable",
         "processing-eu-central", "--org", ORG, "--project", PROJECT);
 
-    result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly(
-        "GET " + CLUSTERS_PATH,
-        "PATCH " + CLUSTERS_PATH);
-    assertThat(platform.getRequestBodies().get(1)).isEqualTo("[]");
-    assertThat(result.stderr())
+    enable.assertSuccess();
+    disable.assertSuccess();
+    assertThat(enable.stderr()).contains(msg.projectClusterEnabled("edge-us-east", PROJECT));
+    assertThat(disable.stderr())
         .contains(msg.projectClusterDisabled("processing-eu-central", PROJECT));
+    assertThat(platform.getRequests()).containsExactly(
+        "PATCH " + CLUSTERS_PATH + "/edge-us-east",
+        "PATCH " + CLUSTERS_PATH + "/processing-eu-central");
+    assertThat(platform.getRequestBodies()).containsExactly("true", "false");
+
+    ProcessResult live = exec("project", "clusters", "list", "--org", ORG, "--project", PROJECT);
+    live.assertSuccess();
+    assertThat(live.stdout()).containsPattern("processing-eu-central[^\\n]*true")
+        .containsPattern("edge-us-east[^\\n]*false");
   }
 
   @Test
-  void shouldNotPatchWhenClusterAlreadyDisabled() throws Exception {
-    ProcessResult result = exec("project", "clusters", "disable",
-        "edge-us-east", "--org", ORG, "--project", PROJECT);
-
-    result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stderr())
-        .contains(msg.projectClusterAlreadyDisabled("edge-us-east", PROJECT));
-  }
-
-  @Test
-  void shouldRejectEnablingUnknownCluster() throws Exception {
+  void shouldReportUnknownClusterRejectedByPlatform() throws Exception {
     ProcessResult result = exec("project", "clusters", "enable",
         "nope-cluster", "--org", ORG, "--project", PROJECT);
 
     result.assertExitCode(1);
     assertThat(result.stderr()).contains(
         msg.projectClusterUnknown("nope-cluster", "edge-us-east, processing-eu-central"));
-    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
+    assertThat(platform.getRequests()).containsExactly("PATCH " + CLUSTERS_PATH + "/nope-cluster");
   }
 
   @Test

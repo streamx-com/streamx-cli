@@ -30,6 +30,10 @@ public class OrganizationClustersApi {
     clients.call(() -> api.updateProjectClusters(orgId, projectId, clusterIds, null, null));
   }
 
+  public void setClusterEnabled(String orgId, String projectId, String clusterId, boolean enabled) {
+    clients.call(() -> api.updateProjectCluster(clusterId, orgId, projectId, enabled, null, null));
+  }
+
   private static List<Cluster> flatten(Clusters clusters) {
     List<Cluster> result = new ArrayList<>();
     if (clusters == null) {

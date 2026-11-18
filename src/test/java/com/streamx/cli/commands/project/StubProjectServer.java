@@ -89,6 +89,15 @@ public class StubProjectServer implements AutoCloseable {
             {"state":"Pending","reason":"Scaling","message":"api starting"}
           ]}
           """);
+    } else if ("PATCH".equals(method) && path.contains("/clusters/")) {
+      String clusterId = path.substring(path.lastIndexOf('/') + 1);
+      if (List.of("processing-eu-central", "edge-us-east").contains(clusterId)) {
+        respond(exchange, 204, "");
+      } else {
+        String message = "Unknown cluster '%s'. Available clusters: edge-us-east, "
+            + "processing-eu-central";
+        respond(exchange, 400, "{\"errorMessage\":\"" + message.formatted(clusterId) + "\"}");
+      }
     } else if (path.endsWith("/clusters")) {
       handleClusters(exchange, method);
     } else if (path.endsWith("/projects")) {
