@@ -82,17 +82,24 @@ public class StubProjectServer implements AutoCloseable {
 
     if (path.contains("/repository")) {
       handleRepository(exchange, method, path);
-    } else if (path.endsWith("/status")) {
+    } else if ("GET".equals(method) && path.endsWith("/deployment/status")) {
       respond(exchange, 200, """
           {"state":"Pending","statuses":[
             {"state":"Ready","reason":"Deployed","message":"web is running"},
             {"state":"Pending","reason":"Scaling","message":"api starting"}
           ]}
           """);
-    } else if (path.endsWith("/changes/pending")) {
-      respond(exchange, 200, """
-          [{"message":"web will be created","details":["image: nginx","replicas: 2"]}]
-          """);
+    } else if ("PATCH".equals(method) && path.contains("/clusters/")) {
+      String clusterId = path.substring(path.lastIndexOf('/') + 1);
+      if (List.of("processing-eu-central", "edge-us-east").contains(clusterId)) {
+        respond(exchange, 204, "");
+      } else {
+        String message = "Unknown cluster '%s'. Available clusters: edge-us-east, "
+            + "processing-eu-central";
+        respond(exchange, 400, "{\"errorMessage\":\"" + message.formatted(clusterId) + "\"}");
+      }
+    } else if ("GET".equals(method) && path.endsWith("/clusters/enabled")) {
+      handleEnabledClusters(exchange);
     } else if (path.endsWith("/clusters")) {
       handleClusters(exchange, method);
     } else if (path.endsWith("/projects")) {
@@ -202,14 +209,25 @@ public class StubProjectServer implements AutoCloseable {
     respond(exchange, 200, """
         {
           "processing": [
-            {"id":"processing-eu-central","enabled":true,"name":"EU Central",
+            {"id":"processing-eu-central","enabled":null,"name":"EU Central",
              "location":{"latitude":50.1,"longitude":8.6}}
           ],
           "edge": [
-            {"id":"edge-us-east","enabled":false,"name":"US East",
+            {"id":"edge-us-east","name":"US East",
              "location":{"latitude":40.7,"longitude":-74.0}}
           ]
         }
+        """);
+  }
+
+  private void handleEnabledClusters(HttpExchange exchange) throws IOException {
+    if (noClusters) {
+      respond(exchange, 200, "{\"processing\":[],\"edge\":[]}");
+      return;
+    }
+    respond(exchange, 200, """
+        {"processing":[{"id":"processing-eu-central","enabled":true,"name":"EU Central"}],
+         "edge":[]}
         """);
   }
 

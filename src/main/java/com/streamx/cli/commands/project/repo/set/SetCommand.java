@@ -2,7 +2,7 @@ package com.streamx.cli.commands.project.repo.set;
 
 import static com.streamx.cli.i18n.MessageProvider.msg;
 
-import com.streamx.cli.commands.project.repo.ProjectScopedOptions;
+import com.streamx.cli.commands.project.ProjectScopedOptions;
 import com.streamx.cli.framework.AbstractSilentCommand;
 import com.streamx.cli.framework.CommandResult;
 import com.streamx.cli.platform.PlatformClients;
@@ -13,9 +13,13 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "set",
     header = "Connect a repository to a project, or change its settings",
-    description = "Connects the repository when the project has none yet, otherwise updates "
-        + "the connection. Use 'ssh-key set' first (or 'project create --ssh-private-key') "
-        + "for private repositories."
+    description = {
+        "Connects the repository when the project has none yet, otherwise updates the connection.",
+        "Use 'ssh-key set' first (or 'project create --ssh-private-key') for private repositories.",
+        "",
+        "Connecting a writable repository can publish the previously pushed configuration to Git.",
+        "Local changes stay staged until you run 'streamx project deployment push'."
+    }
 )
 public class SetCommand extends AbstractSilentCommand {
 

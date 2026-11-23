@@ -135,11 +135,11 @@ public class StubPlatformServer implements AutoCloseable {
     respond(exchange, 200, """
         {
           "processing": [
-            {"id":"processing-eu-central","enabled":true,"name":"EU Central",
+            {"id":"processing-eu-central","enabled":null,"name":"EU Central",
              "location":{"latitude":50.1,"longitude":8.6}}
           ],
           "edge": [
-            {"id":"edge-us-east","enabled":false,"name":"US East",
+            {"id":"edge-us-east","name":"US East",
              "location":{"latitude":40.7,"longitude":-74.0}}
           ]
         }

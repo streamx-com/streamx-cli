@@ -21,13 +21,22 @@ public class OrganizationClustersApi {
         clients.call(() -> api.listOrganizationClusters(orgId, null, null), Clusters.class));
   }
 
-  public List<Cluster> listForProject(String orgId, String projectId) {
+  public List<Cluster> listAvailableProjectClusters(String orgId, String projectId) {
     return flatten(
         clients.call(() -> api.listProjectClusters(orgId, projectId, null, null), Clusters.class));
   }
 
+  public List<Cluster> listEnabledProjectClusters(String orgId, String projectId) {
+    return flatten(clients.call(
+        () -> api.listEnabledProjectClusters(orgId, projectId, null, null), Clusters.class));
+  }
+
   public void setForProject(String orgId, String projectId, List<String> clusterIds) {
     clients.call(() -> api.updateProjectClusters(orgId, projectId, clusterIds, null, null));
+  }
+
+  public void setClusterEnabled(String orgId, String projectId, String clusterId, boolean enabled) {
+    clients.call(() -> api.updateProjectCluster(clusterId, orgId, projectId, enabled, null, null));
   }
 
   private static List<Cluster> flatten(Clusters clusters) {

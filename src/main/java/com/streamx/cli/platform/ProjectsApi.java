@@ -1,11 +1,9 @@
 package com.streamx.cli.platform;
 
-import com.streamx.cli.platform.generated.api.PendingChangesResourceApi;
 import com.streamx.cli.platform.generated.api.ProjectsResourceApi;
 import com.streamx.cli.platform.generated.api.StatusResourceApi;
 import com.streamx.cli.platform.generated.model.CreateProjectRequest;
 import com.streamx.cli.platform.generated.model.CreateProjectRequestRepository;
-import com.streamx.cli.platform.generated.model.PendingChange;
 import com.streamx.cli.platform.generated.model.Project;
 import com.streamx.cli.platform.generated.model.ProjectRequest;
 import com.streamx.cli.platform.generated.model.ProjectStatus;
@@ -41,8 +39,7 @@ public class ProjectsApi {
 
   public ProjectView detailed(String orgId, Project project) {
     List<String> clusters = new OrganizationClustersApi(clients)
-        .listForProject(orgId, project.getId()).stream()
-        .filter(Cluster::enabled)
+        .listEnabledProjectClusters(orgId, project.getId()).stream()
         .map(Cluster::id)
         .toList();
     RepositoryView repository = null;
@@ -83,11 +80,5 @@ public class ProjectsApi {
   public ProjectStatus status(String orgId, String projectId) {
     StatusResourceApi statusApi = clients.api(StatusResourceApi.class);
     return clients.call(() -> statusApi.status(orgId, projectId, null, null), ProjectStatus.class);
-  }
-
-  public List<PendingChange> pendingChanges(String orgId, String projectId) {
-    PendingChangesResourceApi changesApi = clients.api(PendingChangesResourceApi.class);
-    return clients.callList(
-        () -> changesApi.getPendingChanges(orgId, projectId, null, null), PendingChange.class);
   }
 }

@@ -18,7 +18,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "list",
-    header = "List clusters available to a project and whether they are enabled"
+    header = "List clusters enabled for the project in the live configuration"
 )
 public class ListCommand extends AbstractCommand<List<Cluster>> {
 
@@ -44,6 +44,12 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
   )
   public boolean quiet;
 
+  @CommandLine.Option(
+      names = "--all",
+      description = "List all clusters available to the project"
+  )
+  public boolean all;
+
   @Override
   public String getTextOutput(CommandResult<List<Cluster>> result) {
     List<Cluster> clusters = result.getData();
@@ -59,13 +65,12 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
     }
 
     return TextTable.render(
-        List.of("ID", "TYPE", "NAME", "ENABLED"),
+        List.of("ID", "TYPE", "NAME"),
         clusters.stream()
             .map(cluster -> Arrays.asList(
                 cluster.id(),
                 cluster.type(),
-                cluster.name(),
-                String.valueOf(cluster.enabled())))
+                cluster.name()))
             .toList());
   }
 
@@ -73,8 +78,11 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
   public CommandResult<List<Cluster>> runCommand() {
     PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
     try (PlatformClients client = PlatformClients.fromConfig()) {
-      return new CommandResult<>(
-          new OrganizationClustersApi(client).listForProject(context.org(), context.project()));
+      OrganizationClustersApi api = new OrganizationClustersApi(client);
+      List<Cluster> clusters = all
+          ? api.listAvailableProjectClusters(context.org(), context.project())
+          : api.listEnabledProjectClusters(context.org(), context.project());
+      return new CommandResult<>(clusters);
     }
   }
 }

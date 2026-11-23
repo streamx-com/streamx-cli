@@ -1,10 +1,10 @@
-package com.streamx.cli.commands.project.repo;
+package com.streamx.cli.commands.project;
 
 import com.streamx.cli.platform.OrgIdCompletionCandidates;
 import com.streamx.cli.platform.ProjectIdCompletionCandidates;
 import picocli.CommandLine;
 
-/** The org/project selectors shared by every {@code project repo} subcommand. */
+/** The org/project selectors shared by project subcommands. */
 public class ProjectScopedOptions {
 
   @CommandLine.Option(

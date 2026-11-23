@@ -1,77 +1,30 @@
 package com.streamx.cli.commands.project.clusters.enable;
 
-import static com.streamx.cli.i18n.MessageProvider.msg;
-
-import com.streamx.cli.framework.AbstractSilentCommand;
-import com.streamx.cli.framework.CliException;
+import com.streamx.cli.commands.project.ProjectScopedOptions;
+import com.streamx.cli.commands.project.clusters.ToggleClusterCommand;
 import com.streamx.cli.framework.CommandResult;
-import com.streamx.cli.platform.Cluster;
 import com.streamx.cli.platform.ClusterIdCompletionCandidates;
-import com.streamx.cli.platform.OrgIdCompletionCandidates;
-import com.streamx.cli.platform.OrganizationClustersApi;
-import com.streamx.cli.platform.PlatformClients;
-import com.streamx.cli.platform.PlatformContext;
-import com.streamx.cli.platform.ProjectIdCompletionCandidates;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import picocli.CommandLine;
 
 @CommandLine.Command(
     name = "enable",
-    header = "Enable one more cluster for a project"
+    header = "Stage a cluster to be enabled for a project"
 )
-public class EnableCommand extends AbstractSilentCommand {
+public class EnableCommand extends ToggleClusterCommand {
 
   @CommandLine.Parameters(
       index = "0",
       paramLabel = "<clusterId>",
-      description = "Cluster ID, as shown by 'streamx org clusters list'",
+      description = "Cluster ID, as shown by 'streamx project clusters list'",
       completionCandidates = ClusterIdCompletionCandidates.class
   )
-  public String clusterId;
+  String clusterId;
 
-  @CommandLine.Option(
-      names = "--org",
-      paramLabel = "<orgId>",
-      description = "Organization ID (defaults to the current organization)",
-      completionCandidates = OrgIdCompletionCandidates.class
-  )
-  public String orgId;
-
-  @CommandLine.Option(
-      names = "--project",
-      paramLabel = "<projectId>",
-      description = "Project ID (defaults to the current project)",
-      completionCandidates = ProjectIdCompletionCandidates.class
-  )
-  public String projectId;
+  @CommandLine.Mixin
+  ProjectScopedOptions scope;
 
   @Override
   public CommandResult<Void> runCommand() {
-    PlatformContext.OrgProject context = PlatformContext.orgAndProject(orgId, projectId);
-    try (PlatformClients client = PlatformClients.fromConfig()) {
-      OrganizationClustersApi clusters = new OrganizationClustersApi(client);
-      List<Cluster> current = clusters.listForProject(context.org(), context.project());
-
-      Cluster target = current.stream()
-          .filter(cluster -> clusterId.equals(cluster.id()))
-          .findFirst()
-          .orElseThrow(() -> new CliException(msg.projectClusterUnknown(clusterId,
-              current.stream().map(Cluster::id).sorted().collect(Collectors.joining(", ")))));
-      if (target.enabled()) {
-        System.err.println(msg.projectClusterAlreadyEnabled(clusterId, context.project()));
-        return new CommandResult<>(null);
-      }
-
-      List<String> enabled = new ArrayList<>(current.stream()
-          .filter(Cluster::enabled)
-          .map(Cluster::id)
-          .toList());
-      enabled.add(clusterId);
-      clusters.setForProject(context.org(), context.project(), enabled);
-    }
-    System.err.println(msg.projectClusterEnabled(clusterId, context.project()));
-    return new CommandResult<>(null);
+    return stage(scope, clusterId, true);
   }
 }
