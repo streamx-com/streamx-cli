@@ -1,17 +1,17 @@
 package com.streamx.cli.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.streamx.cli.platform.generated.api.CloudConfigResourceApi;
+import com.streamx.cli.platform.generated.api.DeploymentResourceApi;
 import com.streamx.cli.platform.generated.model.CloudConfigDiffPathRequest;
 
 public class ProjectDeploymentApi {
 
   private final PlatformClients clients;
-  private final CloudConfigResourceApi api;
+  private final DeploymentResourceApi api;
 
   public ProjectDeploymentApi(PlatformClients clients) {
     this.clients = clients;
-    this.api = clients.api(CloudConfigResourceApi.class);
+    this.api = clients.api(DeploymentResourceApi.class);
   }
 
   public JsonNode live(String orgId, String projectId) {

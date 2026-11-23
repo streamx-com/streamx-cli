@@ -39,8 +39,7 @@ public class ProjectsApi {
 
   public ProjectView detailed(String orgId, Project project) {
     List<String> clusters = new OrganizationClustersApi(clients)
-        .listForProject(orgId, project.getId()).stream()
-        .filter(Cluster::enabled)
+        .listEnabledProjectClusters(orgId, project.getId()).stream()
         .map(Cluster::id)
         .toList();
     RepositoryView repository = null;

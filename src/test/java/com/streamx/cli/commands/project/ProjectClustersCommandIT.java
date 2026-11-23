@@ -52,15 +52,24 @@ class ProjectClustersCommandIT extends CliBaseIT {
   }
 
   @Test
-  void shouldListProjectClustersWithEnabledColumn() throws Exception {
+  void shouldListOnlyEnabledProjectClustersByDefault() throws Exception {
     ProcessResult result =
         exec("project", "clusters", "list", "--org", ORG, "--project", PROJECT);
 
     result.assertSuccess();
+    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH + "/enabled");
+    assertThat(result.stdout()).contains("ID", "TYPE", "NAME", "processing-eu-central")
+        .doesNotContain("edge-us-east");
+  }
+
+  @Test
+  void shouldListAllAvailableProjectClustersWithAllOption() throws Exception {
+    ProcessResult result =
+        exec("project", "clusters", "list", "--all", "--org", ORG, "--project", PROJECT);
+
+    result.assertSuccess();
     assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stdout()).contains("ID", "TYPE", "NAME", "ENABLED");
-    assertThat(result.stdout()).contains("processing-eu-central", "true");
-    assertThat(result.stdout()).contains("edge-us-east", "false");
+    assertThat(result.stdout()).contains("processing-eu-central", "edge-us-east");
   }
 
   @Test
@@ -71,8 +80,8 @@ class ProjectClustersCommandIT extends CliBaseIT {
     ProcessResult result = exec("project", "clusters", "list", "-q");
 
     result.assertSuccess();
-    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH);
-    assertThat(result.stdout()).isEqualTo("processing-eu-central\nedge-us-east\n");
+    assertThat(platform.getRequests()).containsExactly("GET " + CLUSTERS_PATH + "/enabled");
+    assertThat(result.stdout()).isEqualTo("processing-eu-central\n");
   }
 
   @Test
@@ -159,8 +168,7 @@ class ProjectClustersCommandIT extends CliBaseIT {
 
     ProcessResult live = exec("project", "clusters", "list", "--org", ORG, "--project", PROJECT);
     live.assertSuccess();
-    assertThat(live.stdout()).containsPattern("processing-eu-central[^\\n]*true")
-        .containsPattern("edge-us-east[^\\n]*false");
+    assertThat(live.stdout()).contains("processing-eu-central").doesNotContain("edge-us-east");
   }
 
   @Test

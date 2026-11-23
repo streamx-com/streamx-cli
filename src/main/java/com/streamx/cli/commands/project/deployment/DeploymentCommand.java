@@ -66,7 +66,8 @@ public class DeploymentCommand extends AbstractCommandGroup {
 
   @CommandLine.Command(
       name = "diff",
-      header = "Show local changes against the desired configuration"
+      header = "Show local changes against the desired configuration",
+      description = "JSON and YAML output include the full staged configuration."
   )
   public static class Diff extends ConfigurationCommand {
 

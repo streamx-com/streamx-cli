@@ -9,7 +9,7 @@ public record Cluster(
     String id,
     String type,
     String name,
-    boolean enabled,
+    Boolean enabled,
     Double latitude,
     Double longitude
 ) {
@@ -20,7 +20,7 @@ public record Cluster(
         node.getId(),
         type,
         node.getName(),
-        Boolean.TRUE.equals(node.getEnabled()),
+        node.getEnabled(),
         location == null ? null : location.getLatitude(),
         location == null ? null : location.getLongitude());
   }

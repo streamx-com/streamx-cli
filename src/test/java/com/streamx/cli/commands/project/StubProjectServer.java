@@ -98,6 +98,8 @@ public class StubProjectServer implements AutoCloseable {
             + "processing-eu-central";
         respond(exchange, 400, "{\"errorMessage\":\"" + message.formatted(clusterId) + "\"}");
       }
+    } else if ("GET".equals(method) && path.endsWith("/clusters/enabled")) {
+      handleEnabledClusters(exchange);
     } else if (path.endsWith("/clusters")) {
       handleClusters(exchange, method);
     } else if (path.endsWith("/projects")) {
@@ -207,14 +209,25 @@ public class StubProjectServer implements AutoCloseable {
     respond(exchange, 200, """
         {
           "processing": [
-            {"id":"processing-eu-central","enabled":true,"name":"EU Central",
+            {"id":"processing-eu-central","enabled":null,"name":"EU Central",
              "location":{"latitude":50.1,"longitude":8.6}}
           ],
           "edge": [
-            {"id":"edge-us-east","enabled":false,"name":"US East",
+            {"id":"edge-us-east","name":"US East",
              "location":{"latitude":40.7,"longitude":-74.0}}
           ]
         }
+        """);
+  }
+
+  private void handleEnabledClusters(HttpExchange exchange) throws IOException {
+    if (noClusters) {
+      respond(exchange, 200, "{\"processing\":[],\"edge\":[]}");
+      return;
+    }
+    respond(exchange, 200, """
+        {"processing":[{"id":"processing-eu-central","enabled":true,"name":"EU Central"}],
+         "edge":[]}
         """);
   }
 

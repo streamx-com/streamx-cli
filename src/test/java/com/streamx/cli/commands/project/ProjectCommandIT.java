@@ -75,8 +75,8 @@ class ProjectCommandIT extends CliBaseIT {
     String web = "/api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c";
     assertThat(platform.getRequests()).containsExactly(
         "GET /api/v1/organizations/" + ORG + "/projects",
-        "GET " + api + "/clusters", "GET " + api + "/repository",
-        "GET " + web + "/clusters", "GET " + web + "/repository");
+        "GET " + api + "/clusters/enabled", "GET " + api + "/repository",
+        "GET " + web + "/clusters/enabled", "GET " + web + "/repository");
     assertThat(result.stdout())
         .contains("CLUSTERS", "REPOSITORY", "SSH KEY")
         .contains("processing-eu-central")
@@ -137,7 +137,8 @@ class ProjectCommandIT extends CliBaseIT {
     result.assertSuccess();
     String base = "/api/v1/organizations/" + ORG + "/projects/so-org-web-a1b2c";
     assertThat(platform.getRequests())
-        .containsExactly("GET " + base, "GET " + base + "/clusters", "GET " + base + "/repository");
+        .containsExactly("GET " + base, "GET " + base + "/clusters/enabled",
+            "GET " + base + "/repository");
     assertThat(result.stdout())
         .contains("id          = so-org-web-a1b2c")
         .contains("clusters    = processing-eu-central")
@@ -339,7 +340,7 @@ class ProjectCommandIT extends CliBaseIT {
   @Test
   void shouldShowDeploymentDiffAndSendPathAsJsonPointer() throws Exception {
     platform.failWith(200, """
-        {"present":true,"base":"desired","differences":[
+        {"present":true,"staged":{"domains":["new.example.com"]},"differences":[
           {"operation":"replace","path":"/domains","before":["old.example.com"],
            "after":["new.example.com"]}
         ]}
@@ -352,7 +353,8 @@ class ProjectCommandIT extends CliBaseIT {
 
     ProcessResult filtered = deployment("diff", "--path", "/domains", "-o", "json");
     filtered.assertSuccess();
-    assertThat(filtered.stdout()).contains("\"present\"", "true", "\"desired\"", "\"differences\"");
+    assertThat(filtered.stdout()).contains(
+        "\"present\"", "true", "\"staged\"", "new.example.com", "\"differences\"");
     assertThat(platform.getRequests()).containsExactly(
         "GET " + DEPLOYMENT_PATH + "/diff", "POST " + DEPLOYMENT_PATH + "/diff/path");
     assertThat(platform.getRequestBodies().get(1)).isEqualTo("{\"path\":\"/domains\"}");
@@ -361,14 +363,14 @@ class ProjectCommandIT extends CliBaseIT {
   @Test
   void shouldDistinguishEmptyDiffFromAbsentLocalChanges() throws Exception {
     platform.failWith(200, """
-        {"present":true,"base":"desired","differences":[]}
+        {"present":true,"staged":{},"differences":[]}
         """);
     ProcessResult empty = deployment("diff");
     empty.assertSuccess();
     assertThat(empty.stdout()).contains(msg.projectDeploymentEmptyDiff());
 
     platform.failWith(200, """
-        {"present":false,"base":"desired","differences":[]}
+        {"present":false,"staged":{},"differences":[]}
         """);
     ProcessResult absent = deployment("diff");
     absent.assertSuccess();

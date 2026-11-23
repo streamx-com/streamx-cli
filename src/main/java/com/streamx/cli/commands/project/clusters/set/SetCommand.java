@@ -67,7 +67,8 @@ public class SetCommand extends AbstractSilentCommand {
       OrganizationClustersApi clusters = new OrganizationClustersApi(client);
 
       if (!selection.clear) {
-        Set<String> available = clusters.listForProject(context.org(), context.project()).stream()
+        Set<String> available = clusters
+            .listAvailableProjectClusters(context.org(), context.project()).stream()
             .map(Cluster::id)
             .collect(Collectors.toSet());
         for (String clusterId : clusterIds) {

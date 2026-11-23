@@ -50,13 +50,12 @@ public class ListCommand extends AbstractCommand<List<Cluster>> {
     }
 
     return TextTable.render(
-        List.of("ID", "TYPE", "NAME", "ENABLED"),
+        List.of("ID", "TYPE", "NAME"),
         clusters.stream()
             .map(cluster -> Arrays.asList(
                 cluster.id(),
                 cluster.type(),
-                cluster.name(),
-                String.valueOf(cluster.enabled())))
+                cluster.name()))
             .toList());
   }
 

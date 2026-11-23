@@ -53,7 +53,7 @@ class OrgClustersCommandIT extends CliBaseIT {
     result.assertSuccess();
     assertThat(platform.getRequests())
         .containsExactly("GET /api/v1/organizations/" + ORG + "/clusters");
-    assertThat(result.stdout()).contains("ID", "TYPE", "NAME", "ENABLED");
+    assertThat(result.stdout()).contains("ID", "TYPE", "NAME").doesNotContain("ENABLED");
     assertThat(result.stdout()).contains("processing-eu-central", "processing", "EU Central");
     assertThat(result.stdout()).contains("edge-us-east", "edge", "US East");
   }
